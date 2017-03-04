@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="adam_bounded" default="jar">
+
+	<dirname property="bounded.basedir" file="${ant.file.adam_bounded}"/>
+
+<!--  %%%%%%%%%%%%%%%%%%%%%%%%%%%%% IMPORTS %%%%%%%%%%%%%%%%%%%%%%%%%%% -->	
+	<property file="${bounded.basedir}/build.properties"/>
+	<import file="${mainfolder}/build_macros.xml" optional="false"/>
+	<include file="${mainfolder}/build_targets.xml" as="fu" optional="false" />
+
+<!--  %%%%%%%%%%%%%%%%%%%%%%%%%%%%% PATHs %%%%%%%%%%%%%%%%%%%%%%%%%%% -->	
+	<path id="bounded.classpath">
+			<resourcelist id="bounded.libs">
+					<file file="${subproject.basedir}/libs.res"/>
+			</resourcelist>
+	</path>
+
+	<union id="bounded.jar.res">    			
+			<zipfileset includes="**/*.class" src="${subproject.basedir}/../ds/adam_logics.jar"/>
+<!--			<zipfileset includes="**/*.stg" src="${subproject.basedir}/../ds/adam_logics.jar"/>-->
+			<zipfileset includes="**/*.class" src="${subproject.basedir}/lib/javaBDD/javabdd-1.0b2.jar"/>
+	</union>
+
+	<!--  %%%%%%%%%%%%%%%%%%%%%%%%%%%%% PROPERTIES %%%%%%%%%%%%%%%%%%%%%%%%%%% -->	
+	<target name="loadProperties">
+		<property file="${subproject.basedir}/build.properties"/>		
+	</target>
+
+<!--  %%%%%%%%%%%%%%%%%%%%%%%%%%%%% DELEGATES %%%%%%%%%%%%%%%%%%%%%%%%%%% -->	
+	<target name="test" depends="loadProperties" description="Runs all tests">
+		<antcall target="bounded.fu.test"/>
+			<!--<ant antfile="${logics.basedir}/build_logics.xml" target="test"></ant>	-->	
+	</target>
+	<target name="test-method" depends="loadProperties" description="Runs the tests of a specific method">
+		<antcall target="bounded.fu.test-method"/>
+	</target>
+	<target name="test-class" depends="loadProperties" description="Runs the tests of a specific class">
+		<antcall target="bounded.fu.test-class"/>
+	</target>
+	<target name="jar" depends="loadProperties" description="Builds a jar with all its dependencies">
+		<antcall target="bounded.fu.jar"/>
+	</target>
+	<target name="clean" depends="loadProperties" description="Cleans all temporary files.">
+		<antcall target="bounded.fu.clean"/>
+	</target>
+	<target name="clean-all" depends="loadProperties" description="Cleans all temporary files including the reports">
+		<antcall target="bounded.fu.clean-all"/>
+	</target>
+</project>
