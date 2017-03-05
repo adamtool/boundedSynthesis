@@ -1,4 +1,4 @@
-package uniolunisaar.adam.bounded.qbfapproach;
+package uniolunisaar.adam.bounded.qbfapproach.solver;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -22,13 +22,17 @@ import uniol.apt.adt.pn.Marking;
 import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
-import uniolunisaar.adam.symbolic.bddapproach.exceptions.NoSuitableDistributionFoundException;
+import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
+import uniolunisaar.adam.ds.exceptions.CouldNotFindSuitableWinningConditionException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
+import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
+import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
+import uniolunisaar.adam.ds.exceptions.UnboundedPGException;
 import uniolunisaar.adam.ds.winningconditions.Safety;
 import uniolunisaar.adam.util.Tools;
 
-public class BoundedSynthesis {
+public class QBFSafetySolver extends QBFSolver<Safety> {
     // Results
 
     boolean solvable = false;
@@ -47,8 +51,13 @@ public class BoundedSynthesis {
     Map<Place, Transition> copyCausing = new HashMap<>();		// for each copied place, which transition was changed
     Map<String, Set<Place>> copyStore = new HashMap<>();
 
-    public BoundedSynthesis(PetriGame pg, int n, int b2) {
-        this.pg = pg;
+    public QBFSafetySolver(PetriNet net) throws UnboundedPGException {
+        this(net, 0, 0);
+    }
+
+    public QBFSafetySolver(PetriNet net, int n, int b2) throws UnboundedPGException {
+        super(new QBFPetriGame(net, n, b2), new Safety());
+        this.pg = super.getGame();
         for (Place p : pg.getNet().getPlaces()) {
             if (p.getPreset().size() == 1) {
                 copyCausing.put(p, p.getPreset().iterator().next());
@@ -87,7 +96,7 @@ public class BoundedSynthesis {
                 openIn.add(p);
             }
         }
-        Set<Place> badPlaces = ((Safety) pg.getWinCon()).getBadPlaces();
+        Set<Place> badPlaces = getWinningCondition().getBadPlaces();
         while (!openIn.isEmpty()) {
             Place p = openIn.poll();
             if (!p.getPreset().isEmpty()) {					// We should copy
@@ -291,261 +300,261 @@ public class BoundedSynthesis {
 
         // old
         /*Queue<Place> openIn = new LinkedTransferQueue<Place> ();
-		Queue<Place> open   = new LinkedTransferQueue<Place> ();
-		Set<Place> closed   = new HashSet<Place> ();
-		Marking in = pg.getNet().getInitialMarkingCopy();
-		// Start with initial places of the system
-		for (Place p : pg.getNet().getPlaces()) {
-			if (in.getToken(p).getValue() == 1)
-				openIn.add(p);
-		}
+         Queue<Place> open   = new LinkedTransferQueue<Place> ();
+         Set<Place> closed   = new HashSet<Place> ();
+         Marking in = pg.getNet().getInitialMarkingCopy();
+         // Start with initial places of the system
+         for (Place p : pg.getNet().getPlaces()) {
+         if (in.getToken(p).getValue() == 1)
+         openIn.add(p);
+         }
 		
-		while(!openIn.isEmpty()) {
-			Place p = openIn.poll();
-			if (!p.getPreset().isEmpty()) {					// We must copy
-				if (b.get(p.getId()) > 1) {					// We can copy
+         while(!openIn.isEmpty()) {
+         Place p = openIn.poll();
+         if (!p.getPreset().isEmpty()) {					// We must copy
+         if (b.get(p.getId()) > 1) {					// We can copy
 					
-					Place newP = pg.getNet().createPlace(p.getId() + "__" + b.get(p.getId()));
-					Set<Place> added = new HashSet<Place> ();
-					added.add(newP);
-					copyStore.put(p.getId(), added);
-					if (pg.getBadPlaces().contains(p))
-						newP.putExtension("bad", true);
-					b.put(p.getId(), b.get(p.getId()) - 1);
+         Place newP = pg.getNet().createPlace(p.getId() + "__" + b.get(p.getId()));
+         Set<Place> added = new HashSet<Place> ();
+         added.add(newP);
+         copyStore.put(p.getId(), added);
+         if (pg.getBadPlaces().contains(p))
+         newP.putExtension("bad", true);
+         b.put(p.getId(), b.get(p.getId()) - 1);
 					
-					for (Transition pre : p.getPreset()) {	// Change incoming arrows
-						pg.getNet().removeFlow(pre, p);
-						pg.getNet().createFlow(pre, newP);
-						copyCausing.put(newP, pre);
-					}
-					for (Transition post : p.getPostset()) {// Copy outgoing arrows
-						Transition newT = pg.getNet().createTransition(post.getId()
-												+ "__" + (++copycounter));
-						for (Place c : post.getPreset()) {
-							if (c.equals(p))
-								pg.getNet().createFlow(newP, newT);
-							else
-								pg.getNet().createFlow(c, newT);
-						}
-						for (Place c : post.getPostset()) {
-							if (c.equals(p))				// remove self transitions
-								pg.getNet().createFlow(newT, newP);
-							else {
-								pg.getNet().createFlow(newT, c);
-								open.add(c);
-							}
-						}
-					}
-					closed.add(p);
-					open.add(newP);
-				}
-			} else {
-				for (Transition t : p.getPostset()) {
-					for (Place p2 : t.getPostset()) {
-						if (p2.getPreset().size() > 1)
-							open.add(p2);
-					}
-				}
-			}
-		}
+         for (Transition pre : p.getPreset()) {	// Change incoming arrows
+         pg.getNet().removeFlow(pre, p);
+         pg.getNet().createFlow(pre, newP);
+         copyCausing.put(newP, pre);
+         }
+         for (Transition post : p.getPostset()) {// Copy outgoing arrows
+         Transition newT = pg.getNet().createTransition(post.getId()
+         + "__" + (++copycounter));
+         for (Place c : post.getPreset()) {
+         if (c.equals(p))
+         pg.getNet().createFlow(newP, newT);
+         else
+         pg.getNet().createFlow(c, newT);
+         }
+         for (Place c : post.getPostset()) {
+         if (c.equals(p))				// remove self transitions
+         pg.getNet().createFlow(newT, newP);
+         else {
+         pg.getNet().createFlow(newT, c);
+         open.add(c);
+         }
+         }
+         }
+         closed.add(p);
+         open.add(newP);
+         }
+         } else {
+         for (Transition t : p.getPostset()) {
+         for (Place p2 : t.getPostset()) {
+         if (p2.getPreset().size() > 1)
+         open.add(p2);
+         }
+         }
+         }
+         }
 		
-		while(!open.isEmpty()) {
-			Place p = open.poll();
-			String id = p.getId();
-			int index = id.indexOf("__");
-			if (index != -1) {
-				id = id.substring(0, index);
-			}
+         while(!open.isEmpty()) {
+         Place p = open.poll();
+         String id = p.getId();
+         int index = id.indexOf("__");
+         if (index != -1) {
+         id = id.substring(0, index);
+         }
 			
-			if (p.getPreset().size() > 1 && p.getPostset().size() > 0) {				// We must copy and should copy
-				if (b.get(id) > 1) {					// We can copy
-					Place newP = pg.getNet().createPlace(id + "__" + b.get(id));
-					if (pg.getBadPlaces().contains(p))
-						newP.putExtension("bad", true);
-					b.put(id, b.get(id) - 1);
+         if (p.getPreset().size() > 1 && p.getPostset().size() > 0) {				// We must copy and should copy
+         if (b.get(id) > 1) {					// We can copy
+         Place newP = pg.getNet().createPlace(id + "__" + b.get(id));
+         if (pg.getBadPlaces().contains(p))
+         newP.putExtension("bad", true);
+         b.put(id, b.get(id) - 1);
 					
-					if (copyStore.get(id) != null) {
-						Set<Place> added = copyStore.get(id);
-						added.add(newP);
-						copyStore.put(id, added);
-					}
-					int i = 0;
-					int n = p.getPreset().size();
-					boolean skip = true;
-					for (Transition pre : p.getPreset()) {	// Change incoming arrows
-						i++;
-						if ((skip && i == n) || (copyCausing.get(p) != null && copyCausing.get(p).equals(pre))) {
-							skip = false;
-						} else {
-							pg.getNet().removeFlow(pre, p);
-							pg.getNet().createFlow(pre, newP);
-							copyCausing.put(newP, pre);
-						}
-					}
-					for (Transition post : p.getPostset()) {// Copy outgoing arrows
-						Transition newT = pg.getNet().createTransition(post.getId()
-												+ "__" + (++copycounter));
-						for (Place c : post.getPreset()) {
-							if (c.equals(p))
-								pg.getNet().createFlow(newP, newT);
-							else
-								pg.getNet().createFlow(c, newT);
-						}
-						for (Place c : post.getPostset()) {
-							if (c.equals(p))				// remove self transitions
-								pg.getNet().createFlow(newT, newP);
-							else {
-								pg.getNet().createFlow(newT, c);
-								open.add(c);
-							}
-						}
-					}
-					closed.add(p);
-					open.add(newP);
-				} else {
-					if (this.b > 1 && copyStore.get(p) != null) {
-						for (Transition t : p.getPreset()) {
-							for (Place copy : copyStore.get(p)) {
-								Transition newT = pg.getNet().createTransition(t.getId()
-									+ "__" + (++copycounter));
+         if (copyStore.get(id) != null) {
+         Set<Place> added = copyStore.get(id);
+         added.add(newP);
+         copyStore.put(id, added);
+         }
+         int i = 0;
+         int n = p.getPreset().size();
+         boolean skip = true;
+         for (Transition pre : p.getPreset()) {	// Change incoming arrows
+         i++;
+         if ((skip && i == n) || (copyCausing.get(p) != null && copyCausing.get(p).equals(pre))) {
+         skip = false;
+         } else {
+         pg.getNet().removeFlow(pre, p);
+         pg.getNet().createFlow(pre, newP);
+         copyCausing.put(newP, pre);
+         }
+         }
+         for (Transition post : p.getPostset()) {// Copy outgoing arrows
+         Transition newT = pg.getNet().createTransition(post.getId()
+         + "__" + (++copycounter));
+         for (Place c : post.getPreset()) {
+         if (c.equals(p))
+         pg.getNet().createFlow(newP, newT);
+         else
+         pg.getNet().createFlow(c, newT);
+         }
+         for (Place c : post.getPostset()) {
+         if (c.equals(p))				// remove self transitions
+         pg.getNet().createFlow(newT, newP);
+         else {
+         pg.getNet().createFlow(newT, c);
+         open.add(c);
+         }
+         }
+         }
+         closed.add(p);
+         open.add(newP);
+         } else {
+         if (this.b > 1 && copyStore.get(p) != null) {
+         for (Transition t : p.getPreset()) {
+         for (Place copy : copyStore.get(p)) {
+         Transition newT = pg.getNet().createTransition(t.getId()
+         + "__" + (++copycounter));
 								
-								int p_int = p.getId().indexOf("__");
-								String p_id = p.getId().substring(0, p_int);
+         int p_int = p.getId().indexOf("__");
+         String p_id = p.getId().substring(0, p_int);
 								
-								for (Place pre : t.getPreset()) {
-									pg.getNet().createFlow(pre, newT);
-								}
-								for (Place post : t.getPostset()) {
-									int post_int = post.getId().indexOf("__");
-									String post_id = post.getId().substring(0, post_int);
-									if (post_id.equals(p_id)){
-										pg.getNet().createFlow(newT, copy);
-									} else {
-										pg.getNet().createFlow(newT,post);
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}*/
+         for (Place pre : t.getPreset()) {
+         pg.getNet().createFlow(pre, newT);
+         }
+         for (Place post : t.getPostset()) {
+         int post_int = post.getId().indexOf("__");
+         String post_id = post.getId().substring(0, post_int);
+         if (post_id.equals(p_id)){
+         pg.getNet().createFlow(newT, copy);
+         } else {
+         pg.getNet().createFlow(newT,post);
+         }
+         }
+         }
+         }
+         }
+         }
+         }
+         }*/
         // oldest
         /*if (bunfolded) {
-			System.out.println("Error: only unfold once");
-		} else {
-			bunfolded = true;
-			Queue<String> recheck = new LinkedTransferQueue<String>();
-			for (String p : b.keySet()) {
-				recheck.add(p);
-			}
-			while (!recheck.isEmpty()) {
-				String p = recheck.poll();
-				if (p.contains("__")) {
-					int index = p.lastIndexOf("__");
-					String old = p;
-					p = p.substring(0, index);
-					if (pg.getNet().getPlace(p).getPostset().size() > 0
-							&& b.get(p) > 1) {
-						boolean first = false; // no need to copy first
-												// occurrence
-						for (Transition t : pg.getNet().getTransitions()) {
-							if (t.getPostset().contains(
-									pg.getNet().getPlace(old))
-									&& b.get(p) > 1) {
-								if (first) {
-									Place newP = pg.getNet().createPlace(
-											old + "__" + b.get(p));
-									if (pg.getBadPlaces().contains(
-											pg.getNet().getPlace(old)))
-										newP.putExtension("bad", true);
-									pg.getNet().removeFlow(t.getId(), old);
-									pg.getNet().createFlow(t, newP);
-									for (Transition trans : pg.getNet()
-											.getTransitions()) {
-										if (trans.getPreset().contains(
-												pg.getNet().getPlace(p))) {
-											Transition newT = pg
-													.getNet()
-													.createTransition(
-															trans.getId()
-																	+ (++copycounter));
-											for (Place place : trans
-													.getPostset()) {
-												pg.getNet().createFlow(newT,
-														place);
-												if (!pg.getEnvPlaces()
-														.contains(place))
-													recheck.add(place.getId());
-											}
-											for (Place place : trans
-													.getPreset()) {
-												if (place.getId().equals(p))
-													pg.getNet().createFlow(
-															newP, newT);
-												else
-													pg.getNet().createFlow(
-															place, newT);
-											}
-										}
-									}
-									b.put(p, b.get(p) - 1);
-								} else {
-									first = true;
-								}
-							}
-						}
-					}
-					continue;
-				}
-				if (pg.getNet().getPlace(p).getPostset().size() > 0
-						&& b.get(p) > 1) {
-					boolean first = false; // no need to copy first occurrence
-					for (Transition t : pg.getNet().getTransitions()) {
-						if (t.getPostset().contains(pg.getNet().getPlace(p))
-								&& b.get(p) > 1) {
-							if (first) {
-								Place newP = pg.getNet().createPlace(
-										p + "__" + b.get(p));
-								if (pg.getBadPlaces().contains(
-										pg.getNet().getPlace(p)))
-									newP.putExtension("bad", true);
-								pg.getNet().removeFlow(t.getId(), p);
-								pg.getNet().createFlow(t, newP);
-								for (Transition trans : pg.getNet()
-										.getTransitions()) {
-									if (trans.getPreset().contains(
-											pg.getNet().getPlace(p))) {
-										Transition newT = pg
-												.getNet()
-												.createTransition(
-														trans.getId()
-																+ (++copycounter));
-										for (Place place : trans.getPostset()) {
-											pg.getNet().createFlow(newT, place);
-											if (!pg.getEnvPlaces().contains(
-													place))
-												recheck.add(place.getId());
-										}
-										for (Place place : trans.getPreset()) {
-											if (place.getId().equals(p))
-												pg.getNet().createFlow(newP,
-														newT);
-											else
-												pg.getNet().createFlow(place,
-														newT);
-										}
-									}
-								}
-								b.put(p, b.get(p) - 1);
-							} else {
-								first = true;
-							}
-						}
-					}
-				}
-			}
-		}*/
+         System.out.println("Error: only unfold once");
+         } else {
+         bunfolded = true;
+         Queue<String> recheck = new LinkedTransferQueue<String>();
+         for (String p : b.keySet()) {
+         recheck.add(p);
+         }
+         while (!recheck.isEmpty()) {
+         String p = recheck.poll();
+         if (p.contains("__")) {
+         int index = p.lastIndexOf("__");
+         String old = p;
+         p = p.substring(0, index);
+         if (pg.getNet().getPlace(p).getPostset().size() > 0
+         && b.get(p) > 1) {
+         boolean first = false; // no need to copy first
+         // occurrence
+         for (Transition t : pg.getNet().getTransitions()) {
+         if (t.getPostset().contains(
+         pg.getNet().getPlace(old))
+         && b.get(p) > 1) {
+         if (first) {
+         Place newP = pg.getNet().createPlace(
+         old + "__" + b.get(p));
+         if (pg.getBadPlaces().contains(
+         pg.getNet().getPlace(old)))
+         newP.putExtension("bad", true);
+         pg.getNet().removeFlow(t.getId(), old);
+         pg.getNet().createFlow(t, newP);
+         for (Transition trans : pg.getNet()
+         .getTransitions()) {
+         if (trans.getPreset().contains(
+         pg.getNet().getPlace(p))) {
+         Transition newT = pg
+         .getNet()
+         .createTransition(
+         trans.getId()
+         + (++copycounter));
+         for (Place place : trans
+         .getPostset()) {
+         pg.getNet().createFlow(newT,
+         place);
+         if (!pg.getEnvPlaces()
+         .contains(place))
+         recheck.add(place.getId());
+         }
+         for (Place place : trans
+         .getPreset()) {
+         if (place.getId().equals(p))
+         pg.getNet().createFlow(
+         newP, newT);
+         else
+         pg.getNet().createFlow(
+         place, newT);
+         }
+         }
+         }
+         b.put(p, b.get(p) - 1);
+         } else {
+         first = true;
+         }
+         }
+         }
+         }
+         continue;
+         }
+         if (pg.getNet().getPlace(p).getPostset().size() > 0
+         && b.get(p) > 1) {
+         boolean first = false; // no need to copy first occurrence
+         for (Transition t : pg.getNet().getTransitions()) {
+         if (t.getPostset().contains(pg.getNet().getPlace(p))
+         && b.get(p) > 1) {
+         if (first) {
+         Place newP = pg.getNet().createPlace(
+         p + "__" + b.get(p));
+         if (pg.getBadPlaces().contains(
+         pg.getNet().getPlace(p)))
+         newP.putExtension("bad", true);
+         pg.getNet().removeFlow(t.getId(), p);
+         pg.getNet().createFlow(t, newP);
+         for (Transition trans : pg.getNet()
+         .getTransitions()) {
+         if (trans.getPreset().contains(
+         pg.getNet().getPlace(p))) {
+         Transition newT = pg
+         .getNet()
+         .createTransition(
+         trans.getId()
+         + (++copycounter));
+         for (Place place : trans.getPostset()) {
+         pg.getNet().createFlow(newT, place);
+         if (!pg.getEnvPlaces().contains(
+         place))
+         recheck.add(place.getId());
+         }
+         for (Place place : trans.getPreset()) {
+         if (place.getId().equals(p))
+         pg.getNet().createFlow(newP,
+         newT);
+         else
+         pg.getNet().createFlow(place,
+         newT);
+         }
+         }
+         }
+         b.put(p, b.get(p) - 1);
+         } else {
+         first = true;
+         }
+         }
+         }
+         }
+         }
+         }*/
     }
 
     public String getInitial() throws NetNotSafeException {
@@ -757,7 +766,7 @@ public class BoundedSynthesis {
 
     public String[] getNobadmarking(int n) {
         String[] nobadmarking = new String[n + 1];
-        Set<Place> badplaces = ((Safety) pg.getWinCon()).getBadPlaces();
+        Set<Place> badplaces = getWinningCondition().getBadPlaces();
         for (int i = 1; i <= n; ++i) {
             if (!badplaces.isEmpty()) {
                 if (badplaces.size() >= 2) {
@@ -1062,7 +1071,7 @@ public class BoundedSynthesis {
     }
 
     /*
-	 * Only safe nets
+     * Only safe nets
      */
     public boolean transformIntoBC(int n, int b) throws NetNotSafeException,
             IOException, InterruptedException,
@@ -1380,5 +1389,15 @@ public class BoundedSynthesis {
             error = true;
         }
         return true;
+    }
+
+    @Override
+    protected boolean exWinStrat() {
+        return this.solvable;
+    }
+
+    @Override
+    protected PetriNet calculateStrategy() throws NoStrategyExistentException {
+        return this.strat;
     }
 }

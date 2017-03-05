@@ -1,5 +1,6 @@
 package uniolunisaar.adam.bounded.qbfapproach;
 
+import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import com.sun.corba.se.impl.io.TypeMismatchException;
 import java.io.IOException;
 import java.text.ParseException;
@@ -42,43 +43,43 @@ public class StringTransformationTester {
 
         if (one) {
             PetriNet pn = Tools.getPetriNet("PetriGames/myexample1.apt");	// system cycle
-            new PetriGameQBF(pn);
+            new QBFPetriGame(pn);
         }
 
         if (two) {
             PetriNet pn2 = Tools.getPetriNet("PetriGames/myexample2.apt"); // reason for ENV unfolding
-            new PetriGameQBF(pn2, "10", "3");
+            new QBFPetriGame(pn2, "10", "3");
         }
 
         if (three) {
             PetriNet pn3 = Tools.getPetriNet("PetriGames/myexample3.apt"); // system decision
-            new PetriGameQBF(pn3, "10", "1");
+            new QBFPetriGame(pn3, "10", "1");
         }
 
         if (four) {
             PetriNet pn4 = Tools.getPetriNet("PetriGames/myexample4.apt"); // not deadlock avoiding example
-            new PetriGameQBF(pn4, "10", "3");
+            new QBFPetriGame(pn4, "10", "3");
         }
 
         if (five) {
             PetriNet pn5 = Tools.getPetriNet("PetriGames/myexample5.apt"); // non-unique system decision
-            new PetriGameQBF(pn5, "8", "1");
+            new QBFPetriGame(pn5, "8", "1");
         }
 
         if (six) {
             PetriNet pn6 = Tools.getPetriNet("/Users/Jesko/Documents/workspace/Hiwi/PetriGames/myexample6.apt"); // unfolding
-            new PetriGameQBF(pn6, "10", "2");
+            new QBFPetriGame(pn6, "10", "2");
         }
 
         if (seven) {
             PetriNet pn7 = Tools.getPetriNet("PetriGames/myexample7.apt"); // unfolding
-            new PetriGameQBF(pn7, "10", "3");
+            new QBFPetriGame(pn7, "10", "3");
             // b > 2 -> copy not right TODO
         }
 
         if (eight) {
             PetriNet pn8 = Tools.getPetriNet("PetriGames/myexample8.apt"); // unfolding
-            new PetriGameQBF(pn8, "10", "3");
+            new QBFPetriGame(pn8, "10", "3");
         }
     }
 }
