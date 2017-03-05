@@ -10,10 +10,9 @@ import org.testng.annotations.Test;
 import uniol.apt.adt.exception.StructureException;
 import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.analysis.exception.UnboundedException;
-import uniol.apt.io.parser.ParseException;
-import uniolunisaar.adam.symbolic.bddapproach.exceptions.NoSuitableDistributionFoundException;
+import uniolunisaar.adam.ds.exceptions.CouldNotFindSuitableWinningConditionException;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
-import uniolunisaar.adam.symbolic.bddapproach.exceptions.CouldNotFindSuitableWinningConditionException;
+import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 import uniolunisaar.adam.util.Tools;
 
 @Test
@@ -23,7 +22,7 @@ public class StringTransformationTester {
     public void test() throws
             NoSuitableDistributionFoundException,
             TypeMismatchException, StructureException,
-            IOException, ParseException, InterruptedException, UnboundedException, NetNotSafeException, CouldNotFindSuitableWinningConditionException {
+            IOException, ParseException, InterruptedException, UnboundedException, NetNotSafeException, CouldNotFindSuitableWinningConditionException, uniol.apt.io.parser.ParseException {
 
         // PetriNet pn = SelfOrganizingRobots.generate(2, 1, true, true);		// same problem as in example 5-7
         // PetriNet pn = Philosopher.generateGuided(5, true, true);				// no unfold: 2->4, 3->5, 4->6, 5->7 (270s XOR)<->(100s OR 5->8 6500s OR 5->7)
