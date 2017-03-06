@@ -23,7 +23,6 @@ import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
-import uniolunisaar.adam.ds.exceptions.CouldNotFindSuitableWinningConditionException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
