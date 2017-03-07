@@ -50,12 +50,8 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
     Map<Place, Transition> copyCausing = new HashMap<>();		// for each copied place, which transition was changed
     Map<String, Set<Place>> copyStore = new HashMap<>();
 
-    public QBFSafetySolver(PetriNet net) throws UnboundedPGException {
-        this(net, 0, 0);
-    }
-
-    public QBFSafetySolver(PetriNet net, int n, int b2) throws UnboundedPGException {
-        super(new QBFPetriGame(net, n, b2), new Safety());
+    public QBFSafetySolver(PetriNet net, QBFSolverOptions so) throws UnboundedPGException {
+        super(new QBFPetriGame(net), new Safety(), so);
         this.pg = super.getGame();
         for (Place p : pg.getNet().getPlaces()) {
             if (p.getPreset().size() == 1) {
@@ -65,7 +61,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 
         // TODO try solving
         try {
-            transformIntoBC(n, b);
+            transformIntoBC(so.getB1(), so.getB2());
         } catch (NetNotSafeException | IOException | InterruptedException | NoSuitableDistributionFoundException e) {
             e.printStackTrace();
         }

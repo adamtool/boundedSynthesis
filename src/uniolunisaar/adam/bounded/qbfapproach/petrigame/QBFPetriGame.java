@@ -15,22 +15,7 @@ import uniolunisaar.adam.ds.petrigame.PetriGame;
  */
 public class QBFPetriGame extends PetriGame {
 
-    int n = 0;
-    int b = 0;
-
     public QBFPetriGame(PetriNet pn) throws UnboundedPGException {
         super(pn);
-    }
-
-    public QBFPetriGame(PetriNet pn, int n, int b) throws UnboundedPGException {
-        super(pn);
-        this.n = n;
-        this.b = b;
-    }
-
-    public QBFPetriGame(PetriNet pn, String string, String string2) throws UnboundedException, CouldNotFindSuitableWinningConditionException {
-        super(pn);
-        n = Integer.parseInt(string);
-        b = Integer.parseInt(string2);
     }
 }
