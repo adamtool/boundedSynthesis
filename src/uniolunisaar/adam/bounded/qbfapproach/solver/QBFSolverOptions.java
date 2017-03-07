@@ -11,7 +11,7 @@ public class QBFSolverOptions extends SolverOptions {
     private int b1 = 0;
     private int b2 = 0;
 
-    public QBFSolverOptions(String name, int b1, int b2) {
+    public QBFSolverOptions(int b1, int b2) {
         super("qbf");
         this.b1 = b1;
         this.b2 = b2;
