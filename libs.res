@@ -1,2 +1,3 @@
-${mainfolder}/symbolic/adam_logics.jar
+${mainfolder}/lib/apt/apt.jar
+${mainfolder}/symbolic/adam_ds.jar
 

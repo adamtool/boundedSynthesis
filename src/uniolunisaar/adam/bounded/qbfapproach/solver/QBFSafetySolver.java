@@ -29,7 +29,7 @@ import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 import uniolunisaar.adam.ds.exceptions.UnboundedPGException;
 import uniolunisaar.adam.ds.winningconditions.Safety;
-import uniolunisaar.adam.util.Tools;
+import uniolunisaar.adam.logic.util.Tools;
 
 public class QBFSafetySolver extends QBFSolver<Safety> {
     // Results
