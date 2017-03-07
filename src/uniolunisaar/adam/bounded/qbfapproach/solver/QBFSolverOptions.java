@@ -7,9 +7,13 @@ import uniolunisaar.adam.ds.solver.SolverOptions;
  * @author Manuel Gieseking
  */
 public class QBFSolverOptions extends SolverOptions {
-
+// TODO: Jesko adapt here
     private int b1 = 0;
     private int b2 = 0;
+
+    public QBFSolverOptions() {
+        super("qbf");
+    }
 
     public QBFSolverOptions(int b1, int b2) {
         super("qbf");
