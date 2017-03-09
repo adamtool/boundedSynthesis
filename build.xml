@@ -9,12 +9,7 @@
 	<include file="${mainfolder}/build_targets.xml" as="bounded.fu" optional="false" />
 
 <!--  %%%%%%%%%%%%%%%%%%%%%%%%%%%%% PATHs %%%%%%%%%%%%%%%%%%%%%%%%%%% -->	
-	<path id="bounded.classpath">
-			<resourcelist id="bounded.libs">
-					<file file="${subproject.basedir}/libs.res"/>
-			</resourcelist>
-	</path>
-
+	
 	<union id="bounded.jar.res">   		
 <!--			<zipfileset includes="**/*.class" src="${subproject.basedir}/../ds/adam_logics.jar"/>-->
 <!--			<zipfileset includes="**/*.stg" src="${subproject.basedir}/../ds/adam_logics.jar"/>-->
@@ -39,6 +34,9 @@
 	</target>
 	<target name="jar" depends="loadProperties" description="Builds a jar with all its dependencies">
 		<antcall target="bounded.fu.jar"/>
+	</target>
+	<target name="jar-standalone" depends="loadProperties" description="Builds a jar with all its dependencies">
+		<antcall target="bounded.fu.jar-standalone"/>
 	</target>
 	<target name="clean" depends="loadProperties" description="Cleans all temporary files.">
 		<antcall target="bounded.fu.clean"/>
