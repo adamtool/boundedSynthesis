@@ -5,12 +5,13 @@ import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 import uniolunisaar.adam.ds.exceptions.UnboundedPGException;
 import uniolunisaar.adam.ds.solver.SolverFactory;
+import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 
 /**
  *
  * @author Manuel Gieseking
  */
-public class QBFSolverFactory extends SolverFactory<QBFSolver, QBFSolverOptions> {
+public class QBFSolverFactory extends SolverFactory<QBFSolverOptions, QBFSolver<? extends WinningCondition>> {
 
     private static QBFSolverFactory instance = null;
 
