@@ -6,7 +6,7 @@
 <!--  %%%%%%%%%%%%%%%%%%%%%%%%%%%%% IMPORTS %%%%%%%%%%%%%%%%%%%%%%%%%%% -->	
 	<property file="${bounded.basedir}/build.properties"/>
 	<import file="${mainfolder}/build_macros.xml" optional="false"/>
-	<include file="${mainfolder}/build_targets.xml" as="fu" optional="false" />
+	<include file="${mainfolder}/build_targets.xml" as="bounded.fu" optional="false" />
 
 <!--  %%%%%%%%%%%%%%%%%%%%%%%%%%%%% PATHs %%%%%%%%%%%%%%%%%%%%%%%%%%% -->	
 	<path id="bounded.classpath">
@@ -15,10 +15,10 @@
 			</resourcelist>
 	</path>
 
-	<union id="bounded.jar.res">    			
-			<zipfileset includes="**/*.class" src="${subproject.basedir}/../ds/adam_logics.jar"/>
+	<union id="bounded.jar.res">   		
+<!--			<zipfileset includes="**/*.class" src="${subproject.basedir}/../ds/adam_logics.jar"/>-->
 <!--			<zipfileset includes="**/*.stg" src="${subproject.basedir}/../ds/adam_logics.jar"/>-->
-			<zipfileset includes="**/*.class" src="${subproject.basedir}/lib/javaBDD/javabdd-1.0b2.jar"/>
+<!--			<zipfileset includes="**/*.class" src="${subproject.basedir}/lib/javaBDD/javabdd-1.0b2.jar"/>-->
 	</union>
 
 	<!--  %%%%%%%%%%%%%%%%%%%%%%%%%%%%% PROPERTIES %%%%%%%%%%%%%%%%%%%%%%%%%%% -->	

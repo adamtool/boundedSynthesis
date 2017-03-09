@@ -14,7 +14,7 @@ import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
 import uniolunisaar.adam.ds.exceptions.CouldNotFindSuitableWinningConditionException;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
-import uniolunisaar.adam.ds.util.Tools;
+import uniolunisaar.adam.tools.Tools;
 
 @Test
 public class StringTransformationTester {
