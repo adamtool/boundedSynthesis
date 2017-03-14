@@ -297,8 +297,18 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 			// generating qcir benchmarks
 			FileUtils.copyFile(file, new File(pg.getNet().getName() + ".qcir"));
 
+			ProcessBuilder pb = null;
 			// Run solver on problem
-			ProcessBuilder pb = new ProcessBuilder("./../../lib/" + solver, "--partial-assignment", file.getAbsolutePath());
+			System.out.println(System.getProperty("os.name"));
+			String os = System.getProperty("os.name");
+			if (os.startsWith("Mac")) {
+				pb = new ProcessBuilder("./../../lib/" + solver +"_mac", "--partial-assignment", file.getAbsolutePath());
+			} else if (os.startsWith("Unix") || os.startsWith("Nix") || os.startsWith("Nux") || os.startsWith("Aix")) {
+				pb = new ProcessBuilder("./../../lib/" + solver +"_linux", "--partial-assignment", file.getAbsolutePath());
+			} else {
+				System.out.println("YOUR OPERATION SYSTEM IS NOT SUPPORTED!");
+				return false;
+			}
 			System.out.println(file.getAbsolutePath());
 			
 			Process pr = pb.start();
