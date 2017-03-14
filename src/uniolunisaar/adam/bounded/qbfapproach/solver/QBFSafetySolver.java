@@ -17,10 +17,10 @@ import org.apache.commons.io.FileUtils;
 import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
+import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
 import uniolunisaar.adam.ds.exceptions.UnboundedPGException;
-import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Safety;
 
 public class QBFSafetySolver extends QBFSolver<Safety> {
@@ -42,22 +42,16 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 	protected Boolean sat = null;
 	protected Boolean error = null;
 
-	Map<Place, Set<Transition>> additionalInfoForNonDetUnfl = new HashMap<>(); // TODO
-																				// where
-																				// from
-																				// to
-																				// I
-																				// get
-																				// this
-																				// value?
+	Map<Place, Set<Transition>> additionalInfoForNonDetUnfl = new HashMap<>(); // TODO where from do I get this value?
 
 	public Map<Integer, String> exists_transitions = new HashMap<>();
 	public Map<Integer, String> forall_places = new HashMap<>();
 	private boolean deterministicStrat = true;
+	
+	protected String outputCAQE = "";
 
 	public QBFSafetySolver(PetriNet net, QBFSolverOptions so) throws UnboundedPGException {
 		super(new QBFPetriGame(net), new Safety(), so);
-
 		fl = new int[n + 1];
 		bad = new int[n + 1];
 		term = new int[n + 1];
@@ -172,7 +166,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 		Set<Integer> exists = new HashSet<>();
 		for (Place p : pg.getNet().getPlaces()) {
 			if (!pg.getEnvPlaces().contains(p)) {
-				if (p.getId().startsWith(additionalSystemName)) {
+				if (p.getId().startsWith(pg.additionalSystemName)) {
 					for (Transition t : p.getPostset()) {
 						int number = createVariable(p.getId() + ".." + t.getId());
 						exists.add(number);
@@ -213,8 +207,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 	// Additional information from nondeterministic unfolding is utilized:
 	// for each place a set of transitions is given of which at least one has to
 	// be activated by the strategy to be deadlock-avoiding
-	public int enumerateStratForNonDetUnfold(Map<Place, Set<Transition>> additionalInfoForNonDetUnfl)
-			throws IOException {
+	public int enumerateStratForNonDetUnfold(Map<Place, Set<Transition>> additionalInfoForNonDetUnfl) throws IOException {
 		if (additionalInfoForNonDetUnfl.keySet().isEmpty()) {
 			return -1;
 		}
@@ -241,13 +234,10 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 	protected boolean exWinStrat() {
 		int exitcode = -1;
 		try {
-			writer.write("#QCIR-G14          " + linebreak); // spaces left to
-																// add variable
-																// count in the
-																// end
+			writer.write("#QCIR-G14          " + pg.linebreak); // spaces left to add variable count in the end
 			addExists();
 			addForall();
-			writer.write("output(1)" + linebreak); // 1 = \phi
+			writer.write("output(1)" + pg.linebreak); // 1 = \phi
 
 			writeInitial();
 			writeDeadlock();
@@ -270,11 +260,9 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 				phi.add(index_for_non_det_unfolding_info);
 			}
 
-			for (int i = 1; i <= n - 1; ++i) { // slightly optimized in the
-												// sense that winning and loop
-												// are put together for n
+			for (int i = 1; i <= n - 1; ++i) { // slightly optimized in the sense that winning and loop are put together for n
 				seqImpliesWin[i] = createUniqueID();
-				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + linebreak);
+				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + pg.linebreak);
 				phi.add(seqImpliesWin[i]);
 			}
 
@@ -285,28 +273,18 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 			writer.write(wnandLoop + " = " + writeAnd(wnandLoopSet));
 
 			seqImpliesWin[n] = createUniqueID();
-			writer.write(seqImpliesWin[n] + " = " + "or(-" + seq[n] + "," + wnandLoop + ")" + linebreak);
+			writer.write(seqImpliesWin[n] + " = " + "or(-" + seq[n] + "," + wnandLoop + ")" + pg.linebreak);
 			phi.add(seqImpliesWin[n]);
 
 			writer.write("1 = " + writeAnd(phi));
 			writer.close();
 
-			// Total number of gates is only calculated during encoding and
-			// added to
-			// the file afterwards
-			if (variablesCounter < 999999999) { // added 9 blanks as more
-												// than 999.999.999
-												// variables wont be
-												// solvable
+			// Total number of gates is only calculated during encoding and added to the file afterwards
+			if (variablesCounter < 999999999) { // added 9 blanks as more than 999.999.999 variables wont be solvable
 				RandomAccessFile raf = new RandomAccessFile(file, "rw");
 				for (int i = 0; i < 10; ++i) // read "#QCIR-G14 "
 					raf.readByte();
-				String counter_str = Integer.toString(variablesCounter - 1); // has
-																				// NEXT
-																				// usable
-																				// counter
-																				// in
-																				// it
+				String counter_str = Integer.toString(variablesCounter - 1); // has NEXT usabel counter in it
 				char[] counter_char = counter_str.toCharArray();
 				for (char c : counter_char)
 					raf.writeByte(c);
@@ -320,21 +298,22 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 			FileUtils.copyFile(file, new File(pg.getNet().getName() + ".qcir"));
 
 			// Run solver on problem
-			ProcessBuilder pb = new ProcessBuilder("./" + solver, "--partial-assignment", file.getAbsolutePath());
-
+			ProcessBuilder pb = new ProcessBuilder("./../../lib/" + solver, "--partial-assignment", file.getAbsolutePath());
+			System.out.println(file.getAbsolutePath());
+			
 			Process pr = pb.start();
 			// Read caqe's output
 			BufferedReader inputReader = new BufferedReader(new InputStreamReader(pr.getInputStream()));
 			String line_read;
-			String outputCAQE = "";
+			outputCAQE = "";
 			while ((line_read = inputReader.readLine()) != null) {
 				outputCAQE += line_read + "\n";
 			}
-	
+
 			exitcode = pr.waitFor();
 			inputReader.close();
 		} catch (Exception e) {
-			// TODO: handle exception
+			System.out.println(outputCAQE);
 		}
 		// Storing results
 		if (exitcode == 20) {
@@ -342,26 +321,83 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 			sat = false;
 			error = false;
 			System.out.println("UNSAT ");
+			return false;
 		} else if (exitcode == 10) {
 			solvable = true;
 			sat = true;
 			error = false;
 			System.out.println("SAT");
+			return true;
 		} else {
-			System.out.println("QCIR ERROR with FULL output: TODO");
+			System.out.println("QCIR ERROR with FULL output:" + outputCAQE);
 			solvable = false;
 			sat = null;
 			error = true;
+			return false;
 		}
-		return sat;
 	}
 
 	@Override
 	protected PetriNet calculateStrategy() throws NoStrategyExistentException {
+		if (existsWinningStrategy()) {
+			for (String outputCAQE_line : outputCAQE.split("\n")) {
+				if (outputCAQE_line.startsWith("V")) {
+					String[] parts = outputCAQE_line.split(" ");
+					for (int i = 0; i < parts.length; ++i) {
+						if ( ! parts[i].equals("V")) {
+							int num = Integer.parseInt(parts[i]);
+							if (num > 0) {
+								//System.out.println("ALLOW " + num);
+							} else if (num < 0) {
+								// System.out.println("DISALLOW " + num * (-1));
+								String remove = exists_transitions.get(num * (-1));
+								int in = remove.indexOf("..");
+								if (in != -1) {		// CTL has exists variables for path EF which mean not remove
+									String place = remove.substring(0, in);
+									String transition = remove.substring(in + 2, remove.length());
+									if (place.startsWith(pg.additionalSystemName)) {
+										// additional system place exactly removes transitions
+										// Transition might already be removed by recursion	
+										for (Transition t : pg.getNet().getTransitions()) {
+											if (t.getId().equals(transition)) {
+												//System.out.println("starting " + t);
+												pg.removeTransitionRecursively(t);
+											}
+										}
+									} else {
+										// original system place removes ALL transitions
+										for (Place p : pg.getNet().getPlaces()) {
+											if (p.getId().equals(place)) {
+												for (Transition post : p.getPostset()) {
+													if (transition.equals(getTruncatedId(post.getId()))) {
+														//System.out.println("starting " + post);
+														pg.removeTransitionRecursively(post);
+													}
+												}
+											}
+										}
+									}
+								}
+							} else {
+								// 0 is the last member
+								//System.out.println("Finished reading strategy.");
+								PGSimplifier.simplifyPG(pg, true);
+								return pg.getNet();
+							}
+						}
+					}
+				}
+			}
+		} else {
+			return null;
+		}
+		
 		// TODO Auto-generated method stub
+		List<?>[] test = new List<?>[5];
+		test[2] = new ArrayList<Integer>();
 		Map<?, ?>[] a = new HashMap<?, ?>[5];
 		a[0] = new HashMap<String, String>();
-		a[1] = new HashMap<Integer,String>();
+		a[1] = new HashMap<Integer, String>();
 		List<HashMap<String, String>> b = new ArrayList<>(5);
 		return null;
 	}

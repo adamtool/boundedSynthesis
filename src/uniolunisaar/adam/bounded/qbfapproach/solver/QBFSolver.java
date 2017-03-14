@@ -40,14 +40,14 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 	protected int[] terminatingSubFormulas;
 	protected File file = null;
 	
-	// TODO folgendes schön aufteilen
-	protected String linebreak = "\n\n"; // Controller
-	protected String additionalSystemName = "AS___"; //Controller
-	protected int n = 10;
+	protected int n = 0;
 
 	public QBFSolver(QBFPetriGame game, W winCon, QBFSolverOptions so) {
 		super(game, winCon, so);
 		pg = game;
+		pg.setN(so.getB1());
+		pg.setB(so.getB2());
+		n = so.getB1();
 		pn = pg.getNet();
 		transitions = new Transition[pn.getTransitions().size()];
 		int counter = 0;
@@ -228,13 +228,13 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 		List<Set<Integer>> and = new ArrayList<>(n + 1);
 		and.add(null); // first element is never accessed
 		for (int i = 1; i <= n; ++i) {
-			and.add(new HashSet<>());
+			and.add(new HashSet<Integer>());
 		}
 		Transition t1, t2;
 		Transition[] sys_transitions;
 		for (Place sys : pn.getPlaces()) {
 			// Additional system places are not forced to behave deterministically, this is the faster variant (especially the larger the PG becomes)
-			if (!pg.getEnvPlaces().contains(sys) && !sys.getId().startsWith(additionalSystemName)) {
+			if (!pg.getEnvPlaces().contains(sys) && !sys.getId().startsWith(pg.additionalSystemName)) {
 				if (sys.getPostset().size() > 1) {
 					sys_transitions = sys.getPostset().toArray(new Transition[0]);
 					for (int j = 0; j < sys_transitions.length; ++j) {
@@ -298,7 +298,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 	
 	public int addSysStrategy(Place p, Transition t) {
 		if (!pg.getEnvPlaces().contains(p)) {
-			if (p.getId().startsWith(additionalSystemName)) {
+			if (p.getId().startsWith(pg.additionalSystemName)) {
 				return getVarNr(p.getId() + ".." + t.getId(), true);
 			} else {
 				return getVarNr(p.getId() + ".." + getTruncatedId(t.getId()), true);
@@ -375,7 +375,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 			delim = ",";
 			sb.append(i);
 		}
-		sb.append(")" + linebreak);
+		sb.append(")" + pg.linebreak);
 		String result = sb.toString();
 		return result;
 	}
