@@ -2,6 +2,7 @@ package uniolunisaar.adam.bounded.qbfapproach.solver;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
@@ -17,11 +18,16 @@ import org.apache.commons.io.FileUtils;
 import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
+import uniol.apt.analysis.exception.UnboundedException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
+import uniolunisaar.adam.bounded.qbfapproach.unfolder.NonDeterministicUnfolder;
+import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
+import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 import uniolunisaar.adam.ds.exceptions.UnboundedPGException;
 import uniolunisaar.adam.ds.winningconditions.Safety;
+import uniolunisaar.adam.tools.Tools;
 
 public class QBFSafetySolver extends QBFSolver<Safety> {
 	// variable to store keys of calculated components for later use
@@ -42,8 +48,6 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 	protected Boolean sat = null;
 	protected Boolean error = null;
 
-	Map<Place, Set<Transition>> additionalInfoForNonDetUnfl = new HashMap<>(); // TODO where from do I get this value?
-
 	public Map<Integer, String> exists_transitions = new HashMap<>();
 	public Map<Integer, String> forall_places = new HashMap<>();
 	private boolean deterministicStrat = true;
@@ -52,19 +56,15 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 
 	public QBFSafetySolver(PetriNet net, QBFSolverOptions so) throws UnboundedPGException {
 		super(new QBFPetriGame(net), new Safety(), so);
-		fl = new int[n + 1];
-		bad = new int[n + 1];
-		term = new int[n + 1];
-		det = new int[n + 1];
-		dl = new int[n + 1];
-		seq = new int[n + 1];
-		dlt = new int[n + 1];
-		win = new int[n + 1];
-		seqImpliesWin = new int[n + 1];
-		transitions = pn.getTransitions().toArray(new Transition[0]);
-		flowSubFormulas = new int[n * pn.getTransitions().size()];
-		deadlockSubFormulas = new int[(n + 1) * pn.getTransitions().size()];
-		terminatingSubFormulas = new int[(n + 1) * pn.getTransitions().size()];
+		System.out.println("N : " + pg.getN());
+		fl = new int[pg.getN() + 1];
+		bad = new int[pg.getN() + 1];
+		term = new int[pg.getN() + 1];
+		det = new int[pg.getN() + 1];
+		dl = new int[pg.getN() + 1];
+		seq = new int[pg.getN() + 1];
+		dlt = new int[pg.getN() + 1];
+		win = new int[pg.getN() + 1];
 	}
 
 	private void writeInitial() throws IOException {
@@ -74,7 +74,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 
 	private void writeDeadlock() throws IOException {
 		String[] deadlock = getDeadlock();
-		for (int i = 1; i <= n; ++i) {
+		for (int i = 1; i <= pg.getN(); ++i) {
 			dl[i] = createUniqueID();
 			writer.write(dl[i] + " = " + deadlock[i]);
 		}
@@ -82,7 +82,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 
 	private void writeFlow() throws IOException {
 		String[] flow = getFlow();
-		for (int i = 1; i < n; ++i) {
+		for (int i = 1; i < pg.getN(); ++i) {
 			fl[i] = createUniqueID();
 			writer.write(fl[i] + " = " + flow[i]);
 		}
@@ -91,7 +91,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 
 	private void writeSequence() throws IOException {
 		Set<Integer> and = new HashSet<>();
-		for (int i = 1; i <= n; ++i) {
+		for (int i = 1; i <= pg.getN(); ++i) {
 			and.clear();
 			and.add(in);
 			for (int j = 1; j <= i - 1; ++j) {
@@ -105,13 +105,38 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 	}
 
 	private void writeNoBadMarking() throws IOException {
-		// TODO SAFETY
+		if (!getWinningCondition().getBadPlaces().isEmpty()) {
+			String[] nobadmarking = getNobadmarking();
+			for (int i = 1; i <= pg.getN(); ++i) {
+				bad[i] = createUniqueID();
+				writer.write(bad[i] + " = " + nobadmarking[i]);
+			}
+		}
+	}
+	
+	
+	public String[] getNobadmarking() {
+		// bad PLACES implementation
+		String[] nobadmarking = new String[pg.getN() + 1];
+		Set<Integer> and = new HashSet<>();
+		for (int i = 1; i <= pg.getN(); ++i) {
+			if (!getWinningCondition().getBadPlaces().isEmpty()) {
+				and.clear();
+				for (Place p : getWinningCondition().getBadPlaces()) {
+					and.add(-getVarNr(p.getId() + "." + i, true));
+				}
+				nobadmarking[i] = writeAnd(and);
+			} else {
+				nobadmarking[i] = "";
+			}
+		}
+		return nobadmarking;
 	}
 
 	private void writeTerminating() throws IOException {
-		String[] terminating = new String[n + 1];
+		String[] terminating = new String[pg.getN() + 1];
 		terminating = getTerminating();
-		for (int i = 1; i <= n; ++i) {
+		for (int i = 1; i <= pg.getN(); ++i) {
 			term[i] = createUniqueID();
 			writer.write(term[i] + " = " + terminating[i]);
 		}
@@ -120,7 +145,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 	private void writeDeterministic() throws IOException {
 		if (deterministicStrat) {
 			String[] deterministic = getDeterministic();
-			for (int i = 1; i <= n; ++i) {
+			for (int i = 1; i <= pg.getN(); ++i) {
 				det[i] = createUniqueID();
 				writer.write(det[i] + " = " + deterministic[i]);
 			}
@@ -135,7 +160,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 
 	private void writeDeadlocksterm() throws IOException {
 		Set<Integer> or = new HashSet<>();
-		for (int i = 1; i <= n; ++i) {
+		for (int i = 1; i <= pg.getN(); ++i) {
 			or.clear();
 			or.add(-dl[i]);
 			or.add(term[i]);
@@ -145,9 +170,8 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 	}
 
 	private void writeWinning() throws IOException {
-		int limit = n;
 		Set<Integer> and = new HashSet<>();
-		for (int i = 1; i <= limit; ++i) {
+		for (int i = 1; i <= pg.getN(); ++i) {
 			and.clear();
 			if (bad[i] != 0)
 				and.add(bad[i]);
@@ -155,8 +179,6 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 				and.add(dlt[i]);
 			if (det[i] != 0)
 				and.add(det[i]);
-			if (dl[i] != 0)
-				and.add(-dl[i]);
 			win[i] = createUniqueID();
 			writer.write(win[i] + " = " + writeAnd(and));
 		}
@@ -194,7 +216,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 	protected void addForall() throws IOException {
 		Set<Integer> forall = new HashSet<>();
 		for (Place p : pg.getNet().getPlaces()) {
-			for (int i = 1; i <= n; ++i) {
+			for (int i = 1; i <= pg.getN(); ++i) {
 				int number = createVariable(p.getId() + "." + i);
 				forall.add(number);
 				// System.out.println(number + " = " + p.getId() + "." + i);
@@ -232,6 +254,24 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 
 	@Override
 	protected boolean exWinStrat() {
+		NonDeterministicUnfolder unfolder = new NonDeterministicUnfolder(pg, null); // TODO max = null never used
+		try {
+			unfolder.createUnfolding();
+		} catch (UnboundedException | FileNotFoundException | NetNotSafeException | NoSuitableDistributionFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		try {
+			Tools.savePN2DotAndPDF("test", pg.getNet(), true);
+		} catch (IOException | InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		seqImpliesWin = new int[pg.getN() + 1];
+		transitions = pn.getTransitions().toArray(new Transition[0]);
+		flowSubFormulas = new int[pg.getN() * pn.getTransitions().size()];
+		deadlockSubFormulas = new int[(pg.getN() + 1) * pn.getTransitions().size()];
+		terminatingSubFormulas = new int[(pg.getN() + 1) * pn.getTransitions().size()];
 		int exitcode = -1;
 		try {
 			writer.write("#QCIR-G14          " + pg.linebreak); // spaces left to add variable count in the end
@@ -255,12 +295,12 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 			// ensure deterministic decision.
 			// It is required that these decide for exactly one transition which
 			// is directly encoded into the problem.
-			int index_for_non_det_unfolding_info = enumerateStratForNonDetUnfold(additionalInfoForNonDetUnfl);
+			int index_for_non_det_unfolding_info = enumerateStratForNonDetUnfold(unfolder.systemHasToDecideForAtLeastOne);
 			if (index_for_non_det_unfolding_info != -1) {
 				phi.add(index_for_non_det_unfolding_info);
 			}
 
-			for (int i = 1; i <= n - 1; ++i) { // slightly optimized in the sense that winning and loop are put together for n
+			for (int i = 1; i <= pg.getN() - 1; ++i) { // slightly optimized in the sense that winning and loop are put together for n
 				seqImpliesWin[i] = createUniqueID();
 				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + pg.linebreak);
 				phi.add(seqImpliesWin[i]);
@@ -269,12 +309,12 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 			int wnandLoop = createUniqueID();
 			Set<Integer> wnandLoopSet = new HashSet<>();
 			wnandLoopSet.add(l);
-			wnandLoopSet.add(win[n]);
+			wnandLoopSet.add(win[pg.getN()]);
 			writer.write(wnandLoop + " = " + writeAnd(wnandLoopSet));
 
-			seqImpliesWin[n] = createUniqueID();
-			writer.write(seqImpliesWin[n] + " = " + "or(-" + seq[n] + "," + wnandLoop + ")" + pg.linebreak);
-			phi.add(seqImpliesWin[n]);
+			seqImpliesWin[pg.getN()] = createUniqueID();
+			writer.write(seqImpliesWin[pg.getN()] + " = " + "or(-" + seq[pg.getN()] + "," + wnandLoop + ")" + pg.linebreak);
+			phi.add(seqImpliesWin[pg.getN()]);
 
 			writer.write("1 = " + writeAnd(phi));
 			writer.close();
@@ -304,12 +344,12 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 			if (os.startsWith("Mac")) {
 				pb = new ProcessBuilder("./../../lib/" + solver +"_mac", "--partial-assignment", file.getAbsolutePath());
 			} else if (os.startsWith("Unix") || os.startsWith("Nix") || os.startsWith("Nux") || os.startsWith("Aix")) {
-				pb = new ProcessBuilder("./../../lib/" + solver +"_linux", "--partial-assignment", file.getAbsolutePath());
+				pb = new ProcessBuilder("./../../lib/" + solver +"_unix", "--partial-assignment", file.getAbsolutePath());
 			} else {
 				System.out.println("YOUR OPERATION SYSTEM IS NOT SUPPORTED!");
 				return false;
 			}
-			System.out.println(file.getAbsolutePath());
+			System.out.println("FILE PATH: " + file.getAbsolutePath());
 			
 			Process pr = pb.start();
 			// Read caqe's output
@@ -323,7 +363,8 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 			exitcode = pr.waitFor();
 			inputReader.close();
 		} catch (Exception e) {
-			System.out.println(outputCAQE);
+			System.out.println(e.getMessage());
+			e.printStackTrace();
 		}
 		// Storing results
 		if (exitcode == 20) {

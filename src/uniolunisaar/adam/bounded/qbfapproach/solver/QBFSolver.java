@@ -39,15 +39,12 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 	protected int[] deadlockSubFormulas;
 	protected int[] terminatingSubFormulas;
 	protected File file = null;
-	
-	protected int n = 0;
 
 	public QBFSolver(QBFPetriGame game, W winCon, QBFSolverOptions so) {
 		super(game, winCon, so);
 		pg = game;
 		pg.setN(so.getB1());
 		pg.setB(so.getB2());
-		n = so.getB1();
 		pn = pg.getNet();
 		transitions = new Transition[pn.getTransitions().size()];
 		int counter = 0;
@@ -94,10 +91,10 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 	}
 	
 	public String[] getDeadlock() throws IOException {
-		writeDeadlockSubFormulas(1, n);
-		String[] deadlock = new String[n + 1];
+		writeDeadlockSubFormulas(1, pg.getN());
+		String[] deadlock = new String[pg.getN() + 1];
 		Set<Integer> and = new HashSet<>();
-		for (int i = 1; i <= n; ++i) {
+		for (int i = 1; i <= pg.getN(); ++i) {
 			and.clear();
 			for (int j = 0; j < pn.getTransitions().size(); ++j) {
 				and.add(deadlockSubFormulas[pn.getTransitions().size() * (i - 1) + j]);
@@ -108,6 +105,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 	}
 
 	private void writeDeadlockSubFormulas(int s, int e) throws IOException {
+		System.out.println(s + " " + e + " " + pn.getTransitions().size());
 		Transition t;
 		Set<Integer> or = new HashSet<>();
 		int number;
@@ -131,9 +129,9 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 	
 	public String[] getFlow() throws IOException {
 		// writeFlowSubFormulas(); // slower
-		String[] flow = new String[n + 1];
+		String[] flow = new String[pg.getN() + 1];
 		Set<Integer> or = new HashSet<>();
-		for (int i = 1; i < n; ++i) {
+		for (int i = 1; i < pg.getN(); ++i) {
 			or.clear();
 			for (int j = 0; j < pn.getTransitions().size(); ++j) {
 				// or.add(flowSubFormulas[pn.getTransitions().size() * (i - 1) + j]);
@@ -187,10 +185,10 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 	}
 	
 	public String[] getTerminating() throws IOException {
-		writeTerminatingSubFormulas(1, n);
-		String[] terminating = new String[n + 1];
+		writeTerminatingSubFormulas(1, pg.getN());
+		String[] terminating = new String[pg.getN() + 1];
 		Set<Integer> and = new HashSet<>();
-		for (int i = 1; i <= n; ++i) {
+		for (int i = 1; i <= pg.getN(); ++i) {
 			if (pg.getNet().getTransitions().size() >= 1) {
 				and.clear();
 				for (int j = 0; j < pn.getTransitions().size(); ++j) {
@@ -225,9 +223,9 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 	}
 	
 	public String[] getDeterministic() throws IOException { // faster than naive implementation
-		List<Set<Integer>> and = new ArrayList<>(n + 1);
+		List<Set<Integer>> and = new ArrayList<>(pg.getN() + 1);
 		and.add(null); // first element is never accessed
-		for (int i = 1; i <= n; ++i) {
+		for (int i = 1; i <= pg.getN(); ++i) {
 			and.add(new HashSet<Integer>());
 		}
 		Transition t1, t2;
@@ -241,7 +239,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 						t1 = sys_transitions[j];
 						for (int k = j + 1; k < sys_transitions.length; ++k) {
 							t2 = sys_transitions[k];
-							for (int i = 1; i <= n; ++i) {
+							for (int i = 1; i <= pg.getN(); ++i) {
 								and.get(i).add(writeOneMissingPre(t1, t2, i));
 							}
 						}
@@ -249,8 +247,8 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 				}
 			}
 		}
-		String[] deterministic = new String[n + 1];
-		for (int i = 1; i <= n; ++i) {
+		String[] deterministic = new String[pg.getN() + 1];
+		for (int i = 1; i <= pg.getN(); ++i) {
 			deterministic[i] = writeAnd(and.get(i));
 		}
 		return deterministic;
@@ -279,8 +277,8 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 	
 	public String getLoopIJ() throws IOException {
 		Set<Integer> or = new HashSet<>();
-		for (int i = 1; i < n; ++i) {
-			for (int j = i + 1; j <= n; ++j) {
+		for (int i = 1; i < pg.getN(); ++i) {
+			for (int j = i + 1; j <= pg.getN(); ++j) {
 				Set<Integer> and = new HashSet<>();
 				for (Place p : pn.getPlaces()) {
 					int p_i = getVarNr(p.getId() + "." + i, true);
