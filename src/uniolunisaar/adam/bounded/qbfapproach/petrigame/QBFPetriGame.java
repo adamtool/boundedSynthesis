@@ -32,7 +32,7 @@ public class QBFPetriGame extends PetriGame {
     
 	public void removeTransitionRecursively(Transition t) {
 		if (getNet().getTransitions().contains(t)) {
-			Set<Place> next = t.getPostset();
+			Set<Place> next = new HashSet<>(t.getPostset());
 			Marking in = getNet().getInitialMarking();
 			getNet().removeTransition(t);
 			for (Place p : next) {
@@ -47,7 +47,7 @@ public class QBFPetriGame extends PetriGame {
 	}
 
 	public void removePlaceRecursively(Place p) {
-		Set<Transition> next = p.getPostset();
+		Set<Transition> next = new HashSet<>(p.getPostset());
 		getNet().removePlace(p);
 		for (Transition t : next) {
 			// remove transition t as soon as one place in pre(t) is removed

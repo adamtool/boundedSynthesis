@@ -105,7 +105,6 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 	}
 
 	private void writeDeadlockSubFormulas(int s, int e) throws IOException {
-		System.out.println(s + " " + e + " " + pn.getTransitions().size());
 		Transition t;
 		Set<Integer> or = new HashSet<>();
 		int number;

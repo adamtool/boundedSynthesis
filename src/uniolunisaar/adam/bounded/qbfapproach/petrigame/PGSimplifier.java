@@ -30,7 +30,8 @@ public class PGSimplifier {
 			for (Transition t : pn.getTransitions()) {
 				Marking next = new Marking(m);
 				try {
-					next.fire(t);
+					//next.fire(t); <- deprecated
+					next = t.fire(next);
 				} catch (TransitionFireException e) {
 					continue;
 				}
@@ -41,7 +42,8 @@ public class PGSimplifier {
 			}
 			closed.add(p);			// add closed this late to allow selfloops to reach transitions
 		}
-		for (Transition t : pn.getTransitions())
+		Set<Transition> transitions = new HashSet<>(pn.getTransitions());
+		for (Transition t : transitions)
 			if (!visited.contains(t))
 				pg.removeTransitionRecursively(t);
 		if (removeAdditionalPlace) {
@@ -51,9 +53,11 @@ public class PGSimplifier {
 	
 	private static void removeAS(QBFPetriGame pg) {
 		PetriNet pn = pg.getNet();
-		for (Place p : pn.getPlaces()) {
+		Set<Place> places = new HashSet<>(pn.getPlaces());
+		for (Place p : places) {
 			if (p.getId().startsWith(pg.additionalSystemName)) {
-				for (Transition pre : p.getPreset()) {
+				Set<Transition> transitions = new HashSet<>(p.getPreset());
+				for (Transition pre : transitions) {
 					pn.removeFlow(p, pre);
 					pn.removeFlow(pre, p);
 				}

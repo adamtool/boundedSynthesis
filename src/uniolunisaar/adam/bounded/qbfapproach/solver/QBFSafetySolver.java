@@ -57,7 +57,6 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 
     public QBFSafetySolver(PetriNet net, QBFSolverOptions so) throws UnboundedPGException {
         super(new QBFPetriGame(net), new Safety(), so);
-        System.out.println("N : " + pg.getN());
         fl = new int[pg.getN() + 1];
         bad = new int[pg.getN() + 1];
         term = new int[pg.getN() + 1];
@@ -195,7 +194,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
                     for (Transition t : p.getPostset()) {
                         int number = createVariable(p.getId() + ".." + t.getId());
                         exists.add(number);
-                        System.out.println(number + " = " + p.getId() + ".." + t.getId());
+                        // System.out.println(number + " = " + p.getId() + ".." + t.getId());
                         exists_transitions.put(number, p.getId() + ".." + t.getId());
                     }
                 } else {
@@ -206,7 +205,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
                             truncatedIDs.add(truncatedID);
                             int number = createVariable(p.getId() + ".." + truncatedID);
                             exists.add(number);
-                            System.out.println(number + " = " + p.getId() + ".." + truncatedID);
+                            // System.out.println(number + " = " + p.getId() + ".." + truncatedID);
                             exists_transitions.put(number, p.getId() + ".." + truncatedID);
                         }
                     }
@@ -264,12 +263,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
             // TODO Auto-generated catch block
             e1.printStackTrace();
         }
-        try {
-            Tools.savePN2DotAndPDF("test", pg.getNet(), true);
-        } catch (IOException | InterruptedException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
-        }
+        
         seqImpliesWin = new int[pg.getN() + 1];
         transitions = pn.getTransitions().toArray(new Transition[0]);
         flowSubFormulas = new int[pg.getN() * pn.getTransitions().size()];
@@ -325,8 +319,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
             // Total number of gates is only calculated during encoding and added to the file afterwards
             if (variablesCounter < 999999999) { // added 9 blanks as more than 999.999.999 variables wont be solvable
                 RandomAccessFile raf = new RandomAccessFile(file, "rw");
-                for (int i = 0; i < 10; ++i) // read "#QCIR-G14 "
-                {
+                for (int i = 0; i < 10; ++i) { // read "#QCIR-G14 "
                     raf.readByte();
                 }
                 String counter_str = Integer.toString(variablesCounter - 1); // has NEXT usabel counter in it
@@ -337,25 +330,24 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
                 raf.close();
             }
 
-            // Copy encoding into file for debugging purposes
-            FileUtils.copyFile(file, new File("debug.txt"));
-
             // generating qcir benchmarks
             FileUtils.copyFile(file, new File(pg.getNet().getName() + ".qcir"));
 
             ProcessBuilder pb = null;
             // Run solver on problem
-            System.out.println(System.getProperty("os.name"));
+            System.out.println("You are using " + System.getProperty("os.name") + ".");
             String os = System.getProperty("os.name");
             if (os.startsWith("Mac")) {
+            	System.out.println("Your operation system is supported.");
                 pb = new ProcessBuilder("./../../lib/" + solver + "_mac", "--partial-assignment", file.getAbsolutePath());
-            } else if (os.startsWith("Unix") || os.startsWith("Nix") || os.startsWith("Nux") || os.startsWith("Aix") || os.startsWith("Linux")) {
-                pb = new ProcessBuilder("./../../lib/" + solver + "_unix", "--partial-assignment", file.getAbsolutePath());
+            } else if (os.startsWith("Linux")) {
+            	System.out.println("Your operation system is supported.");
+            	pb = new ProcessBuilder("./../../lib/" + solver + "_unix", "--partial-assignment", file.getAbsolutePath());
             } else {
-                System.out.println("YOUR OPERATION SYSTEM IS NOT SUPPORTED!");
+                System.out.println("Your operation system is not supported.");
                 return false;
             }
-            System.out.println("FILE PATH: " + file.getAbsolutePath());
+            System.out.println("A temporary file is saved to \"" + file.getAbsolutePath() + "\".");
 
             Process pr = pb.start();
             // Read caqe's output
@@ -415,7 +407,8 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
                                     if (place.startsWith(pg.additionalSystemName)) {
                                         // additional system place exactly removes transitions
                                         // Transition might already be removed by recursion	
-                                        for (Transition t : pg.getNet().getTransitions()) {
+                                    	Set<Transition> transitions = new HashSet<>(pg.getNet().getTransitions());
+                                        for (Transition t : transitions) {
                                             if (t.getId().equals(transition)) {
                                                 //System.out.println("starting " + t);
                                                 pg.removeTransitionRecursively(t);
@@ -423,9 +416,11 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
                                         }
                                     } else {
                                         // original system place removes ALL transitions
-                                        for (Place p : pg.getNet().getPlaces()) {
+                                    	Set<Place> places = new HashSet<>(pg.getNet().getPlaces());
+                                        for (Place p : places) {
                                             if (p.getId().equals(place)) {
-                                                for (Transition post : p.getPostset()) {
+                                            	Set<Transition> transitions = new HashSet<>(p.getPostset());
+                                                for (Transition post : transitions) {
                                                     if (transition.equals(getTruncatedId(post.getId()))) {
                                                         //System.out.println("starting " + post);
                                                         pg.removeTransitionRecursively(post);
@@ -445,17 +440,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
                     }
                 }
             }
-        } else {
-            return null;
         }
-
-        // TODO Auto-generated method stub
-        List<?>[] test = new List<?>[5];
-        test[2] = new ArrayList<Integer>();
-        Map<?, ?>[] a = new HashMap<?, ?>[5];
-        a[0] = new HashMap<String, String>();
-        a[1] = new HashMap<Integer, String>();
-        List<HashMap<String, String>> b = new ArrayList<>(5);
-        return null;
+        throw new NoStrategyExistentException();
     }
 }
