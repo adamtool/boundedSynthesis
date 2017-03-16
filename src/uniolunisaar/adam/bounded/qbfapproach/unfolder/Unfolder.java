@@ -6,10 +6,7 @@ import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 
 import java.io.FileNotFoundException;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import uniol.apt.adt.pn.Marking;
 import uniol.apt.adt.pn.PetriNet;
@@ -17,6 +14,12 @@ import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.analysis.exception.UnboundedException;
 import uniol.apt.util.Pair;
+
+/**
+ * 
+ * @author Jesko Hecking-Harbusch
+ *
+ */
 
 public abstract class Unfolder {
 

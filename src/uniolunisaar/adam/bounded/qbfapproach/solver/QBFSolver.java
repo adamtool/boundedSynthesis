@@ -24,7 +24,22 @@ import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.ds.solver.Solver;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 
+/**
+ * 
+ * @author Jesko Hecking-Harbusch
+ *
+ * @param <W>
+ */
+
 public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPetriGame, W, QBFSolverOptions> {
+	
+	// TODO maybe optional arguments
+	public static String linebreak = "\n\n"; // Controller
+	public static String additionalSystemName = "AS___"; //Controller
+    public static String solver = "quabs"; // Controller
+    public static boolean deterministicStrat = true; // Controller
+	
+    // Caches
 	private Map<Transition, Set<Place>> restCache = new HashMap<>(); // proven to be slightly useful in terms of performance
 	private Map<Transition, Set<Place>> preMinusPostCache = new HashMap<>();
 	
@@ -62,17 +77,17 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 		try {
 			file = File.createTempFile(prefix, ".txt");
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			System.out.println("Error: File creation in temp directory caused an error.");
 			e.printStackTrace();
 		}
 		file.deleteOnExit();
 		try {
 			writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "utf-8"));
 		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
+			System.out.println("Error: Your computer does not support \"utf-8\".");
 			e.printStackTrace();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
+			System.out.println("Error: The file created in the temp directory was already removed.");
 			e.printStackTrace();
 		}
 	}
@@ -231,7 +246,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 		Transition[] sys_transitions;
 		for (Place sys : pn.getPlaces()) {
 			// Additional system places are not forced to behave deterministically, this is the faster variant (especially the larger the PG becomes)
-			if (!pg.getEnvPlaces().contains(sys) && !sys.getId().startsWith(pg.additionalSystemName)) {
+			if (!pg.getEnvPlaces().contains(sys) && !sys.getId().startsWith(QBFSolver.additionalSystemName)) {
 				if (sys.getPostset().size() > 1) {
 					sys_transitions = sys.getPostset().toArray(new Transition[0]);
 					for (int j = 0; j < sys_transitions.length; ++j) {
@@ -295,7 +310,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 	
 	public int addSysStrategy(Place p, Transition t) {
 		if (!pg.getEnvPlaces().contains(p)) {
-			if (p.getId().startsWith(pg.additionalSystemName)) {
+			if (p.getId().startsWith(QBFSolver.additionalSystemName)) {
 				return getVarNr(p.getId() + ".." + t.getId(), true);
 			} else {
 				return getVarNr(p.getId() + ".." + getTruncatedId(t.getId()), true);
@@ -372,7 +387,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 			delim = ",";
 			sb.append(i);
 		}
-		sb.append(")" + pg.linebreak);
+		sb.append(")" + QBFSolver.linebreak);
 		String result = sb.toString();
 		return result;
 	}

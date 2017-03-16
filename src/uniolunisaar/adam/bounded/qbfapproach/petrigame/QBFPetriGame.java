@@ -14,17 +14,11 @@ import uniolunisaar.adam.ds.petrigame.PetriGame;
  *
  * @author Jesko Hecking-Harbusch
  *
- * Requires the executables "bc2cnf" and "depqbf" from BCPackage and DepQBF as
- * well as the Petri Game in .apt format at the same position as the executable.
  */
 public class QBFPetriGame extends PetriGame {
-
-	// TODO folgendes schön aufteilen
-	public String linebreak = "\n\n"; // Controller
-	public String additionalSystemName = "AS___"; //Controller
 	
-	private int n = 0;
-	private int b = 0;
+	private int n = 0; // length of the simulation, i.e. for n there are n - 1 transitions simulated
+	private int b = 0; // number of unfoldings per place in the bounded unfolding
 	
     public QBFPetriGame(PetriNet pn) throws UnboundedPGException {
         super(pn);
@@ -36,8 +30,7 @@ public class QBFPetriGame extends PetriGame {
 			Marking in = getNet().getInitialMarking();
 			getNet().removeTransition(t);
 			for (Place p : next) {
-				// remove place p if all transition leading to it are removed or all
-				// incoming transitions are also outgoing from p
+				// remove place p if all transition leading to it are removed or all incoming transitions are also outgoing from p
 				// don't remove place if part of initial marking
 				if (getNet().getPlaces().contains(p) && in.getToken(p).getValue() == 0 && (p.getPreset().isEmpty() || p.getPostset().containsAll(p.getPreset()))) {
 					removePlaceRecursively(p);
@@ -53,24 +46,6 @@ public class QBFPetriGame extends PetriGame {
 			// remove transition t as soon as one place in pre(t) is removed
 			removeTransitionRecursively(t);
 		}
-	}
-
-	public Set<Place> placesDirectlyBefore(Place p) {
-		Set<Place> result = new HashSet<>();
-		for (Transition t : p.getPreset())
-			for (Place pre : t.getPreset())
-				result.add(pre);
-		return result;
-	}
-
-	public Set<Place> placesDirectlyAfter(Place p) {
-		Set<Place> result = new HashSet<>();
-		for (Transition t : p.getPostset()) {
-			for (Place post : t.getPostset()) {
-				result.add(post);
-			}
-		}
-		return result;
 	}
 
 	public int getN() {

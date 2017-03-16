@@ -11,6 +11,7 @@ import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolver;
 
 public class PGSimplifier {
 
@@ -55,7 +56,7 @@ public class PGSimplifier {
 		PetriNet pn = pg.getNet();
 		Set<Place> places = new HashSet<>(pn.getPlaces());
 		for (Place p : places) {
-			if (p.getId().startsWith(pg.additionalSystemName)) {
+			if (p.getId().startsWith(QBFSolver.additionalSystemName)) {
 				Set<Transition> transitions = new HashSet<>(p.getPreset());
 				for (Transition pre : transitions) {
 					pn.removeFlow(p, pre);
