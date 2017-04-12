@@ -32,27 +32,46 @@ import uniolunisaar.adam.ds.winningconditions.WinningCondition;
  */
 
 public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPetriGame, W, QBFSolverOptions> {
-	
+
+	// variable to store keys of calculated components for later use (shared among all solvers)
+	protected int in;
+	protected int[] fl;
+	protected int[] det;
+	protected int[] dl;
+	protected int[] seq;
+	protected int[] win;
+	protected int[] seqImpliesWin;
+
+	// results
+	public Boolean solvable = null;
+	public Boolean sat = null;
+	public Boolean error = null;
+
+	// keys
+	public Map<Integer, String> exists_transitions = new HashMap<>();
+	public Map<Integer, String> forall_places = new HashMap<>();
+
+	protected String outputCAQE = "";
+
 	// TODO maybe optional arguments
 	public static String linebreak = "\n\n"; // Controller
-	public static String additionalSystemName = "AS___"; //Controller
-    public static String solver = "quabs"; // Controller
-    public static boolean deterministicStrat = true; // Controller
-	
-    // Caches
+	public static String additionalSystemName = "AS___"; // Controller
+	public static String solver = "quabs"; // Controller
+	public static boolean deterministicStrat = true; // Controller
+
+	// Caches
 	private Map<Transition, Set<Place>> restCache = new HashMap<>(); // proven to be slightly useful in terms of performance
 	private Map<Transition, Set<Place>> preMinusPostCache = new HashMap<>();
-	
+
 	protected QBFPetriGame pg;
 	protected PetriNet pn;
 	protected BufferedWriter writer;
 	protected int variablesCounter = 2; // 1 reserved for phi
 	protected Map<String, Integer> numbersForVariables = new HashMap<>(); // map for storing keys and the corresponding value
-	
+
 	protected Transition[] transitions;
 	protected int[] flowSubFormulas;
 	protected int[] deadlockSubFormulas;
-	protected int[] terminatingSubFormulas;
 	protected File file = null;
 
 	public QBFSolver(QBFPetriGame game, W winCon, QBFSolverOptions so) {
@@ -92,6 +111,11 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 		}
 	}
 
+	protected void writeInitial() throws IOException {
+		in = createUniqueID();
+		writer.write(in + " = " + getInitial());
+	}
+
 	public String getInitial() {
 		Marking initialMarking = pg.getNet().getInitialMarking();
 		Set<Integer> initial = new HashSet<>();
@@ -104,7 +128,15 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 		}
 		return writeAnd(initial);
 	}
-	
+
+	protected void writeDeadlock() throws IOException {
+		String[] deadlock = getDeadlock();
+		for (int i = 1; i <= pg.getN(); ++i) {
+			dl[i] = createUniqueID();
+			writer.write(dl[i] + " = " + deadlock[i]);
+		}
+	}
+
 	public String[] getDeadlock() throws IOException {
 		writeDeadlockSubFormulas(1, pg.getN());
 		String[] deadlock = new String[pg.getN() + 1];
@@ -140,7 +172,16 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 			}
 		}
 	}
-	
+
+	protected void writeFlow() throws IOException {
+		String[] flow = getFlow();
+		for (int i = 1; i < pg.getN(); ++i) {
+			fl[i] = createUniqueID();
+			writer.write(fl[i] + " = " + flow[i]);
+		}
+
+	}
+
 	public String[] getFlow() throws IOException {
 		// writeFlowSubFormulas(); // slower
 		String[] flow = new String[pg.getN() + 1];
@@ -155,7 +196,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 		}
 		return flow;
 	}
-	
+
 	public int getOneTransition(Transition t, int i) throws IOException {
 		int number = createUniqueID();
 		Set<Integer> and = new HashSet<>();
@@ -197,45 +238,31 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 		writer.write(number + " = " + writeAnd(and));
 		return number;
 	}
-	
-	public String[] getTerminating() throws IOException {
-		writeTerminatingSubFormulas(1, pg.getN());
-		String[] terminating = new String[pg.getN() + 1];
+
+	protected void writeSequence() throws IOException {
 		Set<Integer> and = new HashSet<>();
 		for (int i = 1; i <= pg.getN(); ++i) {
-			if (pg.getNet().getTransitions().size() >= 1) {
-				and.clear();
-				for (int j = 0; j < pn.getTransitions().size(); ++j) {
-					and.add(terminatingSubFormulas[pn.getTransitions().size() * (i - 1) + j]);
-				}
-				terminating[i] = writeAnd(and);
-			} else {
-				terminating[i] = "";
+			and.clear();
+			and.add(in);
+			for (int j = 1; j <= i - 1; ++j) {
+				// and.add(-dl[j]); // performance evaluation showed that leaving this out makes program faster as it is redundant
+				and.add(fl[j]);
 			}
+			seq[i] = createUniqueID();
+			writer.write(seq[i] + " = " + writeAnd(and));
 		}
-		return terminating;
 	}
-	
-	private void writeTerminatingSubFormulas(int s, int e) throws IOException {
-		Set<Integer> or = new HashSet<>();
-		Set<Place> pre;
-		Transition t;
-		int key;
-		for (int i = s; i <= e; ++i) {
-			for (int j = 0; j < pn.getTransitions().size(); ++j) {
-				t = transitions[j];
-				key = createUniqueID();
-				pre = t.getPreset();
-				or.clear();
-				for (Place p : pre) {
-					or.add(-getVarNr(p.getId() + "." + i, true));
-				}
-				writer.write(key + " = " + writeOr(or));
-				terminatingSubFormulas[pn.getTransitions().size() * (i - 1) + j] = key;
+
+	protected void writeDeterministic() throws IOException {
+		if (deterministicStrat) {
+			String[] deterministic = getDeterministic();
+			for (int i = 1; i <= pg.getN(); ++i) {
+				det[i] = createUniqueID();
+				writer.write(det[i] + " = " + deterministic[i]);
 			}
 		}
 	}
-	
+
 	public String[] getDeterministic() throws IOException { // faster than naive implementation
 		List<Set<Integer>> and = new ArrayList<>(pg.getN() + 1);
 		and.add(null); // first element is never accessed
@@ -267,7 +294,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 		}
 		return deterministic;
 	}
-	
+
 	private int writeOneMissingPre(Transition t1, Transition t2, int i) throws IOException {
 		Set<Integer> or = new HashSet<>();
 		int strat;
@@ -275,7 +302,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 			or.add(-getVarNr(p.getId() + "." + i, true));
 			strat = addSysStrategy(p, t1);
 			if (strat != 0)
-			or.add(-strat);
+				or.add(-strat);
 		}
 		for (Place p : t2.getPreset()) {
 			or.add(-getVarNr(p.getId() + "." + i, true));
@@ -288,26 +315,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 		writer.write(number + " = " + writeOr(or));
 		return number;
 	}
-	
-	public String getLoopIJ() throws IOException {
-		Set<Integer> or = new HashSet<>();
-		for (int i = 1; i < pg.getN(); ++i) {
-			for (int j = i + 1; j <= pg.getN(); ++j) {
-				Set<Integer> and = new HashSet<>();
-				for (Place p : pn.getPlaces()) {
-					int p_i = getVarNr(p.getId() + "." + i, true);
-					int p_j = getVarNr(p.getId() + "." + j, true);
-					and.add(writeImplication(p_i, p_j));
-					and.add(writeImplication(p_j, p_i));
-				}
-				int andNumber = createUniqueID();
-				writer.write(andNumber + " = " + writeAnd(and));
-				or.add(andNumber);
-			}
-		}
-		return writeOr(or);
-	}
-	
+
 	public int addSysStrategy(Place p, Transition t) {
 		if (!pg.getEnvPlaces().contains(p)) {
 			if (p.getId().startsWith(QBFSolver.additionalSystemName)) {
@@ -318,6 +326,74 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 		} else {
 			return 0;
 		}
+	}
+
+	public void addExists() throws IOException {
+		Set<Integer> exists = new HashSet<>();
+		for (Place p : pg.getNet().getPlaces()) {
+			if (!pg.getEnvPlaces().contains(p)) {
+				if (p.getId().startsWith(QBFSolver.additionalSystemName)) {
+					for (Transition t : p.getPostset()) {
+						int number = createVariable(p.getId() + ".." + t.getId());
+						exists.add(number);
+						// System.out.println(number + " = " + p.getId() + ".." + t.getId());
+						exists_transitions.put(number, p.getId() + ".." + t.getId());
+					}
+				} else {
+					Set<String> truncatedIDs = new HashSet<>();
+					for (Transition t : p.getPostset()) {
+						String truncatedID = getTruncatedId(t.getId());
+						if (!truncatedIDs.contains(truncatedID)) {
+							truncatedIDs.add(truncatedID);
+							int number = createVariable(p.getId() + ".." + truncatedID);
+							exists.add(number);
+							// System.out.println(number + " = " + p.getId() + ".." + truncatedID);
+							exists_transitions.put(number, p.getId() + ".." + truncatedID);
+						}
+					}
+				}
+			}
+		}
+		writer.write(writeExists(exists));
+	}
+
+	protected void addForall() throws IOException {
+		Set<Integer> forall = new HashSet<>();
+		for (Place p : pg.getNet().getPlaces()) {
+			for (int i = 1; i <= pg.getN(); ++i) {
+				int number = createVariable(p.getId() + "." + i);
+				forall.add(number);
+				// System.out.println(number + " = " + p.getId() + "." + i);
+				forall_places.put(number, p.getId() /* + "." + i */);
+			}
+		}
+		writer.write(writeForall(forall));
+	}
+
+	// Additional information from nondeterministic unfolding is utilized:
+	// for each place a set of transitions is given of which at least one has to
+	// be activated by the strategy to be deadlock-avoiding
+	public int enumerateStratForNonDetUnfold(Map<Place, Set<Transition>> additionalInfoForNonDetUnfl) throws IOException {
+		if (additionalInfoForNonDetUnfl.keySet().isEmpty()) {
+			return -1;
+		}
+		int index = createUniqueID();
+		Set<Integer> and = new HashSet<>();
+		Set<Transition> transitions;
+		int or_index;
+		Set<Integer> or = new HashSet<>();
+		for (Place p : additionalInfoForNonDetUnfl.keySet()) {
+			transitions = additionalInfoForNonDetUnfl.get(p);
+			or_index = createUniqueID();
+			or.clear();
+			for (Transition t : transitions) {
+				or.add(getVarNr(p.getId() + ".." + t.getId(), true));
+			}
+			writer.write(or_index + " = " + writeOr(or));
+			and.add(or_index);
+		}
+		writer.write(index + " = " + writeAnd(and));
+		return index;
 	}
 
 	public int getVarNr(String id, boolean extraCheck) {
@@ -350,7 +426,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 	public int createUniqueID() {
 		return variablesCounter++;
 	}
-	
+
 	public String getTruncatedId(String id) {
 		int index = id.indexOf("__");
 		if (index != -1) {
@@ -358,7 +434,6 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 		}
 		return id;
 	}
-
 
 	// WRITERS:
 	public String writeExists(Set<Integer> input) {
