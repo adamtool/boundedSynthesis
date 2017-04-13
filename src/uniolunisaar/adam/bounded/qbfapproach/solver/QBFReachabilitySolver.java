@@ -3,12 +3,13 @@ package uniolunisaar.adam.bounded.qbfapproach.solver;
 import uniol.apt.adt.pn.PetriNet;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
+import uniolunisaar.adam.ds.exceptions.UnboundedPGException;
 import uniolunisaar.adam.ds.winningconditions.Reachability;
 
 public class QBFReachabilitySolver extends QBFSolver<Reachability> {
 
-	public QBFReachabilitySolver(QBFPetriGame game, Reachability winCon, QBFSolverOptions so) {
-		super(game, winCon, so);
+	public QBFReachabilitySolver(PetriNet net, QBFSolverOptions so) throws UnboundedPGException {
+		super(new QBFPetriGame(net), new Reachability(), so);
 		// TODO Auto-generated constructor stub
 	}
 

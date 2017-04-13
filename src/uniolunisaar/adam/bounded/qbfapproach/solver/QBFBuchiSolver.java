@@ -21,6 +21,7 @@ import uniolunisaar.adam.bounded.qbfapproach.unfolder.NonDeterministicUnfolder;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
+import uniolunisaar.adam.ds.exceptions.UnboundedPGException;
 import uniolunisaar.adam.ds.winningconditions.Buchi;
 import uniolunisaar.adam.tools.ADAMProperties;
 
@@ -35,8 +36,8 @@ public class QBFBuchiSolver extends QBFSolver<Buchi> {
 	// variable to store keys of calculated components for later use (special to this winning condition)
 	private int bl;
 
-	public QBFBuchiSolver(QBFPetriGame game, Buchi winCon, QBFSolverOptions so) {
-		super(game, winCon, so);
+	public QBFBuchiSolver(PetriNet net, QBFSolverOptions so) throws UnboundedPGException {
+		super(new QBFPetriGame(net), new Buchi(), so);
 		fl = new int[pg.getN() + 1];
 		det = new int[pg.getN() + 1];
 		dl = new int[pg.getN() + 1];

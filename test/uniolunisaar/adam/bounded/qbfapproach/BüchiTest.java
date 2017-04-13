@@ -6,10 +6,8 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import uniol.apt.adt.pn.PetriNet;
-import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFBuchiSolver;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
-import uniolunisaar.adam.ds.winningconditions.Buchi;
 import uniolunisaar.adam.tools.Tools;
 
 @Test
@@ -30,9 +28,8 @@ public class BüchiTest {
 	private void test(String name, boolean result, int n, int b) throws Exception {
 		final String path = System.getProperty("examplesfolder") + "/buechi/" + "toyExamples" + File.separator + name + ".apt";
 		PetriNet pn = Tools.getPetriNet(path);
-		QBFPetriGame game = new QBFPetriGame(pn);
 		System.out.println("NAME: " + pn.getName());
-		QBFBuchiSolver sol = new QBFBuchiSolver(game, new Buchi(), new QBFSolverOptions(n, b));
+		QBFBuchiSolver sol = new QBFBuchiSolver(pn, new QBFSolverOptions(n, b));
 		Assert.assertEquals(sol.existsWinningStrategy(), result);
 	}
 }
