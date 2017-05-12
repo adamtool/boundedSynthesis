@@ -36,93 +36,36 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 
 	// variable to store keys of calculated components for later use (special to this winning condition)
 	private int[] bad;
-	private int[] term;
 	private int l;
-	private int[] dlt;
-	private int[] terminatingSubFormulas;
 
 	public QBFSafetySolver(PetriNet net, QBFSolverOptions so) throws UnboundedPGException {
 		super(new QBFPetriGame(net), new Safety(), so);
-		fl = new int[pg.getN() + 1];
 		bad = new int[pg.getN() + 1];
 		term = new int[pg.getN() + 1];
-		det = new int[pg.getN() + 1];
-		dl = new int[pg.getN() + 1];
-		seq = new int[pg.getN() + 1];
 		dlt = new int[pg.getN() + 1];
-		win = new int[pg.getN() + 1];
 	}
 
-	private void writeNoBadMarking() throws IOException {
+	private void writeNoBadPlaces() throws IOException {
 		if (!getWinningCondition().getBadPlaces().isEmpty()) {
-			String[] nobadmarking = getNobadmarking();
-			if (!getWinningCondition().getBadPlaces().isEmpty()) {
-				for (int i = 1; i <= pg.getN(); ++i) {
-					bad[i] = createUniqueID();
-					writer.write(bad[i] + " = " + nobadmarking[i]);
-				}
+			String[] nobadplaces = getNoBadPlaces();
+			for (int i = 1; i <= pg.getN(); ++i) {
+				bad[i] = createUniqueID();
+				writer.write(bad[i] + " = " + nobadplaces[i]);
 			}
 		}
 	}
 
-	public String[] getNobadmarking() {
-		String[] nobadmarking = new String[pg.getN() + 1];
+	public String[] getNoBadPlaces() {
+		String[] nobadplaces = new String[pg.getN() + 1];
 		Set<Integer> and = new HashSet<>();
 		for (int i = 1; i <= pg.getN(); ++i) {
 			and.clear();
 			for (Place p : getWinningCondition().getBadPlaces()) {
 				and.add(-getVarNr(p.getId() + "." + i, true));
 			}
-			nobadmarking[i] = writeAnd(and);
+			nobadplaces[i] = writeAnd(and);
 		}
-		return nobadmarking;
-	}
-
-	private void writeTerminating() throws IOException {
-		String[] terminating = new String[pg.getN() + 1];
-		terminating = getTerminating();
-		for (int i = 1; i <= pg.getN(); ++i) {
-			term[i] = createUniqueID();
-			writer.write(term[i] + " = " + terminating[i]);
-		}
-	}
-
-	public String[] getTerminating() throws IOException {
-		writeTerminatingSubFormulas(1, pg.getN());
-		String[] terminating = new String[pg.getN() + 1];
-		Set<Integer> and = new HashSet<>();
-		for (int i = 1; i <= pg.getN(); ++i) {
-			if (pg.getNet().getTransitions().size() >= 1) {
-				and.clear();
-				for (int j = 0; j < pn.getTransitions().size(); ++j) {
-					and.add(terminatingSubFormulas[pn.getTransitions().size() * (i - 1) + j]);
-				}
-				terminating[i] = writeAnd(and);
-			} else {
-				terminating[i] = "";
-			}
-		}
-		return terminating;
-	}
-
-	private void writeTerminatingSubFormulas(int s, int e) throws IOException {
-		Set<Integer> or = new HashSet<>();
-		Set<Place> pre;
-		Transition t;
-		int key;
-		for (int i = s; i <= e; ++i) {
-			for (int j = 0; j < pn.getTransitions().size(); ++j) {
-				t = transitions[j];
-				key = createUniqueID();
-				pre = t.getPreset();
-				or.clear();
-				for (Place p : pre) {
-					or.add(-getVarNr(p.getId() + "." + i, true));
-				}
-				writer.write(key + " = " + writeOr(or));
-				terminatingSubFormulas[pn.getTransitions().size() * (i - 1) + j] = key;
-			}
-		}
+		return nobadplaces;
 	}
 
 	private void writeLoop() throws IOException {
@@ -148,17 +91,6 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 			}
 		}
 		return writeOr(or);
-	}
-
-	private void writeDeadlocksterm() throws IOException {
-		Set<Integer> or = new HashSet<>();
-		for (int i = 1; i <= pg.getN(); ++i) {
-			or.clear();
-			or.add(-dl[i]);
-			or.add(term[i]);
-			dlt[i] = createUniqueID();
-			writer.write(dlt[i] + " = " + writeOr(or));
-		}
 	}
 
 	private void writeWinning() throws IOException {
@@ -205,7 +137,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 			writeDeadlock();
 			writeFlow();
 			writeSequence();
-			writeNoBadMarking();
+			writeNoBadPlaces();
 			writeTerminating();
 			writeDeterministic();
 			writeLoop();

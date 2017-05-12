@@ -37,7 +37,9 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 	protected int in;
 	protected int[] fl;
 	protected int[] det;
+	protected int[] dlt;
 	protected int[] dl;
+	protected int[] term;
 	protected int[] seq;
 	protected int[] win;
 	protected int[] seqImpliesWin;
@@ -72,6 +74,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 	protected Transition[] transitions;
 	protected int[] flowSubFormulas;
 	protected int[] deadlockSubFormulas;
+	protected int[] terminatingSubFormulas;
 	protected File file = null;
 
 	public QBFSolver(QBFPetriGame game, W winCon, QBFSolverOptions so) {
@@ -85,6 +88,15 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 		for (Transition t : pn.getTransitions()) {
 			transitions[counter++] = t;
 		}
+		
+		fl = new int[pg.getN() + 1];
+		det = new int[pg.getN() + 1];
+		dlt = new int[pg.getN() + 1];
+		dl = new int[pg.getN() + 1];
+		term = new int[pg.getN() + 1];
+		seq = new int[pg.getN() + 1];
+		win = new int[pg.getN() + 1];
+		seqImpliesWin = new int[pg.getN() + 1];
 
 		// Create random file in tmp directory which is deleted after solving it
 		String prefix = "";
@@ -170,6 +182,64 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 				writer.write(number + " = " + writeOr(or));
 				deadlockSubFormulas[pn.getTransitions().size() * (i - 1) + j] = number;
 			}
+		}
+	}
+	
+	protected void writeTerminating() throws IOException {
+		String[] terminating = new String[pg.getN() + 1];
+		terminating = getTerminating();
+		for (int i = 1; i <= pg.getN(); ++i) {
+			term[i] = createUniqueID();
+			writer.write(term[i] + " = " + terminating[i]);
+		}
+	}
+
+	public String[] getTerminating() throws IOException {
+		writeTerminatingSubFormulas(1, pg.getN());
+		String[] terminating = new String[pg.getN() + 1];
+		Set<Integer> and = new HashSet<>();
+		for (int i = 1; i <= pg.getN(); ++i) {
+			if (pg.getNet().getTransitions().size() >= 1) {
+				and.clear();
+				for (int j = 0; j < pn.getTransitions().size(); ++j) {
+					and.add(terminatingSubFormulas[pn.getTransitions().size() * (i - 1) + j]);
+				}
+				terminating[i] = writeAnd(and);
+			} else {
+				terminating[i] = "";
+			}
+		}
+		return terminating;
+	}
+
+	private void writeTerminatingSubFormulas(int s, int e) throws IOException {
+		Set<Integer> or = new HashSet<>();
+		Set<Place> pre;
+		Transition t;
+		int key;
+		for (int i = s; i <= e; ++i) {
+			for (int j = 0; j < pn.getTransitions().size(); ++j) {
+				t = transitions[j];
+				key = createUniqueID();
+				pre = t.getPreset();
+				or.clear();
+				for (Place p : pre) {
+					or.add(-getVarNr(p.getId() + "." + i, true));
+				}
+				writer.write(key + " = " + writeOr(or));
+				terminatingSubFormulas[pn.getTransitions().size() * (i - 1) + j] = key;
+			}
+		}
+	}
+	
+	protected void writeDeadlocksterm() throws IOException {
+		Set<Integer> or = new HashSet<>();
+		for (int i = 1; i <= pg.getN(); ++i) {
+			or.clear();
+			or.add(-dl[i]);
+			or.add(term[i]);
+			dlt[i] = createUniqueID();
+			writer.write(dlt[i] + " = " + writeOr(or));
 		}
 	}
 
