@@ -31,9 +31,8 @@ public class ExamplesTest {
 		oneTest("jhh/myexample7", 3, 0, false);
 		oneTest("ma_vsp/vsp_1_withBadPlaces", 3, 0, true);
 		oneTest("ma_vsp/vsp_1_withBadPlaces", 2, 0, false);
-		oneTest("ma_vsp/vsp_1", 3, 0, true);
-		oneTest("ma_vsp/vsp_1", 2, 0, false);*/
-		oneTest("jhh/simple", 3, 0, true);
+		oneTest("firstExamplePaper/firstExamplePaper", 10, 3, true);
+		oneTest("firstExamplePaper/firstExamplePaper", 10, 2, false);*/
 	}
 	
 	private void oneTest(String str, int n, int b, boolean result) throws Exception {

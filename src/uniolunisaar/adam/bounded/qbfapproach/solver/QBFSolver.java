@@ -35,6 +35,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 
 	// variable to store keys of calculated components for later use (shared among all solvers)
 	protected int in;
+	protected int l;
 	protected int[] fl;
 	protected int[] det;
 	protected int[] dlt;
@@ -384,6 +385,31 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 		int number = createUniqueID();
 		writer.write(number + " = " + writeOr(or));
 		return number;
+	}
+	
+	protected void writeLoop() throws IOException {
+		String loop = getLoopIJ();
+		l = createUniqueID();
+		writer.write(l + " = " + loop);
+	}
+
+	public String getLoopIJ() throws IOException {
+		Set<Integer> or = new HashSet<>();
+		for (int i = 1; i < pg.getN(); ++i) {
+			for (int j = i + 1; j <= pg.getN(); ++j) {
+				Set<Integer> and = new HashSet<>();
+				for (Place p : pn.getPlaces()) {
+					int p_i = getVarNr(p.getId() + "." + i, true);
+					int p_j = getVarNr(p.getId() + "." + j, true);
+					and.add(writeImplication(p_i, p_j));
+					and.add(writeImplication(p_j, p_i));
+				}
+				int andNumber = createUniqueID();
+				writer.write(andNumber + " = " + writeAnd(and));
+				or.add(andNumber);
+			}
+		}
+		return writeOr(or);
 	}
 
 	public int addSysStrategy(Place p, Transition t) {

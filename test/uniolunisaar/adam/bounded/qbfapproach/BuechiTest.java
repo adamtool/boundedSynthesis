@@ -10,8 +10,8 @@ import uniolunisaar.adam.bounded.qbfapproach.solver.QBFBuchiSolver;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
 import uniolunisaar.adam.tools.Tools;
 
-@Test
-public class BüchiTest {
+//@Test
+public class BuechiTest {
 
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testBüchi() throws Exception {
@@ -26,7 +26,7 @@ public class BüchiTest {
 	}
 
 	private void test(String name, boolean result, int n, int b) throws Exception {
-		final String path = System.getProperty("examplesfolder") + "/buechi/" + "toyExamples" + File.separator + name + ".apt";
+		final String path = System.getProperty("examplesfolder") + File.separator + "buechi" + File.separator + "toyExamples" + File.separator + name + ".apt";
 		PetriNet pn = Tools.getPetriNet(path);
 		System.out.println("NAME: " + pn.getName());
 		QBFBuchiSolver sol = new QBFBuchiSolver(pn, new QBFSolverOptions(n, b));

@@ -36,7 +36,6 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 
 	// variable to store keys of calculated components for later use (special to this winning condition)
 	private int[] bad;
-	private int l;
 
 	public QBFSafetySolver(PetriNet net, QBFSolverOptions so) throws UnboundedPGException {
 		super(new QBFPetriGame(net), new Safety(), so);
@@ -66,31 +65,6 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 			nobadplaces[i] = writeAnd(and);
 		}
 		return nobadplaces;
-	}
-
-	private void writeLoop() throws IOException {
-		String loop = getLoopIJ();
-		l = createUniqueID();
-		writer.write(l + " = " + loop);
-	}
-
-	public String getLoopIJ() throws IOException {
-		Set<Integer> or = new HashSet<>();
-		for (int i = 1; i < pg.getN(); ++i) {
-			for (int j = i + 1; j <= pg.getN(); ++j) {
-				Set<Integer> and = new HashSet<>();
-				for (Place p : pn.getPlaces()) {
-					int p_i = getVarNr(p.getId() + "." + i, true);
-					int p_j = getVarNr(p.getId() + "." + j, true);
-					and.add(writeImplication(p_i, p_j));
-					and.add(writeImplication(p_j, p_i));
-				}
-				int andNumber = createUniqueID();
-				writer.write(andNumber + " = " + writeAnd(and));
-				or.add(andNumber);
-			}
-		}
-		return writeOr(or);
 	}
 
 	private void writeWinning() throws IOException {

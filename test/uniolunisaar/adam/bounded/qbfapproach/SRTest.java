@@ -13,7 +13,7 @@ import uniol.apt.adt.pn.PetriNet;
 public class SRTest {
 
 	@Test(timeOut = 1800 * 1000) // 30 min
-	public void test() throws Exception { // only with simplifier no timeout
+	public void testSR() throws Exception { // only with simplifier no timeout
 		oneTest(2, 1, 6, 2);
 		//oneTest(3, 1, 7, 2);
 		//oneTest(4, 1, 8, 2);

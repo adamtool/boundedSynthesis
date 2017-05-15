@@ -45,7 +45,7 @@ public class QBFBuchiSolver extends QBFSolver<Buchi> {
 		win = new int[pg.getN() + 1];
 	}
 
-	private void writeLoop() throws IOException {
+	protected void writeLoop() throws IOException {
 		String loop = getBuchiLoop();
 		bl = createUniqueID();
 		writer.write(bl + " = " + loop);
