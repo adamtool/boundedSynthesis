@@ -3,10 +3,14 @@ package uniolunisaar.adam.bounded.qbfapproach.petrigame;
 import java.util.HashSet;
 import java.util.Set;
 
+import uniol.apt.adt.pn.Flow;
 import uniol.apt.adt.pn.Marking;
 import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
+import uniol.apt.analysis.exception.UnboundedException;
+import uniol.apt.util.Pair;
+import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.UnboundedPGException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 
@@ -46,6 +50,39 @@ public class QBFPetriGame extends PetriGame {
 			// remove transition t as soon as one place in pre(t) is removed
 			removeTransitionRecursively(t);
 		}
+	}
+	
+	public QBFPetriGame copy(String name) {
+		PetriNet copy = new PetriNet(getNet().getName() + "_" + name);
+
+		for (Place p : getNet().getPlaces()) {
+			copy.createPlace(p.getId());
+			for (Pair<String, Object> pair : p.getExtensions()) {
+				p.putExtension(pair.getFirst(), pair.getSecond());
+			}
+		}
+		for (Transition t : getNet().getTransitions()) {
+			copy.createTransition(t.getId());
+		}
+		for (Flow f : getNet().getEdges()) {
+			copy.createFlow(f.getSource().getId(), f.getTarget().getId());
+		}
+
+		Marking in = getNet().getInitialMarking();
+		for (Place p : getNet().getPlaces()) {
+			if (in.getToken(p).getValue() == 1) {
+				copy.getPlace(p.getId()).setInitialToken(1);
+			}
+		}
+
+		QBFPetriGame newPG = null;
+		try {
+			newPG = new QBFPetriGame(copy);
+		} catch (UnboundedPGException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return newPG;
 	}
 
 	public int getN() {

@@ -237,6 +237,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 	@Override
 	protected PetriNet calculateStrategy() throws NoStrategyExistentException {
 		if (existsWinningStrategy()) {
+			QBFPetriGame copy = pg.copy("strategy");
 			for (String outputCAQE_line : outputCAQE.split("\n")) {
 				if (outputCAQE_line.startsWith("V")) {
 					String[] parts = outputCAQE_line.split(" ");
@@ -255,23 +256,23 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 									if (place.startsWith(QBFSolver.additionalSystemName)) {
 										// additional system place exactly removes transitions
 										// Transition might already be removed by recursion
-										Set<Transition> transitions = new HashSet<>(pg.getNet().getTransitions());
+										Set<Transition> transitions = new HashSet<>(copy.getNet().getTransitions());
 										for (Transition t : transitions) {
 											if (t.getId().equals(transition)) {
 												// System.out.println("starting " + t);
-												pg.removeTransitionRecursively(t);
+												copy.removeTransitionRecursively(t);
 											}
 										}
 									} else {
 										// original system place removes ALL transitions
-										Set<Place> places = new HashSet<>(pg.getNet().getPlaces());
+										Set<Place> places = new HashSet<>(copy.getNet().getPlaces());
 										for (Place p : places) {
 											if (p.getId().equals(place)) {
 												Set<Transition> transitions = new HashSet<>(p.getPostset());
 												for (Transition post : transitions) {
 													if (transition.equals(getTruncatedId(post.getId()))) {
 														// System.out.println("starting " + post);
-														pg.removeTransitionRecursively(post);
+														copy.removeTransitionRecursively(post);
 													}
 												}
 											}
@@ -281,8 +282,8 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 							} else {
 								// 0 is the last member
 								// System.out.println("Finished reading strategy.");
-								PGSimplifier.simplifyPG(pg, true);
-								return pg.getNet();
+								PGSimplifier.simplifyPG(copy, true);
+								return copy.getNet();
 							}
 						}
 					}

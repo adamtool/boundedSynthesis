@@ -55,8 +55,6 @@ public class ReachabilityTest {
 		final String path = System.getProperty("examplesfolder") + File.separator + "reachability" + File.separator + folder + File.separator + name + ".apt";
 		PetriNet pn = Tools.getPetriNet(path);
 		QBFReachabilitySolver sol = new QBFReachabilitySolver(pn, new QBFSolverOptions(n, b));
-		boolean bool = sol.existsWinningStrategy();
-		if (bool) Tools.savePN2PDF("strat", sol.getStrategy(), true);
-		Assert.assertEquals(bool, result);
+		Assert.assertEquals(sol.existsWinningStrategy(), result);
 	}
 }
