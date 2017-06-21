@@ -15,6 +15,7 @@ import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.analysis.exception.UnboundedException;
+import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.NonDeterministicUnfolder;
@@ -104,6 +105,16 @@ public class QBFBuchiSolver extends QBFSolver<Buchi> {
 			System.out.println("Error: The bounded unfolding of the game failed.");
 			e1.printStackTrace();
 		}
+
+		// I dont want NonDetUnfolder<Safe/Reach/Buechi> and therefore add places after unfolding...
+		for (Place p : pn.getPlaces()) {
+			for (Pair<String, Object> pair : p.getExtensions()) {
+				if (pair.getFirst().equals("buchi") && pair.getSecond().toString().equals("true")) {
+					getWinningCondition().getBuchiPlaces().add(p);
+				}
+			}
+		}
+
 		seqImpliesWin = new int[pg.getN() + 1];
 		transitions = pn.getTransitions().toArray(new Transition[0]);
 		flowSubFormulas = new int[pg.getN() * pn.getTransitions().size()];
@@ -166,7 +177,7 @@ public class QBFBuchiSolver extends QBFSolver<Buchi> {
 				raf.close();
 			}
 			// generating qcir benchmarks
-			FileUtils.copyFile(file, new File(pg.getNet().getName() + ".qcir"));
+			// FileUtils.copyFile(file, new File(pg.getNet().getName() + ".qcir"));
 
 			ProcessBuilder pb = null;
 			// Run solver on problem

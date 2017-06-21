@@ -3,6 +3,7 @@ package uniolunisaar.adam.bounded.qbfapproach;
 import java.io.File;
 
 import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import uniol.apt.adt.pn.PetriNet;
@@ -10,9 +11,16 @@ import uniolunisaar.adam.bounded.qbfapproach.solver.QBFBuchiSolver;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
 import uniolunisaar.adam.tools.Tools;
 
-//@Test
+@Test
 public class BuechiTest {
 
+	@BeforeClass
+    public void setProperties() {
+        if (System.getProperty("examplesfolder") == null) {
+        	System.setProperty("examplesfolder", "examples");
+        }
+    }
+	
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testBüchi() throws Exception {
 		test ("finiteA", false, 20, 5);

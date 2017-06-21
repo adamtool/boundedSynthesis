@@ -20,7 +20,6 @@ import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 import uniolunisaar.adam.ds.exceptions.SolverDontFitPetriGameException;
 import uniolunisaar.adam.ds.exceptions.UnboundedPGException;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
-import uniolunisaar.adam.generators.ContainerTerminal;
 import uniolunisaar.adam.generators.SecuritySystem;
 import uniolunisaar.adam.tools.Logger;
 import uniolunisaar.adam.tools.Tools;
@@ -29,7 +28,7 @@ import uniolunisaar.adam.tools.Tools;
  *
  * @author Manuel Gieseking
  */
-@Test
+//@Test
 public class SSTest {
 
     private static final String outputDir = System.getProperty("testoutputfolder") + "/securitySystem/";
@@ -53,7 +52,7 @@ public class SSTest {
         return out;
     }
 
-    @Test(dataProvider = "secSystem")
+    //@Test(dataProvider = "secSystem")
     public void testSecuritySystem(int intrudingPoints, boolean hasStrategy) throws NetNotSafeException, NetNotConcurrencyPreservingException, NoStrategyExistentException, IOException, InterruptedException, FileNotFoundException, ModuleException, NoSuitableDistributionFoundException, SolverDontFitPetriGameException, UnboundedPGException, CouldNotFindSuitableWinningConditionException {
         final String path = outputDir;
         String name = intrudingPoints + "_secSystem";

@@ -25,7 +25,6 @@ public class CMTest { // Concurrent Machines / WF
 
 	private void oneTest(int ps1, int ps2, int n, int b) throws Exception {
 		PetriNet pn = Workflow.generate(ps1, ps2, true, true);
-		System.out.println("NAME: " + pn.getName());
 		QBFSafetySolver sol = new QBFSafetySolver(pn, new QBFSolverOptions(n, b));
 		Assert.assertTrue(sol.existsWinningStrategy());
 	}

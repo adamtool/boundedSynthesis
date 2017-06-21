@@ -5,7 +5,6 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
 
-import uniol.apt.adt.exception.TransitionFireException;
 import uniol.apt.adt.pn.Marking;
 import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.adt.pn.Place;
@@ -27,21 +26,16 @@ public class PGSimplifier {
 		while ((p = queue.poll()) != null) {
 			Marking m = p.getFirst();
 			int i = p.getSecond();
-			//System.out.println("ITERATION " + queue.size() + " : " + m + " : " + i);
 			for (Transition t : pn.getTransitions()) {
-				Marking next = new Marking(m);
-				try {
-					//next.fire(t); <- deprecated
-					next = t.fire(next);
-				} catch (TransitionFireException e) {
-					continue;
-				}
-				visited.add(t);
-				if (i <= n && ! closed.contains(next)) {
-					queue.add(new Pair<>(next, i + 1));
+				if (t.isFireable(m)) {
+					Marking next = t.fire(m);
+					visited.add(t);
+					if (i <= n && ! closed.contains(next)) {
+						queue.add(new Pair<>(next, i + 1));
+					}
 				}
 			}
-			closed.add(p);			// add closed this late to allow selfloops to reach transitions
+			closed.add(p);			// add closed this late to allow self-loops to reach transitions
 		}
 		Set<Transition> transitions = new HashSet<>(pn.getTransitions());
 		for (Transition t : transitions)

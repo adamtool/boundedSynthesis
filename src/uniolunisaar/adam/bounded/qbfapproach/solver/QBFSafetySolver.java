@@ -15,6 +15,7 @@ import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.analysis.exception.UnboundedException;
+import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.NonDeterministicUnfolder;
@@ -24,6 +25,7 @@ import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 import uniolunisaar.adam.ds.exceptions.UnboundedPGException;
 import uniolunisaar.adam.ds.winningconditions.Safety;
 import uniolunisaar.adam.tools.ADAMProperties;
+import uniolunisaar.adam.tools.Tools;
 
 /**
  *
@@ -85,8 +87,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 		}
 	}
 
-	@Override
-	protected boolean exWinStrat() {
+	public void writeQCIR() throws IOException {
 		NonDeterministicUnfolder unfolder = new NonDeterministicUnfolder(pg, null); // null forces unfolder to use b as bound for every place
 		try {
 			unfolder.createUnfolding();
@@ -95,74 +96,90 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 			e1.printStackTrace();
 		}
 
+		// I dont want NonDetUnfolder<Safe/Reach/Buechi> and therefore add places after unfolding...
+		for (Place p : pn.getPlaces()) {
+			for (Pair<String, Object> pair : p.getExtensions()) {
+				if (pair.getFirst().equals("bad") && pair.getSecond().toString().equals("true")) {
+					getWinningCondition().getBadPlaces().add(p);
+				}
+			}
+		}
+
 		seqImpliesWin = new int[pg.getN() + 1];
 		transitions = pn.getTransitions().toArray(new Transition[0]);
 		flowSubFormulas = new int[pg.getN() * pn.getTransitions().size()];
 		deadlockSubFormulas = new int[(pg.getN() + 1) * pn.getTransitions().size()];
 		terminatingSubFormulas = new int[(pg.getN() + 1) * pn.getTransitions().size()];
+
+		writer.write("#QCIR-G14          " + QBFSolver.linebreak); // spaces left to add variable count in the end
+		addExists();
+		addForall();
+		writer.write("output(1)" + QBFSolver.linebreak); // 1 = \phi
+
+		writeInitial();
+		writeDeadlock();
+		writeFlow();
+		writeSequence();
+		writeNoBadPlaces();
+		writeTerminating();
+		writeDeterministic();
+		writeLoop();
+		writeDeadlocksterm();
+		writeWinning();
+
+		Set<Integer> phi = new HashSet<>();
+		// When unfolding non-deterministically we add system places to
+		// ensure deterministic decision.
+		// It is required that these decide for exactly one transition which
+		// is directly encoded into the problem.
+		int index_for_non_det_unfolding_info = enumerateStratForNonDetUnfold(unfolder.systemHasToDecideForAtLeastOne);
+		if (index_for_non_det_unfolding_info != -1) {
+			phi.add(index_for_non_det_unfolding_info);
+		}
+
+		for (int i = 1; i <= pg.getN() - 1; ++i) { // slightly optimized in the sense that winning and loop are put together for n
+			seqImpliesWin[i] = createUniqueID();
+			writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + QBFSolver.linebreak);
+			phi.add(seqImpliesWin[i]);
+		}
+
+		int wnandLoop = createUniqueID();
+		Set<Integer> wnandLoopSet = new HashSet<>();
+		wnandLoopSet.add(l);
+		wnandLoopSet.add(win[pg.getN()]);
+		writer.write(wnandLoop + " = " + writeAnd(wnandLoopSet));
+
+		seqImpliesWin[pg.getN()] = createUniqueID();
+		writer.write(seqImpliesWin[pg.getN()] + " = " + "or(-" + seq[pg.getN()] + "," + wnandLoop + ")" + QBFSolver.linebreak);
+		phi.add(seqImpliesWin[pg.getN()]);
+
+		writer.write("1 = " + writeAnd(phi));
+		writer.close();
+
+		// Total number of gates is only calculated during encoding and added to the file afterwards
+		if (variablesCounter < 999999999) { // added 9 blanks as more than 999.999.999 variables wont be solvable
+			RandomAccessFile raf = new RandomAccessFile(file, "rw");
+			for (int i = 0; i < 10; ++i) { // read "#QCIR-G14 "
+				raf.readByte();
+			}
+			String counter_str = Integer.toString(variablesCounter - 1); // has NEXT usable counter in it
+			char[] counter_char = counter_str.toCharArray();
+			for (char c : counter_char) {
+				raf.writeByte(c);
+			}
+			raf.close();
+		}
+	}
+
+	@Override
+	protected boolean exWinStrat() {
+
 		int exitcode = -1;
 		try {
-			writer.write("#QCIR-G14          " + QBFSolver.linebreak); // spaces left to add variable count in the end
-			addExists();
-			addForall();
-			writer.write("output(1)" + QBFSolver.linebreak); // 1 = \phi
+			writeQCIR();
 
-			writeInitial();
-			writeDeadlock();
-			writeFlow();
-			writeSequence();
-			writeNoBadPlaces();
-			writeTerminating();
-			writeDeterministic();
-			writeLoop();
-			writeDeadlocksterm();
-			writeWinning();
-
-			Set<Integer> phi = new HashSet<>();
-			// When unfolding non-deterministically we add system places to
-			// ensure deterministic decision.
-			// It is required that these decide for exactly one transition which
-			// is directly encoded into the problem.
-			int index_for_non_det_unfolding_info = enumerateStratForNonDetUnfold(unfolder.systemHasToDecideForAtLeastOne);
-			if (index_for_non_det_unfolding_info != -1) {
-				phi.add(index_for_non_det_unfolding_info);
-			}
-
-			for (int i = 1; i <= pg.getN() - 1; ++i) { // slightly optimized in the sense that winning and loop are put together for n
-				seqImpliesWin[i] = createUniqueID();
-				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + QBFSolver.linebreak);
-				phi.add(seqImpliesWin[i]);
-			}
-
-			int wnandLoop = createUniqueID();
-			Set<Integer> wnandLoopSet = new HashSet<>();
-			wnandLoopSet.add(l);
-			wnandLoopSet.add(win[pg.getN()]);
-			writer.write(wnandLoop + " = " + writeAnd(wnandLoopSet));
-
-			seqImpliesWin[pg.getN()] = createUniqueID();
-			writer.write(seqImpliesWin[pg.getN()] + " = " + "or(-" + seq[pg.getN()] + "," + wnandLoop + ")" + QBFSolver.linebreak);
-			phi.add(seqImpliesWin[pg.getN()]);
-
-			writer.write("1 = " + writeAnd(phi));
-			writer.close();
-
-			// Total number of gates is only calculated during encoding and added to the file afterwards
-			if (variablesCounter < 999999999) { // added 9 blanks as more than 999.999.999 variables wont be solvable
-				RandomAccessFile raf = new RandomAccessFile(file, "rw");
-				for (int i = 0; i < 10; ++i) { // read "#QCIR-G14 "
-					raf.readByte();
-				}
-				String counter_str = Integer.toString(variablesCounter - 1); // has NEXT usabel counter in it
-				char[] counter_char = counter_str.toCharArray();
-				for (char c : counter_char) {
-					raf.writeByte(c);
-				}
-				raf.close();
-			}
-
-			// generating qcir benchmarks
-			FileUtils.copyFile(file, new File(pg.getNet().getName() + ".qcir"));
+			// This line was used to create benchmarks:
+			// FileUtils.copyFile(file, new File(pg.getNet().getName() + ".qcir"));
 
 			ProcessBuilder pb = null;
 			// Run solver on problem

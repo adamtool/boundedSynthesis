@@ -3,6 +3,7 @@ package uniolunisaar.adam.bounded.qbfapproach;
 import java.io.File;
 
 import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import uniol.apt.adt.pn.PetriNet;
@@ -13,6 +14,13 @@ import uniolunisaar.adam.tools.Tools;
 @Test
 public class ReachabilityTest {
 
+	@BeforeClass
+    public void createFolder() {
+        if (System.getProperty("examplesfolder") == null) {
+        	System.setProperty("examplesfolder", "examples");
+        }
+    }
+	
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testReachability() throws Exception {
 		// correct because after unfolding all runs can be forced by strategy to reach place-to-reach
@@ -46,8 +54,9 @@ public class ReachabilityTest {
 	private void test(String folder, String name, boolean result, int n, int b) throws Exception {
 		final String path = System.getProperty("examplesfolder") + File.separator + "reachability" + File.separator + folder + File.separator + name + ".apt";
 		PetriNet pn = Tools.getPetriNet(path);
-		System.out.println("NAME: " + pn.getName());
 		QBFReachabilitySolver sol = new QBFReachabilitySolver(pn, new QBFSolverOptions(n, b));
-		Assert.assertEquals(sol.existsWinningStrategy(), result);
+		boolean bool = sol.existsWinningStrategy();
+		if (bool) Tools.savePN2PDF("strat", sol.getStrategy(), true);
+		Assert.assertEquals(bool, result);
 	}
 }

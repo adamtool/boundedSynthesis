@@ -18,6 +18,7 @@ import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolver;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
+import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 
 /**
  * 
@@ -27,14 +28,13 @@ import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 
 public class NonDeterministicUnfolder extends Unfolder {
 
-	private PetriNet pn;
 	Set<Place> placesWithCopiedTransitions = new HashSet<>(); // Maintained during unfolding in order to afterwards add additional places
 	public Map<Place, Set<Transition>> systemHasToDecideForAtLeastOne = new HashMap<>(); // Map for QCIRbuilder to include additional information
 
 	public NonDeterministicUnfolder(QBFPetriGame QBFPetriGame, Map<String, Integer> max) {
 		super(QBFPetriGame);
 		this.max = max;
-		pn = QBFPetriGame.getNet();
+		this.pn = QBFPetriGame.getNet();
 	}
 
 	@Override
@@ -352,10 +352,10 @@ public class NonDeterministicUnfolder extends Unfolder {
 			for (int i = 0; i < transitions.length; ++i) {
 				Transition t = transitions[i];
 				String trunc_id = getTruncatedId(t.getId());
-				if (!truncatedIDsAndPreset.contains(new Pair<>(trunc_id, t.getPreset())) /*&& !reachesBadPlace(t)*/ && !containsAdditionalSystemPlace(t.getPreset())) {
+				if (!truncatedIDsAndPreset.contains(new Pair<>(trunc_id, t.getPreset())) /*&& !reachesBadPlace(t)*/ && !containsAdditionalSystemPlace(t.getPreset())) {				// TODO does this change anything?
 					Set<Transition> otherTransitions = new HashSet<>();
 					for (int j = i + 1; j < transitions.length; ++j) {
-						if (getTruncatedId(transitions[j].getId()).equals(trunc_id) && transitions[j].getPreset().equals(t.getPreset()) /*&& !reachesBadPlace(transitions[j])*/) {
+						if (getTruncatedId(transitions[j].getId()).equals(trunc_id) && transitions[j].getPreset().equals(t.getPreset()) /*&& !reachesBadPlace(transitions[j])*/) {	// TODO does this change anything?
 							otherTransitions.add(transitions[j]);
 						}
 					}

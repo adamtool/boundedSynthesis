@@ -57,7 +57,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 	protected String outputCAQE = "";
 
 	// TODO maybe optional arguments
-	public static String linebreak = "\n\n"; // Controller
+	public static String linebreak = "\n"; // Controller
 	public static String additionalSystemName = "AS___"; // Controller
 	public static String solver = "quabs"; // Controller
 	public static boolean deterministicStrat = true; // Controller
@@ -84,11 +84,11 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 		pg.setN(so.getB1());
 		pg.setB(so.getB2());
 		pn = pg.getNet();
-		transitions = new Transition[pn.getTransitions().size()];
-		int counter = 0;
-		for (Transition t : pn.getTransitions()) {
-			transitions[counter++] = t;
-		}
+		//transitions = new Transition[pn.getTransitions().size()];
+		//int counter = 0;
+		//for (Transition t : pn.getTransitions()) {
+		//	transitions[counter++] = t;
+		//}
 		
 		fl = new int[pg.getN() + 1];
 		det = new int[pg.getN() + 1];
@@ -107,10 +107,10 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 			prefix += lexicon.charAt(rand.nextInt(lexicon.length()));
 		}
 		try {
-			file = File.createTempFile(prefix, ".txt");
-		} catch (IOException e) {
-			System.out.println("Error: File creation in temp directory caused an error.");
-			e.printStackTrace();
+			file = File.createTempFile(prefix, pn.getName() + ".qcir");
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
 		file.deleteOnExit();
 		try {
@@ -172,7 +172,6 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 		for (int i = s; i <= e; ++i) {
 			for (int j = 0; j < pn.getTransitions().size(); ++j) {
 				t = transitions[j];
-				number = createUniqueID();
 				or.clear();
 				for (Place p : t.getPreset()) {
 					or.add(-getVarNr(p.getId() + "." + i, true)); // "p.i"
@@ -180,6 +179,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 					if (strat != 0)
 						or.add(-strat);
 				}
+				number = createUniqueID();
 				writer.write(number + " = " + writeOr(or));
 				deadlockSubFormulas[pn.getTransitions().size() * (i - 1) + j] = number;
 			}
@@ -221,12 +221,12 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 		for (int i = s; i <= e; ++i) {
 			for (int j = 0; j < pn.getTransitions().size(); ++j) {
 				t = transitions[j];
-				key = createUniqueID();
 				pre = t.getPreset();
 				or.clear();
 				for (Place p : pre) {
 					or.add(-getVarNr(p.getId() + "." + i, true));
 				}
+				key = createUniqueID();
 				writer.write(key + " = " + writeOr(or));
 				terminatingSubFormulas[pn.getTransitions().size() * (i - 1) + j] = key;
 			}
@@ -269,7 +269,6 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 	}
 
 	public int getOneTransition(Transition t, int i) throws IOException {
-		int number = createUniqueID();
 		Set<Integer> and = new HashSet<>();
 		int strat;
 		for (Place p : t.getPreset()) {
@@ -306,6 +305,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 		for (Place p : preMinusPost) {
 			and.add(-getVarNr(p.getId() + "." + (i + 1), true));
 		}
+		int number = createUniqueID();
 		writer.write(number + " = " + writeAnd(and));
 		return number;
 	}
@@ -473,21 +473,21 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 		if (additionalInfoForNonDetUnfl.keySet().isEmpty()) {
 			return -1;
 		}
-		int index = createUniqueID();
 		Set<Integer> and = new HashSet<>();
 		Set<Transition> transitions;
 		int or_index;
 		Set<Integer> or = new HashSet<>();
 		for (Place p : additionalInfoForNonDetUnfl.keySet()) {
 			transitions = additionalInfoForNonDetUnfl.get(p);
-			or_index = createUniqueID();
 			or.clear();
 			for (Transition t : transitions) {
 				or.add(getVarNr(p.getId() + ".." + t.getId(), true));
 			}
+			or_index = createUniqueID();
 			writer.write(or_index + " = " + writeOr(or));
 			and.add(or_index);
 		}
+		int index = createUniqueID();
 		writer.write(index + " = " + writeAnd(and));
 		return index;
 	}

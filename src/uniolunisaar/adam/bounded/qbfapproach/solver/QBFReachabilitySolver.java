@@ -9,12 +9,11 @@ import java.io.RandomAccessFile;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.io.FileUtils;
-
 import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.analysis.exception.UnboundedException;
+import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.NonDeterministicUnfolder;
@@ -64,14 +63,10 @@ public class QBFReachabilitySolver extends QBFSolver<Reachability> {
 		Set<Integer> or = new HashSet<>();
 		for (int i = 1; i < pg.getN(); ++i) {
 			and.clear();
-			if (dlt[i] != 0) {
-				and.add(dlt[i]);
-			}
-			if (det[i] != 0) {
-				and.add(det[i]);
-			}
+			and.add(dlt[i]);
+			and.add(det[i]);
 			or.clear();
-			or.add(-term[i]); // TODO: fl[i], fl[i + 1], or -term[i]?!
+			or.add(-dl[i]); // TODO: -dl[i] or -term[i] (fl[i] does not work)
 			for (int j = 1; j <= i; ++j) {
 				if(goodPlaces[j] != 0) {
 					or.add(goodPlaces[j]);
@@ -85,12 +80,8 @@ public class QBFReachabilitySolver extends QBFSolver<Reachability> {
 
 		}
 		and.clear();
-		if (dlt[pg.getN()] != 0) {
-			and.add(dlt[pg.getN()]);
-		}
-		if (det[pg.getN()] != 0) {
-			and.add(det[pg.getN()]);
-		}
+		and.add(dlt[pg.getN()]);
+		and.add(det[pg.getN()]);
 		or.clear();
 		for (int i = 1; i <= pg.getN(); ++i) {
 			if(goodPlaces[i] != 0) {
@@ -112,6 +103,15 @@ public class QBFReachabilitySolver extends QBFSolver<Reachability> {
 		} catch (UnboundedException | FileNotFoundException | NetNotSafeException | NoSuitableDistributionFoundException e1) {
 			System.out.println("Error: The bounded unfolding of the game failed.");
 			e1.printStackTrace();
+		}
+		
+		// I dont want NonDetUnfolder<Safe/Reach/Buechi> and therefore add places after unfolding...
+		for (Place p : pn.getPlaces()) {
+			for (Pair<String, Object> pair : p.getExtensions()) {
+				if (pair.getFirst().equals("reach") && pair.getSecond().toString().equals("true")) {
+					getWinningCondition().getPlaces2Reach().add(p);
+				}
+			}
 		}
 		
 		try {
@@ -141,8 +141,8 @@ public class QBFReachabilitySolver extends QBFSolver<Reachability> {
 			writeTerminating();
 			writeDeadlocksterm();
 			writeDeterministic();
-			writeLoop();
 			writeWinning();
+			writeLoop();
 
 			Set<Integer> phi = new HashSet<>();
 			// When unfolding non-deterministically we add system places to
@@ -189,7 +189,7 @@ public class QBFReachabilitySolver extends QBFSolver<Reachability> {
 			}
 
 			// generating qcir benchmarks
-			FileUtils.copyFile(file, new File(pg.getNet().getName() + ".qcir"));
+			//FileUtils.copyFile(file, new File(pg.getNet().getName() + ".qcir"));
 
 			ProcessBuilder pb = null;
 			// Run solver on problem
@@ -291,7 +291,7 @@ public class QBFReachabilitySolver extends QBFSolver<Reachability> {
 							} else {
 								// 0 is the last member
 								// System.out.println("Finished reading strategy.");
-								PGSimplifier.simplifyPG(pg, true);
+								PGSimplifier.simplifyPG(pg, false);
 								return pg.getNet();
 							}
 						}
