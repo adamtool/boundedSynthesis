@@ -66,8 +66,18 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 	private Map<Transition, Set<Place>> restCache = new HashMap<>(); // proven to be slightly useful in terms of performance
 	private Map<Transition, Set<Place>> preMinusPostCache = new HashMap<>();
 
+	// working copy of the game
 	protected QBFPetriGame pg;
 	protected PetriNet pn;
+	
+	protected QBFPetriGame game;
+	protected WinningCondition game_winCon;
+	protected QBFPetriGame unfolding;
+	protected WinningCondition unfolding_winCon;
+	protected QBFPetriGame strategy;
+	protected WinningCondition strategy_winCon;
+	
+	// Solving
 	protected BufferedWriter writer;
 	protected int variablesCounter = 2; // 1 reserved for phi
 	protected Map<String, Integer> numbersForVariables = new HashMap<>(); // map for storing keys and the corresponding value
@@ -84,11 +94,6 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 		pg.setN(so.getB1());
 		pg.setB(so.getB2());
 		pn = pg.getNet();
-		//transitions = new Transition[pn.getTransitions().size()];
-		//int counter = 0;
-		//for (Transition t : pn.getTransitions()) {
-		//	transitions[counter++] = t;
-		//}
 		
 		fl = new int[pg.getN() + 1];
 		det = new int[pg.getN() + 1];

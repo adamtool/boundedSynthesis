@@ -9,8 +9,6 @@ import java.io.RandomAccessFile;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.io.FileUtils;
-
 import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
@@ -25,7 +23,6 @@ import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 import uniolunisaar.adam.ds.exceptions.UnboundedPGException;
 import uniolunisaar.adam.ds.winningconditions.Safety;
 import uniolunisaar.adam.tools.ADAMProperties;
-import uniolunisaar.adam.tools.Tools;
 
 /**
  *
@@ -88,12 +85,13 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 	}
 
 	public void writeQCIR() throws IOException {
+		game = pg.copy("originalGame");
+		game_winCon = new Safety();
 		NonDeterministicUnfolder unfolder = new NonDeterministicUnfolder(pg, null); // null forces unfolder to use b as bound for every place
 		try {
 			unfolder.createUnfolding();
 		} catch (UnboundedException | FileNotFoundException | NetNotSafeException | NoSuitableDistributionFoundException e1) {
 			System.out.println("Error: The bounded unfolding of the game failed.");
-			e1.printStackTrace();
 		}
 
 		// I dont want NonDetUnfolder<Safe/Reach/Buechi> and therefore add places after unfolding...
@@ -104,6 +102,8 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 				}
 			}
 		}
+		unfolding = pg.copy("unfolding");
+		unfolding_winCon = new Safety();
 
 		seqImpliesWin = new int[pg.getN() + 1];
 		transitions = pn.getTransitions().toArray(new Transition[0]);
@@ -173,7 +173,6 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 
 	@Override
 	protected boolean exWinStrat() {
-
 		int exitcode = -1;
 		try {
 			writeQCIR();
@@ -237,7 +236,6 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 	@Override
 	protected PetriNet calculateStrategy() throws NoStrategyExistentException {
 		if (existsWinningStrategy()) {
-			QBFPetriGame copy = pg.copy("strategy");
 			for (String outputCAQE_line : outputCAQE.split("\n")) {
 				if (outputCAQE_line.startsWith("V")) {
 					String[] parts = outputCAQE_line.split(" ");
@@ -256,23 +254,23 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 									if (place.startsWith(QBFSolver.additionalSystemName)) {
 										// additional system place exactly removes transitions
 										// Transition might already be removed by recursion
-										Set<Transition> transitions = new HashSet<>(copy.getNet().getTransitions());
+										Set<Transition> transitions = new HashSet<>(pg.getNet().getTransitions());
 										for (Transition t : transitions) {
 											if (t.getId().equals(transition)) {
 												// System.out.println("starting " + t);
-												copy.removeTransitionRecursively(t);
+												pg.removeTransitionRecursively(t);
 											}
 										}
 									} else {
 										// original system place removes ALL transitions
-										Set<Place> places = new HashSet<>(copy.getNet().getPlaces());
+										Set<Place> places = new HashSet<>(pg.getNet().getPlaces());
 										for (Place p : places) {
 											if (p.getId().equals(place)) {
 												Set<Transition> transitions = new HashSet<>(p.getPostset());
 												for (Transition post : transitions) {
 													if (transition.equals(getTruncatedId(post.getId()))) {
 														// System.out.println("starting " + post);
-														copy.removeTransitionRecursively(post);
+														pg.removeTransitionRecursively(post);
 													}
 												}
 											}
@@ -282,8 +280,10 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 							} else {
 								// 0 is the last member
 								// System.out.println("Finished reading strategy.");
-								PGSimplifier.simplifyPG(copy, true);
-								return copy.getNet();
+								PGSimplifier.simplifyPG(pg, true);
+								strategy = pg.copy("strategy");
+								strategy_winCon = new Safety();
+								return pg.getNet();
 							}
 						}
 					}

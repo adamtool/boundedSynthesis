@@ -22,6 +22,7 @@ import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 import uniolunisaar.adam.ds.exceptions.UnboundedPGException;
 import uniolunisaar.adam.ds.winningconditions.Reachability;
+import uniolunisaar.adam.ds.winningconditions.Safety;
 import uniolunisaar.adam.tools.ADAMProperties;
 import uniolunisaar.adam.tools.Tools;
 
@@ -97,6 +98,8 @@ public class QBFReachabilitySolver extends QBFSolver<Reachability> {
 
 	@Override
 	protected boolean exWinStrat() {
+		game = pg.copy("originalGame");
+		game_winCon = new Safety();
 		NonDeterministicUnfolder unfolder = new NonDeterministicUnfolder(pg, null); // null forces unfolder to use b as bound for every place
 		try {
 			unfolder.createUnfolding();
@@ -113,6 +116,8 @@ public class QBFReachabilitySolver extends QBFSolver<Reachability> {
 				}
 			}
 		}
+		unfolding = pg.copy("unfolding");
+		unfolding_winCon = new Safety();
 		
 		try {
 			Tools.savePN2PDF("name", pg.getNet(), true);
@@ -291,7 +296,9 @@ public class QBFReachabilitySolver extends QBFSolver<Reachability> {
 							} else {
 								// 0 is the last member
 								// System.out.println("Finished reading strategy.");
-								PGSimplifier.simplifyPG(pg, false);
+								PGSimplifier.simplifyPG(pg, true);
+								strategy = pg.copy("strategy");
+								strategy_winCon = new Safety();
 								return pg.getNet();
 							}
 						}
