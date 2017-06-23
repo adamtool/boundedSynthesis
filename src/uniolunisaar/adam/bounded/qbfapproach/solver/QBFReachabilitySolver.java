@@ -67,10 +67,17 @@ public class QBFReachabilitySolver extends QBFSolver<Reachability> {
 			and.add(dlt[i]);
 			and.add(det[i]);
 			or.clear();
-			or.add(-dl[i]); // TODO: -dl[i] or -term[i] (fl[i] does not work)
+			or.add(-dl[i]); // TODO: -dl[i] or -term[i] (fl[i] does not work), makes probably no difference because of dlt
 			for (int j = 1; j <= i; ++j) {
-				if(goodPlaces[j] != 0) {
+				if (goodPlaces[j] != 0) {
 					or.add(goodPlaces[j]);
+				} else {
+					// empty set of places to reach never lets system win
+					Pair<Boolean, Integer> result = getVarNrWithResult("or()");
+					if (result.getFirst()) {
+						writer.write(result.getSecond() + " = or()" + QBFSolver.linebreak);
+					}
+					or.add(result.getSecond());
 				}
 			}
 			int orID = createUniqueID();
@@ -85,8 +92,15 @@ public class QBFReachabilitySolver extends QBFSolver<Reachability> {
 		and.add(det[pg.getN()]);
 		or.clear();
 		for (int i = 1; i <= pg.getN(); ++i) {
-			if(goodPlaces[i] != 0) {
+			if (goodPlaces[i] != 0) {
 				or.add(goodPlaces[i]);
+			} else {
+				// empty set of places to reach never lets system win
+				Pair<Boolean, Integer> result = getVarNrWithResult("or()");
+				if (result.getFirst()) {
+					writer.write(result.getSecond() + " = or()" + QBFSolver.linebreak);
+				}
+				or.add(result.getSecond());
 			}
 		}
 		int orID = createUniqueID();
@@ -107,7 +121,7 @@ public class QBFReachabilitySolver extends QBFSolver<Reachability> {
 			System.out.println("Error: The bounded unfolding of the game failed.");
 			e1.printStackTrace();
 		}
-		
+
 		// I dont want NonDetUnfolder<Safe/Reach/Buechi> and therefore add places after unfolding...
 		for (Place p : pn.getPlaces()) {
 			for (Pair<String, Object> pair : p.getExtensions()) {
@@ -118,7 +132,7 @@ public class QBFReachabilitySolver extends QBFSolver<Reachability> {
 		}
 		unfolding = pg.copy("unfolding");
 		unfolding_winCon = new Safety();
-		
+
 		try {
 			Tools.savePN2PDF("name", pg.getNet(), true);
 		} catch (IOException | InterruptedException e1) {
@@ -194,7 +208,7 @@ public class QBFReachabilitySolver extends QBFSolver<Reachability> {
 			}
 
 			// generating qcir benchmarks
-			//FileUtils.copyFile(file, new File(pg.getNet().getName() + ".qcir"));
+			// FileUtils.copyFile(file, new File(pg.getNet().getName() + ".qcir"));
 
 			ProcessBuilder pb = null;
 			// Run solver on problem

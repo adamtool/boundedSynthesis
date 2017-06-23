@@ -70,11 +70,11 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 	protected QBFPetriGame pg;
 	protected PetriNet pn;
 	
-	protected QBFPetriGame game;
+	public QBFPetriGame game;
 	protected WinningCondition game_winCon;
-	protected QBFPetriGame unfolding;
+	public QBFPetriGame unfolding;
 	protected WinningCondition unfolding_winCon;
-	protected QBFPetriGame strategy;
+	public QBFPetriGame strategy;
 	protected WinningCondition strategy_winCon;
 	
 	// Solving
@@ -91,8 +91,8 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 	public QBFSolver(QBFPetriGame game, W winCon, QBFSolverOptions so) {
 		super(game, winCon, so);
 		pg = game;
-		pg.setN(so.getB1());
-		pg.setB(so.getB2());
+		pg.setN(so.getN());
+		pg.setB(so.getB());
 		pn = pg.getNet();
 		
 		fl = new int[pg.getN() + 1];

@@ -87,6 +87,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 	public void writeQCIR() throws IOException {
 		game = pg.copy("originalGame");
 		game_winCon = new Safety();
+
 		NonDeterministicUnfolder unfolder = new NonDeterministicUnfolder(pg, null); // null forces unfolder to use b as bound for every place
 		try {
 			unfolder.createUnfolding();

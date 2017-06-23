@@ -42,6 +42,8 @@ public class SafetyTest {
 		oneTest("ma_vsp/vsp_1_withBadPlaces", 2, 0, false);
 		oneTest("firstExamplePaper/firstExamplePaper", 10, 3, true);
 		oneTest("firstExamplePaper/firstExamplePaper", 10, 2, false);
+		oneTest("jhh/myexample1", 10, 0, false);
+		oneTest("jhh/myexample1", 10, 2, false);
 	}
 	
 	private void oneTest(String str, int n, int b, boolean result) throws Exception {
@@ -49,5 +51,6 @@ public class SafetyTest {
         PetriNet pn = Tools.getPetriNet(path);
         QBFSafetySolver sol = new QBFSafetySolver(pn, new QBFSolverOptions(n, b));
 		Assert.assertEquals(sol.existsWinningStrategy(), result);
+		Tools.savePN2PDF("unfolding", sol.unfolding.getNet(), true);
 	}
 }

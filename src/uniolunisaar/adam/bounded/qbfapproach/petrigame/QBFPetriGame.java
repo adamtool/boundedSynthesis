@@ -56,9 +56,9 @@ public class QBFPetriGame extends PetriGame {
 		PetriNet copy = new PetriNet(getNet().getName() + "_" + name);
 
 		for (Place p : getNet().getPlaces()) {
-			copy.createPlace(p.getId());
+			Place copyPlace = copy.createPlace(p.getId());
 			for (Pair<String, Object> pair : p.getExtensions()) {
-				p.putExtension(pair.getFirst(), pair.getSecond());
+				copyPlace.putExtension(pair.getFirst(), pair.getSecond());
 			}
 		}
 		for (Transition t : getNet().getTransitions()) {
@@ -81,6 +81,11 @@ public class QBFPetriGame extends PetriGame {
 		} catch (UnboundedPGException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		for (Place p : getNet().getPlaces()) {
+			if (getEnvPlaces().contains(p)) {
+				newPG.getEnvPlaces().add(p);
+			}
 		}
 		return newPG;
 	}
