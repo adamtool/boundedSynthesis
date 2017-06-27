@@ -49,6 +49,9 @@ public class ReachabilityTest {
 		test ("toyExamples", "type2A", false, 10, 2);
 		test ("toyExamples", "type2B", false, 10, 0);
 		test ("toyExamples", "type2B", false, 10, 2);
+		
+		// correct because the strategy cannot both force reaching the place and afterwards be deadlock-avoiding
+		test ("toyExamples", "question", false, 10, 0);
 	}
 
 	private void test(String folder, String name, boolean result, int n, int b) throws Exception {

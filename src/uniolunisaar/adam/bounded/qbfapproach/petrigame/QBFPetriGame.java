@@ -8,9 +8,7 @@ import uniol.apt.adt.pn.Marking;
 import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
-import uniol.apt.analysis.exception.UnboundedException;
 import uniol.apt.util.Pair;
-import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.UnboundedPGException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 
@@ -20,14 +18,18 @@ import uniolunisaar.adam.ds.petrigame.PetriGame;
  *
  */
 public class QBFPetriGame extends PetriGame {
-	
+
 	private int n = 0; // length of the simulation, i.e. for n there are n - 1 transitions simulated
 	private int b = 0; // number of unfoldings per place in the bounded unfolding
-	
-    public QBFPetriGame(PetriNet pn) throws UnboundedPGException {
-        super(pn);
-    }
-    
+
+	public QBFPetriGame(PetriNet pn) throws UnboundedPGException {
+		super(pn);
+	}
+
+	public QBFPetriGame(PetriNet pn, boolean skipChecks) throws UnboundedPGException {
+		super(pn, skipChecks);
+	}
+
 	public void removeTransitionRecursively(Transition t) {
 		if (getNet().getTransitions().contains(t)) {
 			Set<Place> next = new HashSet<>(t.getPostset());
@@ -51,7 +53,7 @@ public class QBFPetriGame extends PetriGame {
 			removeTransitionRecursively(t);
 		}
 	}
-	
+
 	public QBFPetriGame copy(String name) {
 		PetriNet copy = new PetriNet(getNet().getName() + "_" + name);
 
@@ -77,9 +79,9 @@ public class QBFPetriGame extends PetriGame {
 
 		QBFPetriGame newPG = null;
 		try {
-			newPG = new QBFPetriGame(copy);
+			newPG = new QBFPetriGame(copy, true);
 		} catch (UnboundedPGException e) {
-			// TODO Auto-generated catch block
+			System.out.println("Something went wrong when copying a Petri game. The copied game was found unbounded. This should not happen as the original game cannot be unbounded.");
 			e.printStackTrace();
 		}
 		for (Place p : getNet().getPlaces()) {

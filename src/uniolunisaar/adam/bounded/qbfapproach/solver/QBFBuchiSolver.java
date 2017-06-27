@@ -9,13 +9,10 @@ import java.io.RandomAccessFile;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.io.FileUtils;
-
 import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.analysis.exception.UnboundedException;
-import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.NonDeterministicUnfolder;
@@ -36,15 +33,10 @@ import uniolunisaar.adam.tools.ADAMProperties;
 public class QBFBuchiSolver extends QBFSolver<Buchi> {
 
 	// variable to store keys of calculated components for later use (special to this winning condition)
-	private int bl;
+	private int bl; // buchi loop
 
 	public QBFBuchiSolver(PetriNet net, QBFSolverOptions so) throws UnboundedPGException {
 		super(new QBFPetriGame(net), new Buchi(), so);
-		fl = new int[pg.getN() + 1];
-		det = new int[pg.getN() + 1];
-		dl = new int[pg.getN() + 1];
-		seq = new int[pg.getN() + 1];
-		win = new int[pg.getN() + 1];
 	}
 
 	protected void writeLoop() throws IOException {
@@ -101,26 +93,23 @@ public class QBFBuchiSolver extends QBFSolver<Buchi> {
 	protected boolean exWinStrat() {
 		game = pg.copy("originalGame");
 		game_winCon = new Safety();
+		game_winCon.buffer(game);
+		
 		NonDeterministicUnfolder unfolder = new NonDeterministicUnfolder(pg, null); // null forces unfolder to use b as bound for every place
 		try {
 			unfolder.createUnfolding();
-		} catch (UnboundedException | FileNotFoundException | NetNotSafeException | NoSuitableDistributionFoundException e1) {
+		} catch (UnboundedException | FileNotFoundException | NetNotSafeException | NoSuitableDistributionFoundException e) {
 			System.out.println("Error: The bounded unfolding of the game failed.");
-			e1.printStackTrace();
+			e.printStackTrace();
 		}
-
-		// I dont want NonDetUnfolder<Safe/Reach/Buechi> and therefore add places after unfolding...
-		for (Place p : pn.getPlaces()) {
-			for (Pair<String, Object> pair : p.getExtensions()) {
-				if (pair.getFirst().equals("buchi") && pair.getSecond().toString().equals("true")) {
-					getWinningCondition().getBuchiPlaces().add(p);
-				}
-			}
-		}
+		// Adding the newly unfolded places to the set of buchi places
+		getWinningCondition().buffer(pg);
+		
 		unfolding = pg.copy("unfolding");
 		unfolding_winCon = new Safety();
+		unfolding_winCon.buffer(unfolding);
 
-		seqImpliesWin = new int[pg.getN() + 1];
+		// These variables depend on the number of transitions and can only be initialized after the unfolding
 		transitions = pn.getTransitions().toArray(new Transition[0]);
 		flowSubFormulas = new int[pg.getN() * pn.getTransitions().size()];
 		deadlockSubFormulas = new int[(pg.getN() + 1) * pn.getTransitions().size()];
@@ -140,16 +129,14 @@ public class QBFBuchiSolver extends QBFSolver<Buchi> {
 			writeWinning();
 
 			Set<Integer> phi = new HashSet<>();
-			// When unfolding non-deterministically we add system places to
-			// ensure deterministic decision.
-			// It is required that these decide for exactly one transition which
-			// is directly encoded into the problem.
+			// When unfolding non-deterministically we add system places to ensure deterministic decision.
+			// It is required that these decide for exactly one transition which is directly encoded into the problem.
 			int index_for_non_det_unfolding_info = enumerateStratForNonDetUnfold(unfolder.systemHasToDecideForAtLeastOne);
 			if (index_for_non_det_unfolding_info != -1) {
 				phi.add(index_for_non_det_unfolding_info);
 			}
 
-			for (int i = 1; i <= pg.getN() - 1; ++i) { // slightly optimized in the sense that winning and loop are put together for n
+			for (int i = 1; i <= pg.getN() - 1; ++i) { // slightly optimized in the sense that winning and loop are put together for i = n
 				seqImpliesWin[i] = createUniqueID();
 				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + QBFSolver.linebreak);
 				phi.add(seqImpliesWin[i]);
@@ -287,6 +274,7 @@ public class QBFBuchiSolver extends QBFSolver<Buchi> {
 								PGSimplifier.simplifyPG(pg, true);
 								strategy = pg.copy("strategy");
 								strategy_winCon = new Safety();
+								strategy_winCon.buffer(strategy);
 								return pg.getNet();
 							}
 						}

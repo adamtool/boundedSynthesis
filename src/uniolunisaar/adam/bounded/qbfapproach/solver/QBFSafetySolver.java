@@ -13,7 +13,6 @@ import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.analysis.exception.UnboundedException;
-import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.NonDeterministicUnfolder;
@@ -39,8 +38,6 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 	public QBFSafetySolver(PetriNet net, QBFSolverOptions so) throws UnboundedPGException {
 		super(new QBFPetriGame(net), new Safety(), so);
 		bad = new int[pg.getN() + 1];
-		term = new int[pg.getN() + 1];
-		dlt = new int[pg.getN() + 1];
 	}
 
 	private void writeNoBadPlaces() throws IOException {
@@ -87,6 +84,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 	public void writeQCIR() throws IOException {
 		game = pg.copy("originalGame");
 		game_winCon = new Safety();
+		game_winCon.buffer(game);
 
 		NonDeterministicUnfolder unfolder = new NonDeterministicUnfolder(pg, null); // null forces unfolder to use b as bound for every place
 		try {
@@ -94,17 +92,12 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 		} catch (UnboundedException | FileNotFoundException | NetNotSafeException | NoSuitableDistributionFoundException e1) {
 			System.out.println("Error: The bounded unfolding of the game failed.");
 		}
+		// Adding the newly unfolded places to the set of bad places
+		getWinningCondition().buffer(pg);
 
-		// I dont want NonDetUnfolder<Safe/Reach/Buechi> and therefore add places after unfolding...
-		for (Place p : pn.getPlaces()) {
-			for (Pair<String, Object> pair : p.getExtensions()) {
-				if (pair.getFirst().equals("bad") && pair.getSecond().toString().equals("true")) {
-					getWinningCondition().getBadPlaces().add(p);
-				}
-			}
-		}
 		unfolding = pg.copy("unfolding");
 		unfolding_winCon = new Safety();
+		unfolding_winCon.buffer(unfolding);
 
 		seqImpliesWin = new int[pg.getN() + 1];
 		transitions = pn.getTransitions().toArray(new Transition[0]);
@@ -284,6 +277,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 								PGSimplifier.simplifyPG(pg, true);
 								strategy = pg.copy("strategy");
 								strategy_winCon = new Safety();
+								strategy_winCon.buffer(strategy);
 								return pg.getNet();
 							}
 						}

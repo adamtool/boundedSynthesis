@@ -24,7 +24,6 @@ import uniolunisaar.adam.ds.exceptions.UnboundedPGException;
 import uniolunisaar.adam.ds.winningconditions.Reachability;
 import uniolunisaar.adam.ds.winningconditions.Safety;
 import uniolunisaar.adam.tools.ADAMProperties;
-import uniolunisaar.adam.tools.Tools;
 
 public class QBFReachabilitySolver extends QBFSolver<Reachability> {
 
@@ -114,6 +113,8 @@ public class QBFReachabilitySolver extends QBFSolver<Reachability> {
 	protected boolean exWinStrat() {
 		game = pg.copy("originalGame");
 		game_winCon = new Safety();
+		game_winCon.buffer(game);
+
 		NonDeterministicUnfolder unfolder = new NonDeterministicUnfolder(pg, null); // null forces unfolder to use b as bound for every place
 		try {
 			unfolder.createUnfolding();
@@ -121,24 +122,12 @@ public class QBFReachabilitySolver extends QBFSolver<Reachability> {
 			System.out.println("Error: The bounded unfolding of the game failed.");
 			e1.printStackTrace();
 		}
+		// Adding the newly unfolded places to the set of places to reach
+		getWinningCondition().buffer(pg);
 
-		// I dont want NonDetUnfolder<Safe/Reach/Buechi> and therefore add places after unfolding...
-		for (Place p : pn.getPlaces()) {
-			for (Pair<String, Object> pair : p.getExtensions()) {
-				if (pair.getFirst().equals("reach") && pair.getSecond().toString().equals("true")) {
-					getWinningCondition().getPlaces2Reach().add(p);
-				}
-			}
-		}
 		unfolding = pg.copy("unfolding");
 		unfolding_winCon = new Safety();
-
-		try {
-			Tools.savePN2PDF("name", pg.getNet(), true);
-		} catch (IOException | InterruptedException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+		unfolding_winCon.buffer(unfolding);
 
 		seqImpliesWin = new int[pg.getN() + 1];
 		transitions = pn.getTransitions().toArray(new Transition[0]);
@@ -313,6 +302,7 @@ public class QBFReachabilitySolver extends QBFSolver<Reachability> {
 								PGSimplifier.simplifyPG(pg, true);
 								strategy = pg.copy("strategy");
 								strategy_winCon = new Safety();
+								strategy_winCon.buffer(strategy);
 								return pg.getNet();
 							}
 						}

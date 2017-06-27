@@ -352,10 +352,10 @@ public class NonDeterministicUnfolder extends Unfolder {
 			for (int i = 0; i < transitions.length; ++i) {
 				Transition t = transitions[i];
 				String trunc_id = getTruncatedId(t.getId());
-				if (!truncatedIDsAndPreset.contains(new Pair<>(trunc_id, t.getPreset())) /*&& !reachesBadPlace(t)*/ && !containsAdditionalSystemPlace(t.getPreset())) {				// TODO does this change anything?
+				if (!truncatedIDsAndPreset.contains(new Pair<>(trunc_id, t.getPreset())) /*&& !reachesBadPlace(t)*/ && !containsAdditionalSystemPlace(t.getPreset())) {				// TODO does reachesBadPlace change anything?
 					Set<Transition> otherTransitions = new HashSet<>();
 					for (int j = i + 1; j < transitions.length; ++j) {
-						if (getTruncatedId(transitions[j].getId()).equals(trunc_id) && transitions[j].getPreset().equals(t.getPreset()) /*&& !reachesBadPlace(transitions[j])*/) {	// TODO does this change anything?
+						if (getTruncatedId(transitions[j].getId()).equals(trunc_id) && transitions[j].getPreset().equals(t.getPreset()) /*&& !reachesBadPlace(transitions[j])*/) {	// TODO does reachesBadPlace change anything?
 							otherTransitions.add(transitions[j]);
 						}
 					}

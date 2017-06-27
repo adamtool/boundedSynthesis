@@ -33,12 +33,12 @@ public class QBFSolverFactory extends SolverFactory<QBFSolverOptions, QBFSolver<
 
     @Override
     protected QBFSolver<? extends WinningCondition> getReachabilitySolver(PetriNet pn, boolean skipTests, QBFSolverOptions so) throws UnboundedPGException, NetNotSafeException, NoSuitableDistributionFoundException {
-        throw new RuntimeException("Method not yet implemented.");
+    	return new QBFReachabilitySolver(pn, so);
     }
 
     @Override
     protected QBFSolver<? extends WinningCondition> getBuchiSolver(PetriNet pn, boolean skipTests, QBFSolverOptions so) throws UnboundedPGException, NetNotSafeException, NoSuitableDistributionFoundException {
-        throw new RuntimeException("Method not yet implemented.");
+    	return new QBFBuchiSolver(pn, so);
     }
 
 }

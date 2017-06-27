@@ -14,38 +14,41 @@ import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolver;
 
 public class PGSimplifier {
 
-	public static void simplifyPG(QBFPetriGame pg, boolean removeAdditionalPlace) {			// TODO performance evaluate PGsimplify
+	// maintains unreachable places
+	
+	public static void simplifyPG(QBFPetriGame pg, boolean removeAdditionalPlace) { // TODO performance evaluate PGsimplify
 
 		PetriNet pn = pg.getNet();
 		int n = pg.getN();
 		Queue<Pair<Marking, Integer>> queue = new LinkedList<>();
-		Set<Pair<Marking, Integer>> closed = new HashSet<>();
 		queue.add(new Pair<>(pn.getInitialMarking(), 0));
+		Set<Pair<Marking, Integer>> closed = new HashSet<>();
 		Pair<Marking, Integer> p;
-		Set<Transition> visited = new HashSet<>();
+		Set<Transition> firedTransitions = new HashSet<>();
+		
 		while ((p = queue.poll()) != null) {
 			Marking m = p.getFirst();
 			int i = p.getSecond();
 			for (Transition t : pn.getTransitions()) {
 				if (t.isFireable(m)) {
 					Marking next = t.fire(m);
-					visited.add(t);
-					if (i <= n && ! closed.contains(next)) {
+					firedTransitions.add(t);
+					if (i <= n && !closed.contains(next)) {
 						queue.add(new Pair<>(next, i + 1));
 					}
 				}
 			}
-			closed.add(p);			// add closed this late to allow self-loops to reach transitions
+			closed.add(p); // add closed this late to allow self-loops to reach transitions
 		}
 		Set<Transition> transitions = new HashSet<>(pn.getTransitions());
 		for (Transition t : transitions)
-			if (!visited.contains(t))
+			if (!firedTransitions.contains(t))
 				pg.removeTransitionRecursively(t);
 		if (removeAdditionalPlace) {
 			removeAS(pg);
 		}
 	}
-	
+
 	private static void removeAS(QBFPetriGame pg) {
 		PetriNet pn = pg.getNet();
 		Set<Place> places = new HashSet<>(pn.getPlaces());
