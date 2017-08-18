@@ -6,6 +6,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
+import java.sql.Savepoint;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -15,6 +17,7 @@ import uniol.apt.adt.pn.Transition;
 import uniol.apt.analysis.exception.UnboundedException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
+import uniolunisaar.adam.bounded.qbfapproach.unfolder.DeterministicUnfolder;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.NonDeterministicUnfolder;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
@@ -22,6 +25,7 @@ import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 import uniolunisaar.adam.ds.exceptions.UnboundedPGException;
 import uniolunisaar.adam.ds.winningconditions.Safety;
 import uniolunisaar.adam.tools.ADAMProperties;
+import uniolunisaar.adam.tools.Tools;
 
 /**
  *
@@ -98,6 +102,12 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 		unfolding = pg.copy("unfolding");
 		unfolding_winCon = new Safety();
 		unfolding_winCon.buffer(unfolding);
+		try {
+			Tools.savePN2PDF("unfolding", unfolding.getNet(), false);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		seqImpliesWin = new int[pg.getN() + 1];
 		transitions = pn.getTransitions().toArray(new Transition[0]);
@@ -126,7 +136,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 		// ensure deterministic decision.
 		// It is required that these decide for exactly one transition which
 		// is directly encoded into the problem.
-		int index_for_non_det_unfolding_info = enumerateStratForNonDetUnfold(unfolder.systemHasToDecideForAtLeastOne);
+		int index_for_non_det_unfolding_info = enumerateStratForNonDetUnfold(unfolder.systemHasToDecideForAtLeastOne/*new HashMap<>()*/);
 		if (index_for_non_det_unfolding_info != -1) {
 			phi.add(index_for_non_det_unfolding_info);
 		}
@@ -163,6 +173,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 			}
 			raf.close();
 		}
+		System.out.println("A temporary file is saved to \"" + file.getAbsolutePath() + "\".");
 	}
 
 	@Override
@@ -274,7 +285,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 							} else {
 								// 0 is the last member
 								// System.out.println("Finished reading strategy.");
-								PGSimplifier.simplifyPG(pg, true);
+								PGSimplifier.simplifyPG(pg, true, false);
 								strategy = pg.copy("strategy");
 								strategy_winCon = new Safety();
 								strategy_winCon.buffer(strategy);

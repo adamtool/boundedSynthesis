@@ -21,7 +21,7 @@ public class DWTest { // Document Workflow / DW
 	public void testClerks() throws Exception {
 
 		int j = 8; // j = 7 -> UNSAT; j = 8 -> SAT
-		for (int i = 1; i <= 1; ++i) {
+		for (int i = 1; i <= 5; ++i) {
 			oneTestTrue(i, j, 0);
 			oneTestFalse(i, j - 1, 0);
 			j += 2;

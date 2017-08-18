@@ -9,7 +9,7 @@ import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
 import uniolunisaar.adam.generators.SecuritySystem;
 
 @Test
-public class BurglarTest {
+public class BurglarTestSafety {
 
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testSecSys() throws Exception {

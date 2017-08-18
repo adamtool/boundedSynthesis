@@ -13,23 +13,22 @@ import uniolunisaar.adam.ds.exceptions.UnboundedPGException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 
 /**
- *
+ * Parameters four bounded synthesis added.
+ * Possibilities to remove places/transitions according to (winning) strategy implemented.
+ * Petri game can be copied.
+ * 
  * @author Jesko Hecking-Harbusch
- *
  */
 public class QBFPetriGame extends PetriGame {
 
-	private int n = 0; // length of the simulation, i.e. for n there are n - 1 transitions simulated
-	private int b = 0; // number of unfoldings per place in the bounded unfolding
+	private int n; // length of the simulation, i.e., for n there are n - 1 transitions simulated
+	private int b; // number of unfoldings per place in the bounded unfolding
 
 	public QBFPetriGame(PetriNet pn) throws UnboundedPGException {
 		super(pn);
 	}
-
-	public QBFPetriGame(PetriNet pn, boolean skipChecks) throws UnboundedPGException {
-		super(pn, skipChecks);
-	}
-
+	
+	// Before removing a place or transition, always check that it has not already been removed.
 	public void removeTransitionRecursively(Transition t) {
 		if (getNet().getTransitions().contains(t)) {
 			Set<Place> next = new HashSet<>(t.getPostset());
@@ -79,9 +78,9 @@ public class QBFPetriGame extends PetriGame {
 
 		QBFPetriGame newPG = null;
 		try {
-			newPG = new QBFPetriGame(copy, true);
+			newPG = new QBFPetriGame(copy);
 		} catch (UnboundedPGException e) {
-			System.out.println("Something went wrong when copying a Petri game. The copied game was found unbounded. This should not happen as the original game cannot be unbounded.");
+			System.out.println("Something went wrong when copying a Petri game. The copied game was found unbounded. This should not happen as the original game should not be unbounded.");
 			e.printStackTrace();
 		}
 		for (Place p : getNet().getPlaces()) {

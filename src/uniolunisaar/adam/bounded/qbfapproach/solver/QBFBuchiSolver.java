@@ -271,7 +271,7 @@ public class QBFBuchiSolver extends QBFSolver<Buchi> {
 							} else {
 								// 0 is the last member
 								// System.out.println("Finished reading strategy.");
-								PGSimplifier.simplifyPG(pg, true);
+								PGSimplifier.simplifyPG(pg, true, false);
 								strategy = pg.copy("strategy");
 								strategy_winCon = new Safety();
 								strategy_winCon.buffer(strategy);

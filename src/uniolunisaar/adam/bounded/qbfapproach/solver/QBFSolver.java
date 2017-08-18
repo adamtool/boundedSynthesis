@@ -112,12 +112,12 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 			prefix += lexicon.charAt(rand.nextInt(lexicon.length()));
 		}
 		try {
-			file = File.createTempFile(prefix, pn.getName() + ".qcir");
+			file = File.createTempFile(prefix, /*pn.getName() +*/ ".qcir");
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		file.deleteOnExit();
+		//file.deleteOnExit();
 		try {
 			writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "utf-8"));
 		} catch (UnsupportedEncodingException e) {
@@ -415,6 +415,41 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 			}
 		}
 		return writeOr(or);
+	}
+	
+	// wahrscheinlich nur hilfreich für deterministic unfolding, macht aber auf jeden fall nichts kaputt, wohl nur langsamer
+	public String getLoopIJunfolded() throws IOException {
+		Set<Integer> outerOr = new HashSet<>();
+		for (int i = 1; i < pg.getN(); ++i) {
+			for (int j = i + 1; j <= pg.getN(); ++j) {
+				Set<Integer> and = new HashSet<>();
+				for (Place p : pn.getPlaces()) {
+					int p_i = getVarNr(p.getId() + "." + i, true);
+					Set<Integer> innerOr = new HashSet<>();
+					for (Place unfoldedP : unfoldingsOf(p)) {
+						innerOr.add(getVarNr(unfoldedP.getId() + "." + j, true));
+					}
+					int innerOrNumber = createUniqueID();
+					writer.write(innerOrNumber + " = " + writeOr(innerOr));
+					and.add(writeImplication(p_i, innerOrNumber));
+					and.add(writeImplication(innerOrNumber, p_i));
+				}
+				int andNumber = createUniqueID();
+				writer.write(andNumber + " = " + writeAnd(and));
+				outerOr.add(andNumber);
+			}
+		}
+		return writeOr(outerOr);
+	}
+
+	private Set<Place> unfoldingsOf(Place place) {
+		Set<Place> result = new HashSet<>();
+		for (Place p : pn.getPlaces()) {
+			if (/*!p.equals(place) &&*/ getTruncatedId(place.getId()).equals(getTruncatedId(p.getId()))) { // forcing into different unfolded place yields more necessary unfoldings
+				result.add(p);
+			}
+		}
+		return result;
 	}
 
 	public int addSysStrategy(Place p, Transition t) {
