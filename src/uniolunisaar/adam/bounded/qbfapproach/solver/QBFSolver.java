@@ -117,7 +117,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		//file.deleteOnExit();
+		file.deleteOnExit();
 		try {
 			writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "utf-8"));
 		} catch (UnsupportedEncodingException e) {

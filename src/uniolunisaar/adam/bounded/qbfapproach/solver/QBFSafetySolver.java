@@ -18,7 +18,8 @@ import uniol.apt.analysis.exception.UnboundedException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.DeterministicUnfolder;
-import uniolunisaar.adam.bounded.qbfapproach.unfolder.NonDeterministicUnfolder;
+import uniolunisaar.adam.bounded.qbfapproach.unfolder.ForNonDeterministicUnfolder;
+import uniolunisaar.adam.bounded.qbfapproach.unfolder.WhileNonDeterministicUnfolder;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
@@ -90,7 +91,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 		game_winCon = new Safety();
 		game_winCon.buffer(game);
 
-		NonDeterministicUnfolder unfolder = new NonDeterministicUnfolder(pg, null); // null forces unfolder to use b as bound for every place
+		WhileNonDeterministicUnfolder unfolder = new WhileNonDeterministicUnfolder(pg, null); // null forces unfolder to use b as bound for every place
 		try {
 			unfolder.createUnfolding();
 		} catch (UnboundedException | FileNotFoundException | NetNotSafeException | NoSuitableDistributionFoundException e1) {

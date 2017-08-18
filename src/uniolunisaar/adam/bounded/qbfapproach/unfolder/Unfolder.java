@@ -3,7 +3,6 @@ package uniolunisaar.adam.bounded.qbfapproach.unfolder;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
-import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 
 import java.io.FileNotFoundException;
 import java.util.HashMap;
@@ -70,7 +69,7 @@ public abstract class Unfolder {
 		if (pg.getEnvPlaces().contains(p)) {
 			pg.getEnvPlaces().add(newP);
 		}
-		// winning conditions are addeed after unfolding TODO unfolding uses reachbad?
+		// winning conditions are added after unfolding TODO unfolding uses reachbad?
 	}
 
 	protected int getCopyCounter() {

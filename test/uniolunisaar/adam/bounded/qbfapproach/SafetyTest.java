@@ -1,12 +1,16 @@
 package uniolunisaar.adam.bounded.qbfapproach;
 
+import java.util.HashMap;
+
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import uniol.apt.adt.pn.PetriNet;
+import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSafetySolver;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
+import uniolunisaar.adam.bounded.qbfapproach.unfolder.ForNonDeterministicUnfolder;
 import uniolunisaar.adam.tools.Tools;
 
 @Test
@@ -51,7 +55,12 @@ public class SafetyTest {
 	private void oneTest(String str, int n, int b, boolean result) throws Exception {
 		final String path = System.getProperty("examplesfolder") + "/safety/" + str + ".apt";
         PetriNet pn = Tools.getPetriNet(path);
-        QBFSafetySolver sol = new QBFSafetySolver(pn, new QBFSolverOptions(n, b));
+        QBFPetriGame pg = new QBFPetriGame(pn);
+		pg.setN(n);
+		pg.setB(b);
+		ForNonDeterministicUnfolder u = new ForNonDeterministicUnfolder(pg, new HashMap<>());
+		u.createUnfolding();
+       /* QBFSafetySolver sol = new QBFSafetySolver(pn, new QBFSolverOptions(n, b));
 		Assert.assertEquals(sol.existsWinningStrategy(), result);
 		
 		// TODO put this to an appropriate place in code
@@ -59,7 +68,7 @@ public class SafetyTest {
 		Tools.savePN2PDF("unfolding", sol.unfolding.getNet(), true);
 		if (sol.existsWinningStrategy()) {
 			Tools.savePN2PDF("strategy", sol.getStrategy(), true);
-		}
+		}*/
 		
 	}
 }

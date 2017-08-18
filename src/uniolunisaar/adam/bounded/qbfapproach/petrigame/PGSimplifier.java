@@ -17,8 +17,8 @@ import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolver;
  * This class removes transitions and following places according to the decisions of the (winning) strategy. 
  * Unreachable places in the original Petri game can be removed. 
  * Additional places of the NonDeterministicUnfolder can be removed. 
- * TODO performance evaluation BEFORE solving pending, performance
- * boost would indicate bad tests
+ * TODO performance evaluation BEFORE solving pending, implementation seems as good as possible
+ * performance boost would indicate bad tests
  * 
  * @author Jesko Hecking-Harbusch
  */
@@ -30,9 +30,9 @@ public class PGSimplifier {
 		int n = pg.getN();
 
 		Queue<Pair<Marking, Integer>> queue = new LinkedList<>();
-		queue.add(new Pair<>(pn.getInitialMarking(), 0));
+		queue.add(new Pair<>(pn.getInitialMarking(), 1));
 
-		Set<Pair<Marking, Integer>> closed = new HashSet<>();
+		Set<Marking> closed = new HashSet<>();
 		Set<Transition> firedTransitions = new HashSet<>();
 		Set<Place> reachedPlaces = new HashSet<>();
 		if (removeUnreachablePlaces) {
@@ -43,19 +43,21 @@ public class PGSimplifier {
 		while ((p = queue.poll()) != null) {
 			Marking m = p.getFirst();
 			int i = p.getSecond();
+			closed.add(m);
 			for (Transition t : pn.getTransitions()) {
 				if (t.isFireable(m)) {
 					Marking next = t.fire(m);
 					firedTransitions.add(t);
-					if (i <= n && !closed.contains(next)) {
-						queue.add(new Pair<>(next, i + 1));
-					}
-					if (removeUnreachablePlaces) {
-						addMarking(pg, reachedPlaces, next);
+					if (!closed.contains(next)) {
+						if (removeUnreachablePlaces) {
+							addMarking(pg, reachedPlaces, next);
+						}
+						if (i + 1 < n) {
+							queue.add(new Pair<>(next, i + 1));
+						}
 					}
 				}
 			}
-			closed.add(p); // add place to closed this late to allow self-loops for reaching transitions
 		}
 		Set<Transition> transitions = new HashSet<>(pn.getTransitions());
 		for (Transition t : transitions)
