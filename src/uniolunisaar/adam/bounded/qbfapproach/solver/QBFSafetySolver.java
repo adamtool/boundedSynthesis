@@ -6,10 +6,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
-import java.sql.Savepoint;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.apache.commons.io.FileUtils;
 
 import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.adt.pn.Place;
@@ -91,7 +91,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 		game_winCon = new Safety();
 		game_winCon.buffer(game);
 
-		WhileNonDeterministicUnfolder unfolder = new WhileNonDeterministicUnfolder(pg, null); // null forces unfolder to use b as bound for every place
+		ForNonDeterministicUnfolder unfolder = new ForNonDeterministicUnfolder(pg, null); // null forces unfolder to use b as bound for every place
 		try {
 			unfolder.createUnfolding();
 		} catch (UnboundedException | FileNotFoundException | NetNotSafeException | NoSuitableDistributionFoundException e1) {
@@ -174,7 +174,6 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 			}
 			raf.close();
 		}
-		System.out.println("A temporary file is saved to \"" + file.getAbsolutePath() + "\".");
 	}
 
 	@Override
@@ -184,7 +183,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 			writeQCIR();
 
 			// This line was used to create benchmarks:
-			// FileUtils.copyFile(file, new File(pg.getNet().getName() + ".qcir"));
+			//FileUtils.copyFile(file, new File(pn.getName() + ".qcir"));
 
 			ProcessBuilder pb = null;
 			// Run solver on problem

@@ -26,10 +26,10 @@ import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 
 public class WhileNonDeterministicUnfolder extends Unfolder {
 
-	Set<Place> placesWithCopiedTransitions = new HashSet<>(); // Maintained during unfolding in order to afterwards add additional places
+	protected Set<Place> placesWithCopiedTransitions = new HashSet<>(); // Maintained during unfolding in order to afterwards add additional places
 	public Map<Place, Set<Transition>> systemHasToDecideForAtLeastOne = new HashMap<>(); // Map for QCIRbuilder to include additional information
-	Set<String> closed = new HashSet<>();
-	Queue<String> placesToUnfold;
+	protected Set<String> closed = new HashSet<>();
+	private Queue<String> placesToUnfold;
 
 	public WhileNonDeterministicUnfolder(QBFPetriGame QBFPetriGame, Map<String, Integer> max) {
 		super(QBFPetriGame);
@@ -51,27 +51,20 @@ public class WhileNonDeterministicUnfolder extends Unfolder {
 		while (!placesToUnfold.isEmpty()) {
 			String id = placesToUnfold.poll();
 			Place p = pn.getPlace(id);
-			unfoldPlace(p);
+			checkPlaceForUnfolding(p, true);
 		}
 
 		// add additional system places to unfolded env transitions
 		addAdditionalSystemPlaces();
 	}
 
-	protected void unfoldPlace(Place p) {
+	protected void checkPlaceForUnfolding(Place p, boolean useQueue) {
 		String p_id = getTruncatedId(p.getId());
 		if (closed.contains(p.getId()))
 			return;
 		closed.add(p.getId());
 
-		// store information for non-deterministic unfold of self-loops
-		Set<Place> copies = new HashSet<>();
-		Set<Transition> selfloops = new HashSet<>(); // transitions go and return to place p but pre- and postSet are NOT the same: interconnection via selfloops necessary
-		Set<Transition> totalSelfLoops = new HashSet<>(); // pre- and postSet are the same: interconnection via selfloops NOT necessary
-
-		// only unfold transitions which were originally present (i.e. only transitions with
-		// same ID as truncated ID) plus some additional test satisfier
-		// in originalPREset
+		// only unfold transitions which were originally present (i.e. only transitions with same ID as truncated ID) plus some additional test satisfier in originalPREset
 		Set<Transition> p_originalPreset = new HashSet<>(); 
 		// originalPreset/Postset makes CM only solvable in the first place
 		// getPreset makes test.apt winning with wrong strategy
@@ -80,79 +73,9 @@ public class WhileNonDeterministicUnfolder extends Unfolder {
 				p_originalPreset.add(t);
 			}
 		}
-
-		// **** ADDITIONAL ADD TEST 1 ****
-		// erkennt wenn lokale Transitionen Historie transportieren da sie unfoldet wurden:
-		// wenn die selbe LOKALE transition (gleiche truncated ID) von 2 unterschiedlichen
-		// UNFOLDETEN plätzen kommt (gleiche truncated ID), dann doch unfold, wenn
-		// partner noch nicht geaddet (EGAL ob env oder sys)
-		// second iteration says that this works as intended
-		for (Transition t1 : p.getPreset()) {
-			if (!t1.getId().equals(getTruncatedId(t1.getId()))) { // unfoldete Transition t1
-				for (Transition t2 : p.getPreset()) { // search for partner
-					if (getTruncatedId(t1.getId()).equals(getTruncatedId(t2.getId()))) // LOKALER partner
-						if (t1.getPreset().size() == 1 && t2.getPreset().size() == 1 && // local transition
-								t2.getPostset().size() == 1 && t2.getPostset().size() == 1)
-							if (!t1.getPreset().toArray()[0].equals(t2.getPreset().toArray()[0])) {// from DIFFERENT places
-								p_originalPreset.add(t1);
-								break;
-							}
-				}
-			}
-		}
-
-		// **** ADDITIONAL ADD TEST 2 ****
-		// soll erkennen wenn von lokaler transition transportierte Historie von system
-		// genutzt wird
-		Set<Transition> already_added = new HashSet<>();
-		for (Transition t1 : p.getPreset()) {
-			if (!t1.getId().equals(getTruncatedId(t1.getId()))) { // unfoldete Transition
-				for (Transition t2 : p.getPreset()) {
-					if (getTruncatedId(t1.getId()).equals(getTruncatedId(t2.getId()))) { // original partner
-						if (!already_added.contains(t1) && !already_added.contains(t2)) {
-							if (t1.getPreset().size() == 2 && t2.getPreset().size() == 2 && // local transition
-									t2.getPostset().size() <= 2 && t2.getPostset().size() <= 2) {
-								if (checkTransitionPair(t1, t2)) {
-									p_originalPreset.add(t1);
-									already_added.add(t1);
-									break;
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-
-		// **** ADDITIONAL ADD TEST 3 ****
-		// soll erkennen wenn sync-Transitionen (mit Einschränkung zum nicht unendlich often Feuern)
-		// Historie transportieren, test basiert auf original transition
-		// scheint evtl den Sinn von originalPreset zu neglecten
-		for (Transition t : p.getPreset()) {
-			if (!t.getId().equals(getTruncatedId(t.getId()))) { // unfoldete Transition
-				if (t.getPreset().size() == t.getPostset().size() + 1) { // TODO 1 hardcoden oder mehr erlauben
-					String tTruncID = getTruncatedId(t.getId());
-					Transition truncT = pn.getTransition(tTruncID);
-					boolean check = true;
-					for (Place post : truncT.getPostset()) {
-						boolean equal = false;
-						for (Place pre : truncT.getPreset()) {
-							if (pre.equals(post)) {
-								equal = true;
-								break;
-							}
-						}
-						if (!equal) {
-							check = false;
-							break;
-						}
-					}
-					if (check) {
-						p_originalPreset.add(t);
-					}
-				}
-			}
-		}
+		
+		// Certain patterns require that SOME unfolded transitions are also part of the "original" preset
+		addTransitionsToOriginalPreset(p, p_originalPreset);
 
 		// every outgoing transition is necessary
 		// originalPOSTset
@@ -160,36 +83,42 @@ public class WhileNonDeterministicUnfolder extends Unfolder {
 		for (Transition t : p.getPostset()) {
 			p_originalPostset.add(t);
 		}
-
+		
+		//decide unfolding of place
+		unfoldPlace(p, p_id, p_originalPreset, p_originalPostset, useQueue);
+	}
+	
+	protected void unfoldPlace(Place p, String p_id, Set<Transition> p_originalPreset, Set<Transition> p_originalPostset, boolean useQueue) {
 		// how often can p be unfolded? as often as needed (first part of min) or not as often as needed (second part of min)
-		int max;
+		int maxNumberOfUnfoldings;
 		Marking in = pn.getInitialMarking();
 		if (isInitialPlace(p, in)) {
-			max = Math.min(p_originalPreset.size(), limit.get(p_id) - current.get(p_id));
+			maxNumberOfUnfoldings = Math.min(p_originalPreset.size(), limit.get(p_id) - current.get(p_id));
 		} else {
-			max = Math.min(p_originalPreset.size() - 1, limit.get(p_id) - current.get(p_id));
+			maxNumberOfUnfoldings = Math.min(p_originalPreset.size() - 1, limit.get(p_id) - current.get(p_id));
 		}
-
+		
+		Set<Place> copies = new HashSet<>();
+		// store information for non-deterministic unfold of self-loops
+		Set<Transition> selfLoops = new HashSet<>(); // transitions go and return to place p but pre- and postSet are NOT the same: interconnection via selfloops necessary
 		// find self-loops
 		for (Transition pre : p_originalPreset) {
 			// we can neglect unfolding of transitions consisting only of selfloops (second part) BUT every copied place needs that selfloop
 			if (p_originalPostset.contains(pre)) {
 				if (!pre.getPreset().equals(pre.getPostset())) {
-					selfloops.add(pre);
-				} else {
-					totalSelfLoops.add(pre);
-				}
+					selfLoops.add(pre);
+				} // else case: pre- and postSet are the same: interconnection via selfloops NOT necessary BECAUSE infinite looping can always be taken in original places
 			}
 		}
 		
 		// actual unfolding
-		for (int i = 0; i < max; ++i) {
+		for (int i = 0; i < maxNumberOfUnfoldings; ++i) {
 			// create new place
 			Place newP = pg.getNet().createPlace(p_id + "__" + current.get(p_id));
 			copies.add(newP);
 			current.put(p_id, current.get(p_id) + 1);
 			copyBadAndEnv(newP, p);
-			//copyTotalSelfLoops(newP, totalSelfLoops);
+			// copyTotalSelfLoops(newP, totalSelfLoops);
 			// copy incoming transitions (except self-loops)
 			HashSet<Transition> preSet = new HashSet<>(p_originalPreset);
 			preSet.removeAll(p_originalPostset);
@@ -231,18 +160,18 @@ public class WhileNonDeterministicUnfolder extends Unfolder {
 
 			for (Transition t : p_originalPostset) {
 				for (Place postPost : t.getPostset()) {
-					if (postPost.getPreset().size() >= 2 && postPost.getPostset().size() >= 1 && !closed.contains(postPost.getId())) {
-						placesToUnfold.add(postPost.getId()); // TODO this only makes sense for one type of unfolder, namely the while thing
+					if (useQueue && postPost.getPreset().size() >= 2 && postPost.getPostset().size() >= 1 && !closed.contains(postPost.getId())) {
+						placesToUnfold.add(postPost.getId());
 					}
 				}
 			}
 		}
 
 		// interconnect via self-loops
-		if (!selfloops.isEmpty()) {
+		if (!selfLoops.isEmpty()) {
 			// from p to all unfolded places via all selfloops
 			for (Place p2 : copies) {
-				for (Transition loop : selfloops) {
+				for (Transition loop : selfLoops) {
 					String loop_id = getTruncatedId(loop.getId());
 					Transition newT = pg.getNet().createTransition(loop_id + "__" + getCopyCounter(loop_id));
 
@@ -266,83 +195,86 @@ public class WhileNonDeterministicUnfolder extends Unfolder {
 			}
 
 			copies.add(p);
-			// TODO outcommented following part
-			/*for (Place p1 : copies) {
-				// add self-loop to each unfolded place; we need these self-loops b/c the winning strategy 
-				// might depend on infinite loop in self-loop 
-				// we can ignore self-loops which do not produce token but require more than one token 
-				// these self-loops can only be fireable infinitely often if the game is not safe 
-				if (!p1.equals(p)) { 
-					for (Transition self : selfloops) { 
-						if (!(self.getPreset().size() >= 2 && self.getPostset().size() == 1)) { 
-							String self_id = getTruncatedId(self.getId()); 
-							Transition newT = pg.getNet().createTransition(self_id + "__" + getCopyCounter(self_id));
-							for (Place postPre : self.getPreset()) { 
-								if (postPre.equals(p)) { 
-									pg.getNet().createFlow(p1, newT); 
-								} else { 
-									pg.getNet().createFlow(postPre, newT); 
-								} 
-							}
-							for (Place prePost : self.getPostset()) { 
-								if (prePost.equals(p)) { 
-									pg.getNet().createFlow(newT, p1); 
-								} else { 
-									pg.getNet().createFlow(newT, prePost); 
-								} 
-							} 
-						} 
-					} 
-				}
-			  
-				// from each unfolded place to each unfolded place AND p (p to all unfolded places already done before) 
-				for (Place p2 : copies) { 
-					if (!p1.equals(p2)) { 
-						for (Transition loop : selfloops) { 
-							String loop_id = getTruncatedId(loop.getId()); 
-							Transition newT = pg.getNet().createTransition(loop_id + "__" + getCopyCounter(loop_id));
-							for (Place postPre : loop.getPreset()) { 
-								if (postPre.equals(p)) { 
-									pg.getNet().createFlow(p1, newT); 
-								} else { 
-									pg.getNet().createFlow(postPre, newT); 
-								} 
-							}
-			  
-			  for (Place prePost : loop.getPostset()) { 
-				  if (prePost.equals(p)) { 
-					  pg.getNet().createFlow(newT, p2); 
-				  } else { 
-					  pg.getNet().createFlow(newT, prePost); 
-				  } 
-			  }*/
-			 
 		}
-		// find transitions consisting only of self-loops 
-		/*Set<Transition> onlyLoops = new HashSet<>(); 
-		for (Transition pre : p_originalPreset) { 
-			System.out.println(pre.getPreset() + " - " + pre.getPostset()); 
-			if (pre.getPreset().equals(pre.getPostset())) { // only selfloops
-				onlyLoops.add(pre); 
-			} 
-		} 
-		for (Transition t : onlyLoops) { 
-			for (Place copy : copies) { 
-				String t_id = getTruncatedId(t.getId()); 
-				Transition newT = pg.getNet().createTransition(t_id + "__" + getCopyCounter(t_id)); 
-				if (getTruncatedId(copy.getId()).equals(getTruncatedId(p.getId()))) { // add transition t with only loops to unfolded place copy 
-					for (Place pre : t.getPreset()) { 
-						if (pre.equals(p)) { 
-							pn.createFlow(copy, newT); 
-							pn.createFlow(newT, copy); 
-						} else { 
-							pn.createFlow(pre, newT); 
-							pn.createFlow(newT, pre); 
-						} 
-					} 
-				} 
-			} 
-		}*/
+	}
+	
+	protected void addTransitionsToOriginalPreset(Place p, Set<Transition> p_originalPreset) {
+		// TODO additional test 1 & 2 look similar and probably can be combined
+		
+		// **** ADDITIONAL ADD TEST 1 ****
+		// erkennt wenn lokale Transitionen Historie transportieren da sie unfoldet wurden:
+		// wenn die selbe LOKALE transition (gleiche truncated ID) von 2 unterschiedlichen
+		// UNFOLDETEN plätzen kommt (gleiche truncated ID), dann doch unfold, wenn
+		// partner noch nicht geaddet (EGAL ob env oder sys)
+		// second iteration says that this works as intended
+		for (Transition t1 : p.getPreset()) {
+			if (!t1.getId().equals(getTruncatedId(t1.getId()))) { // unfoldete Transition t1
+				for (Transition t2 : p.getPreset()) { // search for partner
+					if (getTruncatedId(t1.getId()).equals(getTruncatedId(t2.getId()))) { // LOKALER partner
+						if (t1.getPreset().size() == 1 && t2.getPreset().size() == 1 && // local transition
+								t2.getPostset().size() == 1 && t2.getPostset().size() == 1) {
+							if (!t1.getPreset().toArray()[0].equals(t2.getPreset().toArray()[0])) {// from DIFFERENT places
+								p_originalPreset.add(t1);
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		// **** ADDITIONAL ADD TEST 2 ****
+		// soll erkennen wenn von lokaler transition transportierte Historie von system
+		// genutzt wird
+		Set<Transition> already_added = new HashSet<>();
+		for (Transition t1 : p.getPreset()) {
+			if (!t1.getId().equals(getTruncatedId(t1.getId()))) { // unfoldete Transition
+				for (Transition t2 : p.getPreset()) {
+					if (getTruncatedId(t1.getId()).equals(getTruncatedId(t2.getId()))) { // original partner
+						if (!already_added.contains(t1) && !already_added.contains(t2)) {
+							if (t1.getPreset().size() == 2 && t2.getPreset().size() == 2 && // local transition
+									t2.getPostset().size() <= 2 && t2.getPostset().size() <= 2) {
+								if (checkTransitionPair(t1, t2)) {
+									p_originalPreset.add(t1);
+									already_added.add(t1);
+									break;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		// **** ADDITIONAL ADD TEST 3 ****
+		// soll erkennen wenn sync-Transitionen (mit Einschränkung zum nicht unendlich often Feuern)
+		// Historie transportieren, test basiert auf original transition
+		// scheint evtl den Sinn von originalPreset zu neglecten
+		for (Transition t : p.getPreset()) {
+			if (!t.getId().equals(getTruncatedId(t.getId()))) { // unfoldete Transition
+				if (t.getPreset().size() == t.getPostset().size() + 1) { // TODO 1 hardcoden oder mehr erlauben
+					String tTruncID = getTruncatedId(t.getId());
+					Transition truncT = pn.getTransition(tTruncID);
+					boolean check = true;
+					for (Place post : truncT.getPostset()) {
+						boolean equal = false;
+						for (Place pre : truncT.getPreset()) {
+							if (pre.equals(post)) {
+								equal = true;
+								break;
+							}
+						}
+						if (!equal) {
+							check = false;
+							break;
+						}
+					}
+					if (check) {
+						p_originalPreset.add(t);
+					}
+				}
+			}
+		}
 	}
 
 	protected void addAdditionalSystemPlaces() {
@@ -457,8 +389,7 @@ public class WhileNonDeterministicUnfolder extends Unfolder {
 	}
 
 	private Queue<String> initializeQueue() throws UnboundedException, NetNotSafeException {
-		// USING PGsimplifier here takes WAY to long TODO PGsimplifier performance issues?!
-		// THEORY: 2 transitions from only (sich gegenseitig ausschließen) sys places to the same place do not require unfolding
+		// THEORY: 2 transitions from only (sich gegenseitig ausschließenden) sys places to the same place do not require unfolding TODO das hier prüfen
 		Queue<String> result = new LinkedList<>(); // fancy
 		Marking in = pn.getInitialMarking();
 		// add non-initial places which can have different history

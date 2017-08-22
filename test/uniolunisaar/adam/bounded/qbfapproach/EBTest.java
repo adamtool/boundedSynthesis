@@ -19,17 +19,18 @@ public class EBTest {
 	// 2 0 14 24 DETERMINISTIC unfolder 50 Sekunden
 	// 0 2 14 24 DETERMINISTIC unfolder 75 Sekunden
 	// 1 1 14 2 NONDETERMINISTIC unfolder 2600, 4500 Sekunden, 2 stds...
+	// 1 1 13 2 FORnondeterministicUNFOLDER
+	// 2 0 13 2 FORnondeterministicUNFOLDER
+	// 0 2 13 2 FORnondeterministicUNFOLDER
 
-	@Test(timeOut = 18000 * 1000) // 30 min
+	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testEB() throws Exception {
-		oneTest(1, 1, 20, 2); // TODO go back to 14 and evaluate
+		oneTest(1, 1, 13, 2);
 	}
 
 	private void oneTest(int ps1, int ps2, int n, int b) throws Exception {
 		PetriNet pn = EmergencyBreakdown.createSafetyVersion(ps1, ps2, false);
 		QBFSafetySolver sol = new QBFSafetySolver(pn, new QBFSolverOptions(n, b));
 		Assert.assertTrue(sol.existsWinningStrategy());
-		Tools.savePN2PDF("unfolding", sol.unfolding.getNet(), false);
-		Tools.savePN2PDF("strategy", sol.getStrategy(), false);
 	}
 }

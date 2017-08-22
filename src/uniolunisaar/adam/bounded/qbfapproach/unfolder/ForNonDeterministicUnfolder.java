@@ -42,7 +42,7 @@ public class ForNonDeterministicUnfolder extends WhileNonDeterministicUnfolder {
 			for (Place p : places) {				// TODO only here a hashCode is important anymore
 				LinkedList<Integer> list = orderOfUnfolding.get(p);
 				if (list.size() > 0 && list.getFirst() == i) {
-					unfoldPlace(p);
+					checkPlaceForUnfolding(p, false);
 					while (list.size() > 0 && list.getFirst() == i) {
 						list.removeFirst();
 					}
@@ -51,7 +51,6 @@ public class ForNonDeterministicUnfolder extends WhileNonDeterministicUnfolder {
 		}
 		
 		// add additional system places to unfolded env transitions
-		System.out.println(placesWithCopiedTransitions);
 		addAdditionalSystemPlaces();
 	}
 
