@@ -19,7 +19,6 @@ import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 
 public class ForNonDeterministicUnfolder extends WhileNonDeterministicUnfolder {
 	
-	public Map<Place, Set<Transition>> systemHasToDecideForAtLeastOne = new HashMap<>(); // Map for QCIRbuilder to include additional information
 	Set<String> closed = new HashSet<>();
 
 	public ForNonDeterministicUnfolder(QBFPetriGame QBFPetriGame, Map<String, Integer> max) {
