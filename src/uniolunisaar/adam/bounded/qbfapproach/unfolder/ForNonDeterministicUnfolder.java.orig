@@ -19,7 +19,7 @@ import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 
 public class ForNonDeterministicUnfolder extends NonDeterministicUnfolder {
 	
-	//public Map<Place, Set<Transition>> systemHasToDecideForAtLeastOne = new HashMap<>(); // Map for QCIRbuilder to include additional information
+	public Map<Place, Set<Transition>> systemHasToDecideForAtLeastOne = new HashMap<>(); // Map for QCIRbuilder to include additional information
 	Set<String> closed = new HashSet<>();
 
 	public ForNonDeterministicUnfolder(QBFPetriGame QBFPetriGame, Map<String, Integer> max) {
@@ -39,9 +39,7 @@ public class ForNonDeterministicUnfolder extends NonDeterministicUnfolder {
 			for (Place p : places) {				// TODO only here a hashCode is important anymore
 				LinkedList<Integer> list = orderOfUnfolding.get(p);
 				if (list.size() > 0 && list.getFirst() == i) {
-					if ((pn.getInitialMarking().getToken(p).getValue() == 0 && p.getPreset().size() >= 2 && p.getPostset().size() >= 1 && !noUnfolding(p)) || (pn.getInitialMarking().getToken(p).getValue() >= 1 && p.getPreset().size() >= 1 && p.getPostset().size() >= 1 && !noUnfolding(p))) {		// TODO not just unfold EVERY place
-						checkPlaceForUnfolding(p);			// ignore returned places as no queue is used
-					}
+					checkPlaceForUnfolding(p);			// ignore returned places as no queue is used
 					while (list.size() > 0 && list.getFirst() == i) {
 						list.removeFirst();
 					}

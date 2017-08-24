@@ -41,7 +41,7 @@ public class WhileNonDeterministicUnfolder extends NonDeterministicUnfolder {
 		while (!placesToUnfold.isEmpty()) {
 			String id = placesToUnfold.poll();
 			Place p = pn.getPlace(id);
-			//placesToUnfold.addAll(checkPlaceForUnfolding(p));
+			placesToUnfold.addAll(checkPlaceForUnfolding(p));
 		}
 
 		// add additional system places to unfolded env transitions
@@ -56,7 +56,7 @@ public class WhileNonDeterministicUnfolder extends NonDeterministicUnfolder {
 		for (Place p : pn.getPlaces()) {
 			if (in.getToken(p).getValue() == 0) {
 				if (p.getPreset().size() >= 2) {
-					if (p.getPostset().size() >= 1 && !additionalCheck(p)) {
+					if (p.getPostset().size() >= 1 && !noUnfolding(p)) {
 						result.add(p.getId());
 					}
 				}
@@ -67,39 +67,12 @@ public class WhileNonDeterministicUnfolder extends NonDeterministicUnfolder {
 		for (Place p : pn.getPlaces()) {
 			if (in.getToken(p).getValue() >= 1) {
 				if (p.getPreset().size() >= 1) {
-					if (p.getPostset().size() >= 1 && !additionalCheck(p)) {
+					if (p.getPostset().size() >= 1 && !noUnfolding(p)) {
 						result.add(p.getId());
 					}
 				}
 			}
 		}
 		return result;
-	}
-	
-	private boolean additionalCheck(Place p) {
-		boolean first = true;
-		Set<Place> cup = new HashSet<>();
-		for (Transition pre : p.getPreset()) {
-			Set<Place> preset = new HashSet<>(pre.getPreset());
-			preset.retainAll(pre.getPostset());
-			if (!preset.isEmpty()) {
-				return false;
-			}
-			if (first) {
-				cup = new HashSet<>(pre.getPreset());
-				first = false;
-			} else {
-				cup.retainAll(pre.getPreset());
-			}
-			if (cup.isEmpty()) {
-				return false;
-			}
-			for (Place prePre : pre.getPreset()) {
-				if (pg.getEnvPlaces().contains(prePre)) {
-					return false;
-				}
-			}
-		}
-		return true;
 	}
 }

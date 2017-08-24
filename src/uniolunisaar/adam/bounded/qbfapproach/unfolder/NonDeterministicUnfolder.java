@@ -68,10 +68,10 @@ public abstract class NonDeterministicUnfolder extends Unfolder {
 		return false;
 	}
 	
-	protected void /*Set<String>*/ checkPlaceForUnfolding(Place p) {
+	protected Set<String> checkPlaceForUnfolding(Place p) {
 		String p_id = getTruncatedId(p.getId());
 		if (closed.contains(p.getId()))
-			return;// new HashSet<>();
+			return new HashSet<>();
 		closed.add(p.getId());
 
 		// only unfold transitions which were originally present (i.e. only transitions with same ID as truncated ID) plus some additional test satisfier in originalPREset
@@ -95,10 +95,10 @@ public abstract class NonDeterministicUnfolder extends Unfolder {
 		}
 
 		// decide unfolding of place
-		/*return*/ unfoldPlace(p, p_id, p_originalPreset, p_originalPostset);
+		return unfoldPlace(p, p_id, p_originalPreset, p_originalPostset);
 	}
 
-	protected void/*Set<String>*/ unfoldPlace(Place p, String p_id, Set<Transition> p_originalPreset, Set<Transition> p_originalPostset) {
+	protected Set<String> unfoldPlace(Place p, String p_id, Set<Transition> p_originalPreset, Set<Transition> p_originalPostset) {
 		Set<String> placesToUnfold = new HashSet<>();
 		// how often can p be unfolded? as often as needed (first part of min) or not as often as needed (second part of min)
 		int maxNumberOfUnfoldings;
@@ -207,7 +207,7 @@ public abstract class NonDeterministicUnfolder extends Unfolder {
 
 			copies.add(p);
 		}
-		//return placesToUnfold;
+		return placesToUnfold;
 	}
 
 	protected void addTransitionsToOriginalPreset(Place p, Set<Transition> p_originalPreset) {
@@ -311,6 +311,34 @@ public abstract class NonDeterministicUnfolder extends Unfolder {
 					}
 				}
 				if (!envTruncatedMatch) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	// TODO evaluate this and think of better name
+	protected boolean noUnfolding(Place p) {
+		boolean first = true;
+		Set<Place> cup = new HashSet<>();
+		for (Transition pre : p.getPreset()) {
+			Set<Place> preset = new HashSet<>(pre.getPreset());
+			preset.retainAll(pre.getPostset());
+			if (!preset.isEmpty()) {
+				return false;
+			}
+			if (first) {
+				cup = new HashSet<>(pre.getPreset());
+				first = false;
+			} else {
+				cup.retainAll(pre.getPreset());
+			}
+			if (cup.isEmpty()) {
+				return false;
+			}
+			for (Place prePre : pre.getPreset()) {
+				if (pg.getEnvPlaces().contains(prePre)) {
 					return false;
 				}
 			}

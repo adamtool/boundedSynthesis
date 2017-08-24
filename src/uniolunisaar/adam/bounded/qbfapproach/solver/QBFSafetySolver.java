@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -137,7 +138,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 		// ensure deterministic decision.
 		// It is required that these decide for exactly one transition which
 		// is directly encoded into the problem.
-		int index_for_non_det_unfolding_info = enumerateStratForNonDetUnfold(unfolder.systemHasToDecideForAtLeastOne/*new HashMap<>()*/);
+		int index_for_non_det_unfolding_info = enumerateStratForNonDetUnfold(/*unfolder.systemHasToDecideForAtLeastOne*/new HashMap<>());
 		if (index_for_non_det_unfolding_info != -1) {
 			phi.add(index_for_non_det_unfolding_info);
 		}

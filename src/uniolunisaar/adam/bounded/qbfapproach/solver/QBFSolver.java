@@ -472,7 +472,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 					for (Transition t : p.getPostset()) {
 						int number = createVariable(p.getId() + ".." + t.getId());
 						exists.add(number);
-						// System.out.println(number + " = " + p.getId() + ".." + t.getId());
+						System.out.println(number + " = " + p.getId() + ".." + t.getId());
 						exists_transitions.put(number, p.getId() + ".." + t.getId());
 					}
 				} else {
@@ -483,7 +483,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 							truncatedIDs.add(truncatedID);
 							int number = createVariable(p.getId() + ".." + truncatedID);
 							exists.add(number);
-							// System.out.println(number + " = " + p.getId() + ".." + truncatedID);
+							System.out.println(number + " = " + p.getId() + ".." + truncatedID);
 							exists_transitions.put(number, p.getId() + ".." + truncatedID);
 						}
 					}
@@ -499,7 +499,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 			for (int i = 1; i <= pg.getN(); ++i) {
 				int number = createVariable(p.getId() + "." + i);
 				forall.add(number);
-				// System.out.println(number + " = " + p.getId() + "." + i);
+				System.out.println(number + " = " + p.getId() + "." + i);
 				forall_places.put(number, p.getId() /* + "." + i */);
 			}
 		}
@@ -518,14 +518,16 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 		int or_index;
 		Set<Integer> or = new HashSet<>();
 		for (Place p : additionalInfoForNonDetUnfl.keySet()) {
-			transitions = additionalInfoForNonDetUnfl.get(p);
-			or.clear();
-			for (Transition t : transitions) {
-				or.add(getVarNr(p.getId() + ".." + t.getId(), true));
+			if (pg.getEnvPlaces().contains(p)) {				//
+				transitions = additionalInfoForNonDetUnfl.get(p);
+				or.clear();
+				for (Transition t : transitions) {
+					or.add(getVarNr(p.getId() + ".." + t.getId(), true));
+				}
+				or_index = createUniqueID();
+				writer.write(or_index + " = " + writeOr(or));
+				and.add(or_index);
 			}
-			or_index = createUniqueID();
-			writer.write(or_index + " = " + writeOr(or));
-			and.add(or_index);
 		}
 		int index = createUniqueID();
 		writer.write(index + " = " + writeAnd(and));

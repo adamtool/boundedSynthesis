@@ -30,10 +30,9 @@ public class DeterministicUnfolder extends Unfolder {
 	}
 
 	@Override
-	public void createUnfolding(Map<String, Integer> b) throws NetNotSafeException, NoSuitableDistributionFoundException {
+	public void createUnfolding() throws NetNotSafeException, NoSuitableDistributionFoundException {
 		// Initialize bounds
-		limit = b;
-		for (String s : b.keySet())
+		for (String s : limit.keySet())
 			current.put(s, 0);
 
 		// Start search
