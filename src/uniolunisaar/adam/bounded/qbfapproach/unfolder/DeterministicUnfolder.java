@@ -1,33 +1,32 @@
 package uniolunisaar.adam.bounded.qbfapproach.unfolder;
 
-
-
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
-import uniol.apt.analysis.exception.UnboundedException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 
+/**
+ * quick and dirty
+ * 
+ * @author Jesko Hecking-Harbusch
+ *
+ */
+
 public class DeterministicUnfolder extends Unfolder {
 
 	Set<Place> consideredPlaces;
 
-	public DeterministicUnfolder(QBFPetriGame petriGame) throws UnboundedException, NetNotSafeException {
-		super(petriGame);
+	public DeterministicUnfolder(QBFPetriGame QBFPetriGame, Map<String, Integer> max) {
+		super(QBFPetriGame, max);
 		QBFPetriGame pgCopy = pg.copy("temp");
 		PGSimplifier.simplifyPG(pgCopy, false, false);
 		consideredPlaces = pgCopy.getNet().getPlaces();
-	}
-
-	public DeterministicUnfolder(QBFPetriGame QBFPetriGame, Map<String, Integer> max) {
-		super(QBFPetriGame);
-		limit = max;
 	}
 
 	@Override
@@ -64,7 +63,7 @@ public class DeterministicUnfolder extends Unfolder {
 
 	public void unfoldPlace(Place unfold) {
 		int limit = getLimitValue(unfold) - getCurrentValue(unfold);
-		int required = (int) (unfold.getPreset().size() + unfold.getInitialToken().getValue() - 1);			// TODO requirement of this cast seems fishy...
+		int required = (int) (unfold.getPreset().size() + unfold.getInitialToken().getValue() - 1);
 		int bound = Math.min(limit, required);
 		Set<Transition> selfLoops = new HashSet<>();
 		Set<Transition> otherTransitions = new HashSet<>();

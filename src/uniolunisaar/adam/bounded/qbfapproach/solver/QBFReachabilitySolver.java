@@ -117,7 +117,7 @@ public class QBFReachabilitySolver extends QBFSolver<Reachability> {
 
 		WhileNonDeterministicUnfolder unfolder = new WhileNonDeterministicUnfolder(pg, null); // null forces unfolder to use b as bound for every place
 		try {
-			unfolder.createUnfolding();
+			unfolder.prepareUnfolding();
 		} catch (UnboundedException | FileNotFoundException | NetNotSafeException | NoSuitableDistributionFoundException e1) {
 			System.out.println("Error: The bounded unfolding of the game failed.");
 			e1.printStackTrace();

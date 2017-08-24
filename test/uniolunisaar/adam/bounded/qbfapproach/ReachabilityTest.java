@@ -23,7 +23,10 @@ public class ReachabilityTest {
 	
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testReachability() throws Exception {
-		// correct because after unfolding all runs can be forced by strategy to reach place-to-reach
+		//test ("jhh", "myExample1", false, 10, 0);
+		test ("toyExamples", "question", false, 10, 2);
+		
+		/*// correct because after unfolding all runs can be forced by strategy to reach place-to-reach
 		test ("burglar", "burglar", false, 10, 0);
 		test ("burglar", "burglar", true, 10, 2);
 		
@@ -35,6 +38,7 @@ public class ReachabilityTest {
 		// correct because there is no det strategy regardless the winning condition
 		test ("ndet", "nondet", false, 10, 0);
 		test ("ndet", "nondet", false, 10, 2);
+		test ("ndet", "nondet2", false, 10, 2);
 		
 		// correct because there is an infinite env-loop
 		test ("toyExamples", "infiniteA", false, 10, 0);
@@ -51,7 +55,7 @@ public class ReachabilityTest {
 		test ("toyExamples", "type2B", false, 10, 2);
 		
 		// correct because the strategy cannot both force reaching the place and afterwards be deadlock-avoiding
-		test ("toyExamples", "question", false, 10, 0);
+		test ("toyExamples", "question", false, 10, 0)*/
 	}
 
 	private void test(String folder, String name, boolean result, int n, int b) throws Exception {

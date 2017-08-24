@@ -7,7 +7,6 @@ import uniol.apt.adt.pn.PetriNet;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSafetySolver;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
 import uniolunisaar.adam.generators.EmergencyBreakdown;
-import uniolunisaar.adam.tools.Tools;
 
 @Test
 public class EBTest {
@@ -25,7 +24,7 @@ public class EBTest {
 
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testEB() throws Exception {
-		oneTest(1, 1, 13, 2);
+		oneTest(1, 1, 15, 2);
 	}
 
 	private void oneTest(int ps1, int ps2, int n, int b) throws Exception {

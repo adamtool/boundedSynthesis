@@ -17,31 +17,28 @@ import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 
-public class ForNonDeterministicUnfolder extends WhileNonDeterministicUnfolder {
+public class ForNonDeterministicUnfolder extends NonDeterministicUnfolder {
 	
 	Set<String> closed = new HashSet<>();
 
 	public ForNonDeterministicUnfolder(QBFPetriGame QBFPetriGame, Map<String, Integer> max) {
 		super(QBFPetriGame, max);
-		this.max = max;
-		this.pn = QBFPetriGame.getNet();
 	}
 
 	@Override
-	public void createUnfolding(Map<String, Integer> b) throws NetNotSafeException, NoSuitableDistributionFoundException, UnboundedException, FileNotFoundException {
+	public void createUnfolding() throws NetNotSafeException, NoSuitableDistributionFoundException, UnboundedException, FileNotFoundException {
 		// Initialize counter for unfolding
 		Set<Place> places = new HashSet<>(pn.getPlaces());
 		for (Place p : places) {
 			current.put(p.getId(), 1);
 		}
-		limit = b;
 		
 		Map<Place, LinkedList<Integer>> orderOfUnfolding = calculateOrderOfUnfolding();
 		for (int i = 2; i <= pg.getN(); ++i) {
 			for (Place p : places) {				// TODO only here a hashCode is important anymore
 				LinkedList<Integer> list = orderOfUnfolding.get(p);
 				if (list.size() > 0 && list.getFirst() == i) {
-					checkPlaceForUnfolding(p, false);
+					checkPlaceForUnfolding(p);			// ignore returned places as no queue is used
 					while (list.size() > 0 && list.getFirst() == i) {
 						list.removeFirst();
 					}

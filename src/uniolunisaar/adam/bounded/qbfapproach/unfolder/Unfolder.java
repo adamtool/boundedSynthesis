@@ -31,36 +31,34 @@ public abstract class Unfolder {
 	protected int copycounter = 0;
 	public Map<String, Integer> copycounter_map = new HashMap<>();
 
-	// different limits for places
-	protected Map<String, Integer> max = null;
-
 	// how much unfolding was done and how much can still be done
 	public Map<String, Integer> current = new HashMap<>();
 	protected Map<String, Integer> limit = null;
 
-	public Unfolder(QBFPetriGame petriGame) {
-		pg = petriGame;
-		pn = pg.getNet();
+	public Unfolder(QBFPetriGame petriGame, Map<String, Integer> max) {
+		this.pg = petriGame;
+		this.pn = pg.getNet();
+		this.limit = max;
 	}
 
-	public void createUnfolding() throws NetNotSafeException, NoSuitableDistributionFoundException, UnboundedException, FileNotFoundException {
-		if (max != null) {
+	public void prepareUnfolding() throws NetNotSafeException, NoSuitableDistributionFoundException, UnboundedException, FileNotFoundException {
+		if (limit != null) {
 			for (Place p : pg.getNet().getPlaces()) {
-				if (max.get(p.getId()) == null) {
-					max.put(p.getId(), 0);
+				if (limit.get(p.getId()) == null) {
+					limit.put(p.getId(), 0);
 				}
 			}
-			createUnfolding(max);
+			createUnfolding();
 		} else {
-			Map<String, Integer> bvalues = new HashMap<>();
+			limit = new HashMap<>();
 			for (Place p : pg.getNet().getPlaces()) {
-				bvalues.put(p.getId(), pg.getB());
+				limit.put(p.getId(), pg.getB());
 			}
-			createUnfolding(bvalues);
+			createUnfolding();
 		}
 	}
 
-	public abstract void createUnfolding(Map<String, Integer> b) throws NetNotSafeException, NoSuitableDistributionFoundException, UnboundedException, FileNotFoundException;
+	public abstract void createUnfolding() throws NetNotSafeException, NoSuitableDistributionFoundException, UnboundedException, FileNotFoundException;
 
 	protected void copyBadAndEnv(Place newP, Place p) {
 		for (Pair<String, Object> pair : p.getExtensions()) {
