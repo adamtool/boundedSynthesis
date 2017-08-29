@@ -138,7 +138,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 		// ensure deterministic decision.
 		// It is required that these decide for exactly one transition which
 		// is directly encoded into the problem.
-		int index_for_non_det_unfolding_info = enumerateStratForNonDetUnfold(/*unfolder.systemHasToDecideForAtLeastOne*/new HashMap<>());
+		int index_for_non_det_unfolding_info = enumerateStratForNonDetUnfold(/*new HashMap<>()*/unfolder.systemHasToDecideForAtLeastOne);
 		if (index_for_non_det_unfolding_info != -1) {
 			phi.add(index_for_non_det_unfolding_info);
 		}

@@ -19,7 +19,6 @@ import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 
 public class ForNonDeterministicUnfolder extends NonDeterministicUnfolder {
 	
-	//public Map<Place, Set<Transition>> systemHasToDecideForAtLeastOne = new HashMap<>(); // Map for QCIRbuilder to include additional information
 	Set<String> closed = new HashSet<>();
 
 	public ForNonDeterministicUnfolder(QBFPetriGame QBFPetriGame, Map<String, Integer> max) {
@@ -28,18 +27,13 @@ public class ForNonDeterministicUnfolder extends NonDeterministicUnfolder {
 
 	@Override
 	public void createUnfolding() throws NetNotSafeException, NoSuitableDistributionFoundException, UnboundedException, FileNotFoundException {
-		// Initialize counter for unfolding
 		Set<Place> places = new HashSet<>(pn.getPlaces());
-		for (Place p : places) {
-			current.put(p.getId(), 1);
-		}
-		
 		Map<Place, LinkedList<Integer>> orderOfUnfolding = calculateOrderOfUnfolding();
 		for (int i = 2; i <= pg.getN(); ++i) {
-			for (Place p : places) {				// TODO only here a hashCode is important anymore
+			for (Place p : places) {						// TODO only here a hashCode is important anymore
 				LinkedList<Integer> list = orderOfUnfolding.get(p);
 				if (list.size() > 0 && list.getFirst() == i) {
-					if ((pn.getInitialMarking().getToken(p).getValue() == 0 && p.getPreset().size() >= 2 && p.getPostset().size() >= 1 && !noUnfolding(p)) || (pn.getInitialMarking().getToken(p).getValue() >= 1 && p.getPreset().size() >= 1 && p.getPostset().size() >= 1 && !noUnfolding(p))) {		// TODO not just unfold EVERY place
+					if (unfoldCondition(p)) {				// TODO I removed !unfoldCondition() here
 						checkPlaceForUnfolding(p);			// ignore returned places as no queue is used
 					}
 					while (list.size() > 0 && list.getFirst() == i) {

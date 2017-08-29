@@ -42,7 +42,7 @@ public abstract class NonDeterministicUnfolder extends Unfolder {
 					}
 					if (otherTransitions.size() > 0) {
 						// create additional system place and place token
-						Place newSysPlace = pg.getNet().createPlace(QBFSolver.additionalSystemName + t.getId() + "__" + p.getId());
+						Place newSysPlace = pg.getNet().createPlace(QBFSolver.additionalSystemName + t.getId() + "--" + p.getId());
 						newSysPlace.setInitialToken(1);
 						// add transition the unfolding is based on BEFORE requiring system to decide for at least one
 						otherTransitions.add(t);
@@ -128,14 +128,13 @@ public abstract class NonDeterministicUnfolder extends Unfolder {
 			Place newP = pg.getNet().createPlace(p_id + "__" + current.get(p_id));
 			copies.add(newP);
 			current.put(p_id, current.get(p_id) + 1);
-			copyBadAndEnv(newP, p);
+			copyEnv(newP, p);
 			// copyTotalSelfLoops(newP, totalSelfLoops);
 			// copy incoming transitions (except self-loops)
 			HashSet<Transition> preSet = new HashSet<>(p_originalPreset);
 			preSet.removeAll(p_originalPostset);
 			for (Transition pre_transition : preSet) {
-				String pre_id = getTruncatedId(pre_transition.getId());
-				Transition newT = pg.getNet().createTransition(pre_id + "__" + getCopyCounter(pre_id));
+				Transition newT = copyTransition(pre_transition);
 				for (Place prePre : pre_transition.getPreset()) {
 					pg.getNet().createFlow(prePre, newT);
 					placesWithCopiedTransitions.add(prePre);
@@ -154,8 +153,7 @@ public abstract class NonDeterministicUnfolder extends Unfolder {
 			HashSet<Transition> postSet = new HashSet<>(p_originalPostset);
 			// postSet.removeAll(p_originalPreset);
 			for (Transition post_transition : postSet) {
-				String post_id = getTruncatedId(post_transition.getId());
-				Transition newT = pg.getNet().createTransition(post_id + "__" + getCopyCounter(post_id));
+				Transition newT = copyTransition(post_transition);
 				for (Place postPre : post_transition.getPreset()) {
 					if (postPre.equals(p)) {
 						pg.getNet().createFlow(newP, newT);
@@ -183,8 +181,7 @@ public abstract class NonDeterministicUnfolder extends Unfolder {
 			// from p to all unfolded places via all selfloops
 			for (Place p2 : copies) {
 				for (Transition loop : selfLoops) {
-					String loop_id = getTruncatedId(loop.getId());
-					Transition newT = pg.getNet().createTransition(loop_id + "__" + getCopyCounter(loop_id));
+					Transition newT = copyTransition(loop);
 
 					for (Place postPre : loop.getPreset()) {
 						placesWithCopiedTransitions.add(postPre);
@@ -311,34 +308,6 @@ public abstract class NonDeterministicUnfolder extends Unfolder {
 					}
 				}
 				if (!envTruncatedMatch) {
-					return false;
-				}
-			}
-		}
-		return true;
-	}
-
-	// TODO evaluate this and think of better name
-	protected boolean noUnfolding(Place p) {
-		boolean first = true;
-		Set<Place> cup = new HashSet<>();
-		for (Transition pre : p.getPreset()) {
-			Set<Place> preset = new HashSet<>(pre.getPreset());
-			preset.retainAll(pre.getPostset());
-			if (!preset.isEmpty()) {
-				return false;
-			}
-			if (first) {
-				cup = new HashSet<>(pre.getPreset());
-				first = false;
-			} else {
-				cup.retainAll(pre.getPreset());
-			}
-			if (cup.isEmpty()) {
-				return false;
-			}
-			for (Place prePre : pre.getPreset()) {
-				if (pg.getEnvPlaces().contains(prePre)) {
 					return false;
 				}
 			}

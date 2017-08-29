@@ -31,19 +31,11 @@ public class DeterministicUnfolder extends Unfolder {
 
 	@Override
 	public void createUnfolding() throws NetNotSafeException, NoSuitableDistributionFoundException {
-		// Initialize bounds
-		for (String s : limit.keySet())
-			current.put(s, 0);
-
 		// Start search
 		Place nextToUnfold;
 		while ((nextToUnfold = findNextPlaceToUnfold()) != null) {
 			unfoldPlace(nextToUnfold);
 		}
-	}
-
-	private boolean unfoldCondition(Place p) {
-		return getCurrentValue(p) < getLimitValue(p) && (p.getPreset().size() >= 2 || (p.getPreset().size() == 1 && p.getInitialToken().getValue() == 1));
 	}
 
 	public Place findNextPlaceToUnfold() {
@@ -77,7 +69,7 @@ public class DeterministicUnfolder extends Unfolder {
 				Place newP = copyPlace(unfold);
 				pg.getNet().removeFlow(t, unfold);
 				pg.getNet().createFlow(t, newP);
-				reduceCurrentValue(unfold);
+				increaseCurrentValue(unfold);
 			}
 		}
 		
@@ -86,7 +78,7 @@ public class DeterministicUnfolder extends Unfolder {
 				Place newP = copyPlace(unfold);
 				pg.getNet().removeFlow(t, unfold);
 				pg.getNet().createFlow(t, newP);
-				reduceCurrentValue(unfold);
+				increaseCurrentValue(unfold);
 			}
 		}
 	}
@@ -140,12 +132,13 @@ public class DeterministicUnfolder extends Unfolder {
 			}
 		}
 	}
-
-	public Place copyPlace(Place p) {
-		String id = truncateUnderscores(p.getId());
+	
+	
+	private Place copyPlace(Place p) {
+		String id = getTruncatedId(p.getId());
 		Place ret = pg.getNet().createPlace(id + "__" + current.get(id));
 		current.put(id, current.get(id) + 1);
-		copyBadAndEnv(ret, p);
+		copyEnv(ret, p);
 		for (Transition trans : p.getPostset()) {
 			Transition copy = copyTransition(trans);
 			for (Place pre : trans.getPreset()) {
@@ -164,35 +157,5 @@ public class DeterministicUnfolder extends Unfolder {
 			}
 		}
 		return ret;
-	}
-
-	public Transition copyTransition(Transition t) {
-		String id = truncateUnderscores(t.getId());
-		Transition ret = pg.getNet().createTransition(id + "__" + getCopyCounter(id));
-		return ret;
-
-	}
-
-	public String truncateUnderscores(String id) {
-		int index = id.indexOf("__");
-		if (index != -1)
-			return id.substring(0, index);
-		else
-			return id;
-	}
-	
-	public void reduceCurrentValue(Place p) {
-		String id = truncateUnderscores(p.getId());
-		current.put(id, current.get(id) + 1);
-	}
-
-	public int getCurrentValue(Place p) {
-		String id = truncateUnderscores(p.getId());
-		return current.get(id);
-	}
-
-	public int getLimitValue(Place p) {
-		String id = truncateUnderscores(p.getId());
-		return limit.get(id);
 	}
 }

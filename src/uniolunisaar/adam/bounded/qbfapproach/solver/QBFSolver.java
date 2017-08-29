@@ -472,7 +472,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 					for (Transition t : p.getPostset()) {
 						int number = createVariable(p.getId() + ".." + t.getId());
 						exists.add(number);
-						System.out.println(number + " = " + p.getId() + ".." + t.getId());
+						//System.out.println(number + " = " + p.getId() + ".." + t.getId());
 						exists_transitions.put(number, p.getId() + ".." + t.getId());
 					}
 				} else {
@@ -483,7 +483,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 							truncatedIDs.add(truncatedID);
 							int number = createVariable(p.getId() + ".." + truncatedID);
 							exists.add(number);
-							System.out.println(number + " = " + p.getId() + ".." + truncatedID);
+							//System.out.println(number + " = " + p.getId() + ".." + truncatedID);
 							exists_transitions.put(number, p.getId() + ".." + truncatedID);
 						}
 					}
@@ -499,7 +499,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 			for (int i = 1; i <= pg.getN(); ++i) {
 				int number = createVariable(p.getId() + "." + i);
 				forall.add(number);
-				System.out.println(number + " = " + p.getId() + "." + i);
+				//System.out.println(number + " = " + p.getId() + "." + i);
 				forall_places.put(number, p.getId() /* + "." + i */);
 			}
 		}
@@ -518,7 +518,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 		int or_index;
 		Set<Integer> or = new HashSet<>();
 		for (Place p : additionalInfoForNonDetUnfl.keySet()) {
-			if (pg.getEnvPlaces().contains(p)) {				//
+			//if (endsWithEnvPlace(p)) {				// TODO is this right?
 				transitions = additionalInfoForNonDetUnfl.get(p);
 				or.clear();
 				for (Transition t : transitions) {
@@ -527,11 +527,56 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 				or_index = createUniqueID();
 				writer.write(or_index + " = " + writeOr(or));
 				and.add(or_index);
-			}
+			//}
 		}
 		int index = createUniqueID();
 		writer.write(index + " = " + writeAnd(and));
 		return index;
+	}
+	
+	// Additional information from nondeterministic unfolding is utilized:
+	// for each place a set of transitions is given of which EXACTLY one has to
+	// be activated by the strategy to be deadlock-avoiding
+	public int enumerateStratForNonDetUnfoldEXACTLYONE(Map<Place, Set<Transition>> additionalInfoForNonDetUnfl) throws IOException {
+		if (additionalInfoForNonDetUnfl.keySet().isEmpty()) {
+			return -1;
+		}
+		Set<Integer> outerAnd = new HashSet<>();
+		int innerAnd_index;
+		Set<Integer> innerAnd = new HashSet<>();
+		Set<Transition> transitions;
+		int or_index;
+		Set<Integer> or = new HashSet<>();
+		for (Place p : additionalInfoForNonDetUnfl.keySet()) {
+			transitions = additionalInfoForNonDetUnfl.get(p);
+			or.clear();
+			for (Transition t : transitions) {
+				innerAnd.clear();
+				int transition_index = getVarNr(p.getId() + ".." + t.getId(), true);
+				innerAnd.add(transition_index);
+				for (Transition t2 : transitions) {
+					int transition2_index = getVarNr(p.getId() + ".." + t2.getId(), true);
+					if (t != t2) {
+						innerAnd.add(-transition2_index);
+					}
+				}
+				innerAnd_index = createUniqueID();
+				writer.write(innerAnd_index + " = " + writeAnd(innerAnd));;
+				or.add(innerAnd_index);
+			}
+			or_index = createUniqueID();
+			writer.write(or_index + " = " + writeOr(or));
+			outerAnd.add(or_index);
+		}
+		int index = createUniqueID();
+		writer.write(index + " = " + writeAnd(outerAnd));
+		return index;
+	}
+
+	private boolean endsWithEnvPlace(Place p) {
+		String p_id = p.getId();
+		String[] split = p_id.split("--");
+		return pg.getEnvPlaces().contains(pn.getPlace(split[split.length - 1]));
 	}
 
 	public int getVarNr(String id, boolean extraCheck) {

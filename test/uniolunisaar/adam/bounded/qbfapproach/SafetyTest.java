@@ -40,8 +40,8 @@ public class SafetyTest {
 		oneTest("container/container", 20, 0, false);
 		oneTest("deadlock/missDeadlock", 4, 0, true);
 		oneTest("deadlock/missDeadlock", 3, 0, false);
-		//oneTest("firstExamplePaper/firstExamplePaper_extended", 6, 3, true);  // TODO did this ever work?!
-		oneTest("firstExamplePaper/firstExamplePaper_extended", 5, 3, false);
+		oneTest("firstExamplePaper/firstExamplePaper_extended", 10, 0, false);
+		oneTest("firstExamplePaper/firstExamplePaper_extended", 10, 3, false);
 		oneTest("firstExamplePaper/firstExamplePaper", 5, 3, true);
 		oneTest("firstExamplePaper/firstExamplePaper", 4, 3, false);
 		oneTest("jhh/myexample7", 4, 0, true);
@@ -54,7 +54,7 @@ public class SafetyTest {
 		oneTest("jhh/myexample1", 10, 2, false);
 		oneTest("ndet/nondet_s3", 10, 0, false);
 		oneTest("ndet/nondet_s3", 10, 2, true);
-		oneTest("ndet/nondet_s3_noStrat", 10, 2, false);
+		oneTest("ndet/nondet_s3_noStrat", 15, 2, false);
 		oneTest("ndet/nondet_unnecessarily_noStrat", 15, 3, false);
 		oneTest("testingNets/envSkipsSys", 15, 3, false);
 	}

@@ -30,10 +30,6 @@ public class WhileNonDeterministicUnfolder extends NonDeterministicUnfolder {
 
 	@Override
 	public void createUnfolding() throws NetNotSafeException, NoSuitableDistributionFoundException, UnboundedException, FileNotFoundException {
-		// Initialize counter for unfolding
-		for (Place p : pg.getNet().getPlaces()) {
-			current.put(p.getId(), 1);
-		}
 
 		// Initialize queue
 		placesToUnfold = initializeQueue();
@@ -74,5 +70,33 @@ public class WhileNonDeterministicUnfolder extends NonDeterministicUnfolder {
 			}
 		}
 		return result;
+	}
+	
+	// TODO evaluate this (for usage in QUEUE approach) and think of better name
+	private boolean noUnfolding(Place p) {
+		boolean first = true;
+		Set<Place> cup = null;
+		for (Transition pre : p.getPreset()) {
+			Set<Place> preset = new HashSet<>(pre.getPreset());
+			preset.retainAll(pre.getPostset());
+			if (!preset.isEmpty()) {
+				return false;
+			}
+			if (first) {
+				cup = new HashSet<>(pre.getPreset());
+				first = false;
+			} else {
+				cup.retainAll(pre.getPreset());
+			}
+			if (cup.isEmpty()) {
+				return false;
+			}
+			for (Place prePre : pre.getPreset()) {
+				if (pg.getEnvPlaces().contains(prePre)) {
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 }
