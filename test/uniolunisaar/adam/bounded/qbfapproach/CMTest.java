@@ -8,6 +8,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import uniol.apt.adt.pn.PetriNet;
+import uniolunisaar.adam.ds.winningconditions.Safety;
 
 @Test
 public class CMTest { // Concurrent Machines / WF
@@ -25,7 +26,7 @@ public class CMTest { // Concurrent Machines / WF
 
 	private void oneTest(int ps1, int ps2, int n, int b) throws Exception {
 		PetriNet pn = Workflow.generate(ps1, ps2, true, true);
-		QBFSafetySolver sol = new QBFSafetySolver(pn, new QBFSolverOptions(n, b));
+		QBFSafetySolver sol = new QBFSafetySolver(pn, new Safety(), new QBFSolverOptions(n, b));
 		Assert.assertTrue(sol.existsWinningStrategy());
 	}
 }

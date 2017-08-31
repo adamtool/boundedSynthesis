@@ -8,6 +8,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import uniol.apt.adt.pn.PetriNet;
+import uniolunisaar.adam.ds.winningconditions.Safety;
 
 @Test
 public class SRTest {
@@ -21,7 +22,7 @@ public class SRTest {
 
 	private void oneTest(int robot1, int robot2, int n, int b) throws Exception {
 		PetriNet pn = SelfOrganizingRobots.generate(robot1, robot2, true, true);
-		QBFSafetySolver sol = new QBFSafetySolver(pn, new QBFSolverOptions(n, b));
+		QBFSafetySolver sol = new QBFSafetySolver(pn, new Safety(),  new QBFSolverOptions(n, b));
 		Assert.assertTrue(sol.existsWinningStrategy());
 	}
 }

@@ -5,6 +5,7 @@ import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
 import uniolunisaar.adam.generators.Workflow;
 
 import uniol.apt.adt.pn.PetriNet;
+import uniolunisaar.adam.ds.winningconditions.Safety;
 
 public class ConcurrentMachinesBenchmark {						//    190 sec
 	
@@ -42,7 +43,7 @@ public class ConcurrentMachinesBenchmark {						//    190 sec
 		PetriNet pn = Workflow.generate(ps1, ps2, true, true);
 		pn.setName("Benchmarks/ConcurrentMachines/" + "" + id + String.format("%02d", ps1) + "-" + String.format("%02d", ps2) + "-" + String.format("%02d", n) + "-" + b);
 		
-		QBFSafetySolver sol = new QBFSafetySolver(pn, new QBFSolverOptions(n, b));
+		QBFSafetySolver sol = new QBFSafetySolver(pn, new Safety(), new QBFSolverOptions(n, b));
 		
 		sol.writeQCIR();
 	}

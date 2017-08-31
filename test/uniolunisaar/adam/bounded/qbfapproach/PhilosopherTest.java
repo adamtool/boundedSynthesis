@@ -8,6 +8,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import uniol.apt.adt.pn.PetriNet;
+import uniolunisaar.adam.ds.winningconditions.Safety;
 
 @Test
 public class PhilosopherTest {
@@ -18,23 +19,23 @@ public class PhilosopherTest {
 		// no unfold: 2->4, 3->5, 4->6, 5->7 in 12,5s with 5->8 in Timeout
 
 		PetriNet pn = Philosopher.generateGuided(2, true, true);
-		QBFSafetySolver sol = new QBFSafetySolver(pn, new QBFSolverOptions(4, 0));
+		QBFSafetySolver sol = new QBFSafetySolver(pn, new Safety(), new QBFSolverOptions(4, 0));
 		Assert.assertTrue(sol.existsWinningStrategy());
 
 		pn = Philosopher.generateGuided(3, true, true);
-		sol = new QBFSafetySolver(pn, new QBFSolverOptions(5, 0));
+		sol = new QBFSafetySolver(pn, new Safety(), new QBFSolverOptions(5, 0));
 		Assert.assertTrue(sol.existsWinningStrategy());
 
 		pn = Philosopher.generateGuided(4, true, true);
-		sol = new QBFSafetySolver(pn, new QBFSolverOptions(6, 0));
+		sol = new QBFSafetySolver(pn, new Safety(), new QBFSolverOptions(6, 0));
 		Assert.assertTrue(sol.existsWinningStrategy());
 
 		pn = Philosopher.generateGuided(5, true, true);
-		sol = new QBFSafetySolver(pn, new QBFSolverOptions(7, 0));
+		sol = new QBFSafetySolver(pn,new Safety(),  new QBFSolverOptions(7, 0));
 		Assert.assertTrue(sol.existsWinningStrategy());
 
 		pn = Philosopher.generateGuided(6, true, true);
-		sol = new QBFSafetySolver(pn, new QBFSolverOptions(8, 0));
+		sol = new QBFSafetySolver(pn, new Safety(), new QBFSolverOptions(8, 0));
 		Assert.assertTrue(sol.existsWinningStrategy());
 	}
 

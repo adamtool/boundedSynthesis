@@ -41,8 +41,8 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 	// variable to store keys of calculated components for later use (special to this winning condition)
 	private int[] bad;
 
-	public QBFSafetySolver(PetriNet net, QBFSolverOptions so) throws UnboundedPGException {
-		super(new QBFPetriGame(net), new Safety(), so);
+	public QBFSafetySolver(PetriNet net, Safety win, QBFSolverOptions so) throws UnboundedPGException {
+		super(new QBFPetriGame(net), win, so);
 		bad = new int[pg.getN() + 1];
 	}
 

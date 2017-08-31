@@ -5,6 +5,7 @@ import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
 import uniolunisaar.adam.generators.Clerks;
 
 import uniol.apt.adt.pn.PetriNet;
+import uniolunisaar.adam.ds.winningconditions.Safety;
 
 public class DocumentWorkflowBenchmark {						//    190 sec
 	
@@ -145,7 +146,7 @@ public class DocumentWorkflowBenchmark {						//    190 sec
 		}
 		pn.setName("Benchmarks/DocumentWorkflow/" + "" + id + String.format("%02d", problemSize) + "-" + String.format("%02d", n) + "-" + b);
 		
-		QBFSafetySolver sol = new QBFSafetySolver(pn, new QBFSolverOptions(n, b));
+		QBFSafetySolver sol = new QBFSafetySolver(pn, new Safety(), new QBFSolverOptions(n, b));
 		
 		sol.writeQCIR();
 	}

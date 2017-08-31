@@ -8,6 +8,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import uniol.apt.adt.pn.PetriNet;
+import uniolunisaar.adam.ds.winningconditions.Safety;
 
 /*
  * NO MEMORY REQUIRED TO SOLVE
@@ -38,13 +39,13 @@ public class DWsTest { // Document Workflow / DW
 	
 	private void oneTestTrue(int problemSize, int n, int b) throws Exception {
 		PetriNet pn = Clerks.generateCP(problemSize, true, true);
-		QBFSafetySolver sol = new QBFSafetySolver(pn, new QBFSolverOptions(n, b));
+		QBFSafetySolver sol = new QBFSafetySolver(pn, new Safety(), new QBFSolverOptions(n, b));
 		Assert.assertTrue(sol.existsWinningStrategy());
 	}
 	
 	private void oneTestFalse(int problemSize, int n, int b) throws Exception {
 		PetriNet pn = Clerks.generateCP(problemSize, true, true);
-		QBFSafetySolver sol = new QBFSafetySolver(pn, new QBFSolverOptions(n, b));
+		QBFSafetySolver sol = new QBFSafetySolver(pn, new Safety(), new QBFSolverOptions(n, b));
 		Assert.assertFalse(sol.existsWinningStrategy());
 	}
 }

@@ -30,8 +30,8 @@ public class QBFReachabilitySolver extends QBFSolver<Reachability> {
 	// variable to store keys of calculated components for later use (special to this winning condition)
 	private int[] goodPlaces;
 
-	public QBFReachabilitySolver(PetriNet net, QBFSolverOptions so) throws UnboundedPGException {
-		super(new QBFPetriGame(net), new Reachability(), so);
+	public QBFReachabilitySolver(PetriNet net, Reachability win, QBFSolverOptions so) throws UnboundedPGException {
+		super(new QBFPetriGame(net), win, so);
 		goodPlaces = new int[pg.getN() + 1];
 	}
 

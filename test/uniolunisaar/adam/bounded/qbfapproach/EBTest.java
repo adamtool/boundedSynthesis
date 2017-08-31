@@ -6,6 +6,7 @@ import org.testng.annotations.Test;
 import uniol.apt.adt.pn.PetriNet;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSafetySolver;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
+import uniolunisaar.adam.ds.winningconditions.Safety;
 import uniolunisaar.adam.generators.EmergencyBreakdown;
 
 @Test
@@ -29,7 +30,7 @@ public class EBTest {
 
 	private void oneTest(int ps1, int ps2, int n, int b) throws Exception {
 		PetriNet pn = EmergencyBreakdown.createSafetyVersion(ps1, ps2, false);
-		QBFSafetySolver sol = new QBFSafetySolver(pn, new QBFSolverOptions(n, b));
+		QBFSafetySolver sol = new QBFSafetySolver(pn,new Safety(),  new QBFSolverOptions(n, b));
 		Assert.assertTrue(sol.existsWinningStrategy());
 	}
 }

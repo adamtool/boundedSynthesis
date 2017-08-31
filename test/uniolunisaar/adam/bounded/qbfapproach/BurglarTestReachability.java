@@ -6,6 +6,7 @@ import org.testng.annotations.Test;
 import uniol.apt.adt.pn.PetriNet;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFReachabilitySolver;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
+import uniolunisaar.adam.ds.winningconditions.Reachability;
 import uniolunisaar.adam.generators.SecuritySystem;
 
 @Test
@@ -21,7 +22,7 @@ public class BurglarTestReachability {
 	
 	private void oneTest(int problemSize, int n, int b, boolean result) throws Exception {
 		PetriNet pn = SecuritySystem.createReachabilityVersion(problemSize, false);
-		QBFReachabilitySolver sol = new QBFReachabilitySolver(pn, new QBFSolverOptions(n, b));
+		QBFReachabilitySolver sol = new QBFReachabilitySolver(pn,  new Reachability(), new QBFSolverOptions(n, b));
 		Assert.assertEquals(sol.existsWinningStrategy(), result);
 	}
 	

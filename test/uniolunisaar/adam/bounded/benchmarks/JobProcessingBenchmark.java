@@ -3,6 +3,7 @@ package uniolunisaar.adam.bounded.benchmarks;
 import uniol.apt.adt.pn.PetriNet;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSafetySolver;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
+import uniolunisaar.adam.ds.winningconditions.Safety;
 import uniolunisaar.adam.generators.ManufactorySystem;
 
 public class JobProcessingBenchmark {
@@ -33,7 +34,7 @@ public class JobProcessingBenchmark {
 		PetriNet pn = ManufactorySystem.generate(problemSize, true, true, true);
 		pn.setName("Benchmarks/JobProcessing/" + "" + id + String.format("%02d", problemSize) + "-" + String.format("%02d", n) + "-" + b);
 		
-		QBFSafetySolver sol = new QBFSafetySolver(pn, new QBFSolverOptions(n, b));
+		QBFSafetySolver sol = new QBFSafetySolver(pn, new Safety(), new QBFSolverOptions(n, b));
 		
 		sol.writeQCIR();
 	}

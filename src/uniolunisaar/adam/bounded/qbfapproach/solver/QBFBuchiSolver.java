@@ -35,8 +35,8 @@ public class QBFBuchiSolver extends QBFSolver<Buchi> {
 	// variable to store keys of calculated components for later use (special to this winning condition)
 	private int bl; // buchi loop
 
-	public QBFBuchiSolver(PetriNet net, QBFSolverOptions so) throws UnboundedPGException {
-		super(new QBFPetriGame(net), new Buchi(), so);
+	public QBFBuchiSolver(PetriNet net, Buchi win, QBFSolverOptions so) throws UnboundedPGException {
+		super(new QBFPetriGame(net), win, so);
 	}
 
 	protected void writeLoop() throws IOException {
