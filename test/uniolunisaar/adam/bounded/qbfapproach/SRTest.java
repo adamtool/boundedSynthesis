@@ -3,6 +3,7 @@ package uniolunisaar.adam.bounded.qbfapproach;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSafetySolver;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
 import uniolunisaar.adam.generators.SelfOrganizingRobots;
+import uniolunisaar.adam.tools.Tools;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -17,12 +18,19 @@ public class SRTest {
 	public void testSR() throws Exception { // only with simplifier no timeout
 		oneTest(2, 1, 6, 2);
 		//oneTest(3, 1, 7, 2);
-		//oneTest(4, 1, 8, 2);
+		// oneTest(4, 1, 8, 2);
 	}
 
 	private void oneTest(int robot1, int robot2, int n, int b) throws Exception {
 		PetriNet pn = SelfOrganizingRobots.generate(robot1, robot2, true, true);
-		QBFSafetySolver sol = new QBFSafetySolver(pn, new Safety(),  new QBFSolverOptions(n, b));
+		QBFSafetySolver sol = new QBFSafetySolver(pn, new Safety(), new QBFSolverOptions(n, b));
+		sol.existsWinningStrategy(); // calculate first, then output games, and then check for correctness
+		// TODO put this to an appropriate place in code
+		Tools.savePN2PDF("originalGame", sol.game.getNet(), false);
+		Tools.savePN2PDF("unfolding", sol.unfolding.getNet(), false);
+		if (sol.existsWinningStrategy()) {
+			Tools.savePN2PDF("strategy", sol.getStrategy(), false);
+		}
 		Assert.assertTrue(sol.existsWinningStrategy());
 	}
 }

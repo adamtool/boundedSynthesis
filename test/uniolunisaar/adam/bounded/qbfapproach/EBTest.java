@@ -8,6 +8,7 @@ import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSafetySolver;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
 import uniolunisaar.adam.ds.winningconditions.Safety;
 import uniolunisaar.adam.generators.EmergencyBreakdown;
+import uniolunisaar.adam.tools.Tools;
 
 @Test
 public class EBTest {
@@ -25,12 +26,19 @@ public class EBTest {
 
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testEB() throws Exception {
-		oneTest(1, 1, 15, 2);
+		oneTest(1, 1, 15, 3);
 	}
 
 	private void oneTest(int ps1, int ps2, int n, int b) throws Exception {
 		PetriNet pn = EmergencyBreakdown.createSafetyVersion(ps1, ps2, false);
 		QBFSafetySolver sol = new QBFSafetySolver(pn,new Safety(),  new QBFSolverOptions(n, b));
+		sol.existsWinningStrategy(); // calculate first, then output games, and then check for correctness
+		// TODO put this to an appropriate place in code
+		Tools.savePN2PDF("originalGame", sol.game.getNet(), false);
+		Tools.savePN2PDF("unfolding", sol.unfolding.getNet(), false);
+		if (sol.existsWinningStrategy()) {
+			Tools.savePN2PDF("strategy", sol.getStrategy(), false);
+		}
 		Assert.assertTrue(sol.existsWinningStrategy());
 	}
 }

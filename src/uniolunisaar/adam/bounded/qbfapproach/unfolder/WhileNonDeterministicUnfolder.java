@@ -29,7 +29,7 @@ public class WhileNonDeterministicUnfolder extends NonDeterministicUnfolder {
 	}
 
 	@Override
-	public void createUnfolding() throws NetNotSafeException, NoSuitableDistributionFoundException, UnboundedException, FileNotFoundException {
+	protected void createUnfolding() throws NetNotSafeException, NoSuitableDistributionFoundException, UnboundedException, FileNotFoundException {
 
 		// Initialize queue
 		placesToUnfold = initializeQueue();

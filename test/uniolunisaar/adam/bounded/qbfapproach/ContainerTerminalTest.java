@@ -52,7 +52,7 @@ public class ContainerTerminalTest {
         return out;
     }
 
-    @Test(dataProvider = "conTerminal")
+    //@Test(dataProvider = "conTerminal")
     public void testContainerTerminal(int containerPlaces, boolean hasStrategy) throws NetNotSafeException, NetNotConcurrencyPreservingException, NoStrategyExistentException, IOException, InterruptedException, FileNotFoundException, ModuleException, NoSuitableDistributionFoundException, SolverDontFitPetriGameException, UnboundedPGException, CouldNotFindSuitableWinningConditionException {
         final String path = outputDir;
         String name = containerPlaces + "_conTerminal";

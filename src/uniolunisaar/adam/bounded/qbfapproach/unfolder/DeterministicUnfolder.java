@@ -6,7 +6,6 @@ import java.util.Set;
 
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
-import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
@@ -20,17 +19,12 @@ import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 
 public class DeterministicUnfolder extends Unfolder {
 
-	Set<Place> consideredPlaces;
-
 	public DeterministicUnfolder(QBFPetriGame QBFPetriGame, Map<String, Integer> max) {
 		super(QBFPetriGame, max);
-		QBFPetriGame pgCopy = pg.copy("temp");
-		PGSimplifier.simplifyPG(pgCopy, false, false);
-		consideredPlaces = pgCopy.getNet().getPlaces();
 	}
 
 	@Override
-	public void createUnfolding() throws NetNotSafeException, NoSuitableDistributionFoundException {
+	protected void createUnfolding() throws NetNotSafeException, NoSuitableDistributionFoundException {
 		// Start search
 		Place nextToUnfold;
 		while ((nextToUnfold = findNextPlaceToUnfold()) != null) {
@@ -38,7 +32,7 @@ public class DeterministicUnfolder extends Unfolder {
 		}
 	}
 
-	public Place findNextPlaceToUnfold() {
+	private Place findNextPlaceToUnfold() {
 		// first try environment places
 		for (Place env : pg.getEnvPlaces()) {
 			if (unfoldCondition(env))
@@ -52,7 +46,7 @@ public class DeterministicUnfolder extends Unfolder {
 		return null;
 	}
 
-	public void unfoldPlace(Place unfold) {
+	private void unfoldPlace(Place unfold) {
 		int limit = getLimitValue(unfold) - getCurrentValue(unfold);
 		int required = (int) (unfold.getPreset().size() + unfold.getInitialToken().getValue() - 1);
 		int bound = Math.min(limit, required);
@@ -72,7 +66,7 @@ public class DeterministicUnfolder extends Unfolder {
 				increaseCurrentValue(unfold);
 			}
 		}
-		
+
 		for (Transition t : otherTransitions) {
 			if (bound-- > 0) {
 				Place newP = copyPlace(unfold);
@@ -83,26 +77,9 @@ public class DeterministicUnfolder extends Unfolder {
 		}
 	}
 
-	public void unfoldPlaceOLD(Place unfold) {
-		if (getCurrentValue(unfold) <= getLimitValue(unfold)) {
-			int iterations = unfold.getPreset().size() - 1;
-			for (int i = 0; i < iterations; ++i) {
-				Place newP = copyPlace(unfold);
-				// change one existing transition i.e. unfold
-				// again choose first, maybe one can do better
-				for (Transition t : unfold.getPreset()) {
-					pg.getNet().removeFlow(t, unfold);
-					pg.getNet().createFlow(t, newP);
-					break;
-				}
-				unfoldPlaceRecursion(newP, unfold);
-			}
-		}
-	}
-
 	// TODO detect loops early before limit is reached
 
-	public void unfoldPlaceRecursion(Place newP, Place oldP) {
+	private void unfoldPlaceRecursion(Place newP, Place oldP) {
 		for (Transition post : oldP.getPostset()) {
 			Transition newT = copyTransition(post);
 			// copy incoming transitions
@@ -131,31 +108,5 @@ public class DeterministicUnfolder extends Unfolder {
 				}
 			}
 		}
-	}
-	
-	
-	private Place copyPlace(Place p) {
-		String id = getTruncatedId(p.getId());
-		Place ret = pg.getNet().createPlace(id + "__" + current.get(id));
-		current.put(id, current.get(id) + 1);
-		copyEnv(ret, p);
-		for (Transition trans : p.getPostset()) {
-			Transition copy = copyTransition(trans);
-			for (Place pre : trans.getPreset()) {
-				if (pre.equals(p)) {
-					pn.createFlow(ret, copy);
-				} else {
-					pn.createFlow(pre, copy);
-				}
-			}
-			for (Place post : trans.getPostset()) {
-				if (post.equals(p)) {
-					pn.createFlow(copy, ret);
-				} else {
-					pn.createFlow(copy, post);
-				}
-			}
-		}
-		return ret;
 	}
 }

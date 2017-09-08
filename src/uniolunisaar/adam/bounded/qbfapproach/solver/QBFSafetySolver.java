@@ -20,6 +20,7 @@ import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.DeterministicUnfolder;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.ForNonDeterministicUnfolder;
+import uniolunisaar.adam.bounded.qbfapproach.unfolder.NewDeterministicUnfolder;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.WhileNonDeterministicUnfolder;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
@@ -104,12 +105,6 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 		unfolding = pg.copy("unfolding");
 		unfolding_winCon = new Safety();
 		unfolding_winCon.buffer(unfolding);
-		try {
-			Tools.savePN2PDF("unfolding", unfolding.getNet(), false);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 
 		seqImpliesWin = new int[pg.getN() + 1];
 		transitions = pn.getTransitions().toArray(new Transition[0]);
@@ -138,7 +133,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 		// ensure deterministic decision.
 		// It is required that these decide for exactly one transition which
 		// is directly encoded into the problem.
-		int index_for_non_det_unfolding_info = enumerateStratForNonDetUnfold(/*new HashMap<>()*/unfolder.systemHasToDecideForAtLeastOne);
+		int index_for_non_det_unfolding_info = enumerateStratForNonDetUnfold(unfolder.systemHasToDecideForAtLeastOne);
 		if (index_for_non_det_unfolding_info != -1) {
 			phi.add(index_for_non_det_unfolding_info);
 		}
@@ -206,9 +201,9 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 			// Read caqe's output
 			BufferedReader inputReader = new BufferedReader(new InputStreamReader(pr.getInputStream()));
 			String line_read;
-			outputCAQE = "";
+			outputQBFsolver = "";
 			while ((line_read = inputReader.readLine()) != null) {
-				outputCAQE += line_read + "\n";
+				outputQBFsolver += line_read + "\n";
 			}
 
 			exitcode = pr.waitFor();
@@ -231,7 +226,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 			System.out.println("SAT");
 			return true;
 		} else {
-			System.out.println("QCIR ERROR with FULL output:" + outputCAQE);
+			System.out.println("QCIR ERROR with FULL output:" + outputQBFsolver);
 			solvable = false;
 			sat = null;
 			error = true;
@@ -242,7 +237,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 	@Override
 	protected PetriNet calculateStrategy() throws NoStrategyExistentException {
 		if (existsWinningStrategy()) {
-			for (String outputCAQE_line : outputCAQE.split("\n")) {
+			for (String outputCAQE_line : outputQBFsolver.split("\n")) {
 				if (outputCAQE_line.startsWith("V")) {
 					String[] parts = outputCAQE_line.split(" ");
 					for (int i = 0; i < parts.length; ++i) {
@@ -296,6 +291,12 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 					}
 				}
 			}
+			// There were no decision points for the system, thus the previous loop did not leave the method
+			PGSimplifier.simplifyPG(pg, true, false);
+			strategy = pg.copy("strategy");
+			strategy_winCon = new Safety();
+			strategy_winCon.buffer(strategy);
+			return pg.getNet();
 		}
 		throw new NoStrategyExistentException();
 	}

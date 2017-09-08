@@ -54,11 +54,12 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 	public Map<Integer, String> exists_transitions = new HashMap<>();
 	public Map<Integer, String> forall_places = new HashMap<>();
 
-	protected String outputCAQE = "";
+	protected String outputQBFsolver = "";
 
 	// TODO maybe optional arguments
 	public static String linebreak = "\n"; // Controller
 	public static String additionalSystemName = "AS___"; // Controller
+	public static String additionalSystemUniqueDivider = "_0_"; // Controller
 	public static String solver = "quabs"; // Controller
 	public static boolean deterministicStrat = true; // Controller
 

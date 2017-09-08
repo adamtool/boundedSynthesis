@@ -219,9 +219,9 @@ public class QBFReachabilitySolver extends QBFSolver<Reachability> {
 			// Read caqe's output
 			BufferedReader inputReader = new BufferedReader(new InputStreamReader(pr.getInputStream()));
 			String line_read;
-			outputCAQE = "";
+			outputQBFsolver = "";
 			while ((line_read = inputReader.readLine()) != null) {
-				outputCAQE += line_read + "\n";
+				outputQBFsolver += line_read + "\n";
 			}
 
 			exitcode = pr.waitFor();
@@ -244,7 +244,7 @@ public class QBFReachabilitySolver extends QBFSolver<Reachability> {
 			System.out.println("SAT");
 			return true;
 		} else {
-			System.out.println("QCIR ERROR with FULL output:" + outputCAQE);
+			System.out.println("QCIR ERROR with FULL output:" + outputQBFsolver);
 			solvable = false;
 			sat = null;
 			error = true;
@@ -255,7 +255,7 @@ public class QBFReachabilitySolver extends QBFSolver<Reachability> {
 	@Override
 	protected PetriNet calculateStrategy() throws NoStrategyExistentException {
 		if (existsWinningStrategy()) {
-			for (String outputCAQE_line : outputCAQE.split("\n")) {
+			for (String outputCAQE_line : outputQBFsolver.split("\n")) {
 				if (outputCAQE_line.startsWith("V")) {
 					String[] parts = outputCAQE_line.split(" ");
 					for (int i = 0; i < parts.length; ++i) {

@@ -32,13 +32,28 @@ public class BuechiTest {
 		test ("decInLoop", false, 10, 0);
 		test ("decInLoop", true, 10, 2);
 		test ("decInLoop", false, 5, 2);
+		test ("firstExamplePaperBuchi", true, 10, 3);
+		test ("firstExamplePaperBuchi", false, 10, 2);
+		test ("firstExamplePaperBuchi", false, 10, 0);
+		test ("goodBadLoop0", true, 10, 0);
+		test ("goodBadLoop1", true, 10, 0);
+		test ("goodBadLoop2", true, 10, 0);
+		test ("oneGoodInfEnv", false, 10, 0);
+		test ("oneGoodInfEnv", false, 10, 3);
+		test ("nondet", false, 10, 0);
+		test ("nondet", false, 10, 3);
 	}
 
 	private void test(String name, boolean result, int n, int b) throws Exception {
 		final String path = System.getProperty("examplesfolder") + File.separator + "buechi" + File.separator + "toyExamples" + File.separator + name + ".apt";
 		PetriNet pn = Tools.getPetriNet(path);
-		System.out.println("NAME: " + pn.getName());
 		QBFBuchiSolver sol = new QBFBuchiSolver(pn, new Buchi(), new QBFSolverOptions(n, b));
+		sol.existsWinningStrategy();
+		Tools.savePN2PDF("originalGame", sol.game.getNet(), false);
+		Tools.savePN2PDF("unfolding", sol.unfolding.getNet(), false);
+		if (sol.existsWinningStrategy()) {
+			Tools.savePN2PDF("strategy", sol.getStrategy(), false);
+		}
 		Assert.assertEquals(sol.existsWinningStrategy(), result);
 	}
 }

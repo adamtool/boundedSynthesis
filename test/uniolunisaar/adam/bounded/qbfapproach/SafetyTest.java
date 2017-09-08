@@ -23,10 +23,11 @@ public class SafetyTest {
 	
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void test() throws Exception {
-		//oneTest("tests/watchdog5", 15, 3, true);
+		//oneTest("tests/watchdog5", 15, 3, true);		// TODO search for bounds
 		oneTest("jhh/myexample2", 10, 2, true);
+		oneTest("jhh/myexample2", 10, 0, true);
 		oneTest("ndet/nondet", 5, 2, false); //TRUE
-		oneTest("burglar/burglar", 7, 2, true);
+		oneTest("burglar/burglar", 7, 3, true);
 		oneTest("burglar/burglar", 6, 2, false);
 		oneTest("jhh/robots_true", 20, 0, true);
 		oneTest("jhh/robots_false", 20, 0, false);
@@ -34,13 +35,13 @@ public class SafetyTest {
 		oneTest("constructedExample/constructedExample", 3, 0, false);
 		oneTest("constructedExampleWithoutLoop/constructedExampleWithoutLoop", 4, 0, true);
 		oneTest("constructedExampleWithoutLoop/constructedExampleWithoutLoop", 3, 0, false);
-		//oneTest("container/container", 10, 2, true);	// TODO search for bound
+		//oneTest("container/container", 10, 2, true);	// TODO search for bounds
 		oneTest("container/container", 20, 0, false);
 		oneTest("deadlock/missDeadlock", 4, 0, true);
 		oneTest("deadlock/missDeadlock", 3, 0, false);
 		oneTest("firstExamplePaper/firstExamplePaper_extended", 10, 0, false);
 		oneTest("firstExamplePaper/firstExamplePaper_extended", 10, 3, false);
-		oneTest("firstExamplePaper/firstExamplePaper", 5, 3, true);
+		oneTest("firstExamplePaper/firstExamplePaper", 10, 10, true);
 		oneTest("firstExamplePaper/firstExamplePaper", 4, 3, false);
 		oneTest("jhh/myexample7", 4, 0, true);
 		oneTest("jhh/myexample7", 3, 0, false);
