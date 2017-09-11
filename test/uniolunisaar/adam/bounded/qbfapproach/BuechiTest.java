@@ -24,6 +24,9 @@ public class BuechiTest {
 	
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testBüchi() throws Exception {
+		test ("independentloops", false, 10, 0);
+		test ("independentloops", false, 10, 2);
+		test ("independentloops", false, 10, 3);
 		test ("finiteA", false, 20, 5);
 		test ("infiniteA", true, 10, 0);
 		test ("infiniteB", false, 10, 0);
