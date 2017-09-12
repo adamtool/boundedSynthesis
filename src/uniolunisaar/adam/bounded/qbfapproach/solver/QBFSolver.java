@@ -442,6 +442,36 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 		}
 		return writeOr(outerOr);
 	}
+	
+	public String getUnfair(int i, int j) throws IOException {
+		Set<Integer> outerOr = new HashSet<>();
+		for (Place p : pn.getPlaces()) {
+			Set<Integer> outerAnd = new HashSet<>();
+			for (int k = i; k < j; ++k) {
+				outerAnd.add(getVarNr(p.getId() + "." + k, true));
+				Set<Integer> innerOr = new HashSet<>();
+				for (Transition t : p.getPreset()) {
+					Set<Integer> innerAnd = new HashSet<>();
+					for (Place place : t.getPreset()) {
+						innerAnd.add(getVarNr(place.getId() + "." + k, true));
+						innerAnd.add(addSysStrategy(place, t));
+					}
+					int innerAndNumber = createUniqueID();
+					writer.write(innerAndNumber + " = " + writeAnd(innerAnd));
+					innerAnd.add(innerAndNumber);
+					
+					outerAnd.add(-getOneTransition(t, k));
+				}
+				int innerOrNumber = createUniqueID();
+				writer.write(innerOrNumber + " = " + writeOr(innerOr));
+				outerAnd.add(innerOrNumber);
+			}
+			int outerAndNumber = createUniqueID();
+			writer.write(outerAndNumber + " = " + writeAnd(outerAnd));
+			outerOr.add(outerAndNumber);
+		}
+		return writeOr(outerOr);
+	}
 
 	private Set<Place> unfoldingsOf(Place place) {
 		Set<Place> result = new HashSet<>();

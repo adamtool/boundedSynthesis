@@ -24,10 +24,12 @@ public class ReachabilityTest {
 	
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testReachability() throws Exception {
-		//test ("jhh", "myExample1", false, 10, 0);
+		test ("toyExamples", "simple", false, 10, 0);
 		test ("toyExamples", "question", false, 10, 2);
+		test ("toyExamples", "shortestStrategy0", true, 10, 0);
+		test ("toyExamples", "shortestStrategy1", true, 10, 0);
 		
-		/*// correct because after unfolding all runs can be forced by strategy to reach place-to-reach
+		// correct because after unfolding all runs can be forced by strategy to reach place-to-reach
 		test ("burglar", "burglar", false, 10, 0);
 		test ("burglar", "burglar", true, 10, 2);
 		
@@ -56,13 +58,19 @@ public class ReachabilityTest {
 		test ("toyExamples", "type2B", false, 10, 2);
 		
 		// correct because the strategy cannot both force reaching the place and afterwards be deadlock-avoiding
-		test ("toyExamples", "question", false, 10, 0)*/
+		test ("toyExamples", "question", false, 10, 0);
 	}
 
 	private void test(String folder, String name, boolean result, int n, int b) throws Exception {
 		final String path = System.getProperty("examplesfolder") + File.separator + "reachability" + File.separator + folder + File.separator + name + ".apt";
 		PetriNet pn = Tools.getPetriNet(path);
 		QBFReachabilitySolver sol = new QBFReachabilitySolver(pn, new Reachability(), new QBFSolverOptions(n, b));
+		sol.existsWinningStrategy();
+		Tools.savePN2PDF("originalGame", sol.game.getNet(), false);
+		Tools.savePN2PDF("unfolding", sol.unfolding.getNet(), false);
+		if (sol.existsWinningStrategy()) {
+			Tools.savePN2PDF("strategy", sol.getStrategy(), false);
+		}
 		Assert.assertEquals(sol.existsWinningStrategy(), result);
 	}
 }
