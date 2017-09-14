@@ -93,14 +93,7 @@ public class QBFReachabilitySolver extends QBFSolver<Reachability> {
 		for (int i = 1; i <= pg.getN(); ++i) {
 			if (goodPlaces[i] != 0) {
 				or.add(goodPlaces[i]);
-			} else {
-				// empty set of places to reach never lets system win
-				Pair<Boolean, Integer> result = getVarNrWithResult("or()");
-				if (result.getFirst()) {
-					writer.write(result.getSecond() + " = or()" + QBFSolver.linebreak);
-				}
-				or.add(result.getSecond());
-			}
+			} 
 		}
 		int orID = createUniqueID();
 		writer.write(orID + " = " + writeOr(or));
@@ -129,7 +122,6 @@ public class QBFReachabilitySolver extends QBFSolver<Reachability> {
 		unfolding_winCon = new Safety();
 		unfolding_winCon.buffer(unfolding);
 
-		seqImpliesWin = new int[pg.getN() + 1];
 		transitions = pn.getTransitions().toArray(new Transition[0]);
 		flowSubFormulas = new int[pg.getN() * pn.getTransitions().size()];
 		deadlockSubFormulas = new int[(pg.getN() + 1) * pn.getTransitions().size()];
@@ -151,6 +143,7 @@ public class QBFReachabilitySolver extends QBFSolver<Reachability> {
 			writeDeterministic();
 			writeWinning();
 			writeLoop();
+			writeUnfair();
 
 			Set<Integer> phi = new HashSet<>();
 			// When unfolding non-deterministically we add system places to
@@ -168,15 +161,15 @@ public class QBFReachabilitySolver extends QBFSolver<Reachability> {
 				phi.add(seqImpliesWin[i]);
 			}
 
-			int wnandLoop = createUniqueID();
-			Set<Integer> wnandLoopSet = new HashSet<>();
-			wnandLoopSet.add(l);
-			wnandLoopSet.add(win[pg.getN()]);
-			writer.write(wnandLoop + " = " + writeAnd(wnandLoopSet));
-
+			int winandLoop = createUniqueID();
+			Set<Integer> winandLoopSet = new HashSet<>();
+			winandLoopSet.add(l);
+			winandLoopSet.add(win[pg.getN()]);
+			writer.write(winandLoop + " = " + writeAnd(winandLoopSet));
+			
 			// TODO loop direkt bei getWinning hinzufügen
 			seqImpliesWin[pg.getN()] = createUniqueID();
-			writer.write(seqImpliesWin[pg.getN()] + " = " + "or(-" + seq[pg.getN()] + "," + wnandLoop + ")" + QBFSolver.linebreak);
+			writer.write(seqImpliesWin[pg.getN()] + " = " + "or(-" + seq[pg.getN()] + "," + winandLoop + "," + u + ")" + QBFSolver.linebreak);
 			phi.add(seqImpliesWin[pg.getN()]);
 
 			writer.write("1 = " + writeAnd(phi));

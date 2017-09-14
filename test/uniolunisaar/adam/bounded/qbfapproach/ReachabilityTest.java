@@ -25,7 +25,7 @@ public class ReachabilityTest {
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testReachability() throws Exception {
 		test ("toyExamples", "simple", false, 10, 0);
-		test ("toyExamples", "question", false, 10, 2);
+		test ("toyExamples", "question", true, 10, 2);
 		test ("toyExamples", "shortestStrategy0", true, 10, 0);
 		test ("toyExamples", "shortestStrategy1", true, 10, 0);
 		
@@ -43,9 +43,10 @@ public class ReachabilityTest {
 		test ("ndet", "nondet", false, 10, 2);
 		test ("ndet", "nondet2", false, 10, 2);
 		
-		// correct because there is an infinite env-loop
-		test ("toyExamples", "infiniteA", false, 10, 0);
+		// correct because unfair loops should not change the result
+		test ("toyExamples", "infiniteA", true, 10, 0);
 		test ("toyExamples", "infiniteB", false, 10, 0);
+		test ("toyExamples", "infiniteC", false, 10, 0);
 	
 		// correct as for some env behavior the place-to-reach is not reached
 		test ("toyExamples", "notReachable", false, 10, 0);

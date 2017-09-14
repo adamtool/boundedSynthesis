@@ -126,6 +126,7 @@ public class QBFBuchiSolver extends QBFSolver<Buchi> {
 			writeSequence();
 			writeDeterministic();
 			writeLoop();
+			writeUnfair();
 			writeWinning();
 
 			Set<Integer> phi = new HashSet<>();
@@ -149,7 +150,7 @@ public class QBFBuchiSolver extends QBFSolver<Buchi> {
 			writer.write(wnandLoop + " = " + writeAnd(wnandLoopSet));
 
 			seqImpliesWin[pg.getN()] = createUniqueID();
-			writer.write(seqImpliesWin[pg.getN()] + " = " + "or(-" + seq[pg.getN()] + "," + wnandLoop + ")" + QBFSolver.linebreak);
+			writer.write(seqImpliesWin[pg.getN()] + " = " + "or(-" + seq[pg.getN()] + "," + wnandLoop + "," + u + ")" + QBFSolver.linebreak);
 			phi.add(seqImpliesWin[pg.getN()]);
 
 			writer.write("1 = " + writeAnd(phi));

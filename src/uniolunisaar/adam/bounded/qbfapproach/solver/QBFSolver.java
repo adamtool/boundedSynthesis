@@ -21,6 +21,7 @@ import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
+import uniolunisaar.adam.bounded.qbfapproach.unfolder.Unfolder;
 import uniolunisaar.adam.ds.solver.Solver;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 
@@ -36,6 +37,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 	// variable to store keys of calculated components for later use (shared among all solvers)
 	protected int in;
 	protected int l;
+	protected int u;
 	protected int[] fl;
 	protected int[] det;
 	protected int[] dlt;
@@ -70,14 +72,14 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 	// working copy of the game
 	protected QBFPetriGame pg;
 	protected PetriNet pn;
-	
+
 	public QBFPetriGame game;
 	protected WinningCondition game_winCon;
 	public QBFPetriGame unfolding;
 	protected WinningCondition unfolding_winCon;
 	public QBFPetriGame strategy;
 	protected WinningCondition strategy_winCon;
-	
+
 	// Solving
 	protected BufferedWriter writer;
 	protected int variablesCounter = 2; // 1 reserved for phi
@@ -95,7 +97,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 		pg.setN(so.getN());
 		pg.setB(so.getB());
 		pn = pg.getNet();
-		
+
 		fl = new int[pg.getN() + 1];
 		det = new int[pg.getN() + 1];
 		dlt = new int[pg.getN() + 1];
@@ -113,7 +115,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 			prefix += lexicon.charAt(rand.nextInt(lexicon.length()));
 		}
 		try {
-			file = File.createTempFile(prefix, /*pn.getName() +*/ ".qcir");
+			file = File.createTempFile(prefix, /* pn.getName() + */ ".qcir");
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -191,7 +193,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 			}
 		}
 	}
-	
+
 	protected void writeTerminating() throws IOException {
 		String[] terminating = new String[pg.getN() + 1];
 		terminating = getTerminating();
@@ -238,7 +240,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 			}
 		}
 	}
-	
+
 	protected void writeDeadlocksterm() throws IOException {
 		Set<Integer> or = new HashSet<>();
 		for (int i = 1; i <= pg.getN(); ++i) {
@@ -392,7 +394,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 		writer.write(number + " = " + writeOr(or));
 		return number;
 	}
-	
+
 	protected void writeLoop() throws IOException {
 		String loop = getLoopIJ();
 		l = createUniqueID();
@@ -417,7 +419,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 		}
 		return writeOr(or);
 	}
-	
+
 	// wahrscheinlich nur hilfreich für deterministic unfolding, macht aber auf jeden fall nichts kaputt, wohl nur langsamer
 	public String getLoopIJunfolded() throws IOException {
 		Set<Integer> outerOr = new HashSet<>();
@@ -442,33 +444,60 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 		}
 		return writeOr(outerOr);
 	}
-	
-	public String getUnfair(int i, int j) throws IOException {
+
+	protected void writeUnfair() throws IOException {
+		String unfair = getUnfair();
+		u = createUniqueID();
+		writer.write(u + " = " + unfair);
+	}
+
+	public String getUnfair() throws IOException {
 		Set<Integer> outerOr = new HashSet<>();
-		for (Place p : pn.getPlaces()) {
-			Set<Integer> outerAnd = new HashSet<>();
-			for (int k = i; k < j; ++k) {
-				outerAnd.add(getVarNr(p.getId() + "." + k, true));
-				Set<Integer> innerOr = new HashSet<>();
-				for (Transition t : p.getPreset()) {
-					Set<Integer> innerAnd = new HashSet<>();
-					for (Place place : t.getPreset()) {
-						innerAnd.add(getVarNr(place.getId() + "." + k, true));
-						innerAnd.add(addSysStrategy(place, t));
-					}
-					int innerAndNumber = createUniqueID();
-					writer.write(innerAndNumber + " = " + writeAnd(innerAnd));
-					innerAnd.add(innerAndNumber);
-					
-					outerAnd.add(-getOneTransition(t, k));
+		for (int i = 1; i < pg.getN(); ++i) {
+			for (int j = i + 2; j <= pg.getN(); ++j) {
+				Set<Integer> and = new HashSet<>();
+				for (Place p : pn.getPlaces()) {
+					int from = getVarNr(p.getId() + "." + i, true);
+					int to = getVarNr(p.getId() + "." + j, true);
+					and.add(writeImplication(from, to));
+					and.add(writeImplication(to, from));
 				}
-				int innerOrNumber = createUniqueID();
-				writer.write(innerOrNumber + " = " + writeOr(innerOr));
-				outerAnd.add(innerOrNumber);
+				Set<Integer> or = new HashSet<>();
+				for (Place p : pn.getPlaces()) {
+					Set<Integer> outerAnd = new HashSet<>();
+					for (int k = i; k < j; ++k) {
+						outerAnd.add(getVarNr(p.getId() + "." + k, true));
+						Set<Integer> innerOr = new HashSet<>();
+						for (Transition t : p.getPostset()) {
+							Set<Integer> innerAnd = new HashSet<>();
+							for (Place place : t.getPreset()) {
+								innerAnd.add(getVarNr(place.getId() + "." + k, true));
+								int strat = addSysStrategy(place, t);
+								if (strat != 0) {
+									innerAnd.add(strat);
+								}
+							}
+							int innerAndNumber = createUniqueID();
+							writer.write(innerAndNumber + " = " + writeAnd(innerAnd));
+							innerOr.add(innerAndNumber);
+
+							outerAnd.add(-getOneTransition(t, k));
+						}
+						int innerOrNumber = createUniqueID();
+						writer.write(innerOrNumber + " = " + writeOr(innerOr));
+						outerAnd.add(innerOrNumber);
+					}
+					int outerAndNumber = createUniqueID();
+					writer.write(outerAndNumber + " = " + writeAnd(outerAnd));
+					or.add(outerAndNumber);
+				}
+				int orNumber = createUniqueID();
+				writer.write(orNumber + " = " + writeOr(or));
+				and.add(orNumber);
+				int andNumber = createUniqueID();
+				writer.write(andNumber + " = " + writeAnd(and));
+				outerOr.add(andNumber);
 			}
-			int outerAndNumber = createUniqueID();
-			writer.write(outerAndNumber + " = " + writeAnd(outerAnd));
-			outerOr.add(outerAndNumber);
 		}
 		return writeOr(outerOr);
 	}
@@ -476,7 +505,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 	private Set<Place> unfoldingsOf(Place place) {
 		Set<Place> result = new HashSet<>();
 		for (Place p : pn.getPlaces()) {
-			if (/*!p.equals(place) &&*/ getTruncatedId(place.getId()).equals(getTruncatedId(p.getId()))) { // forcing into different unfolded place yields more necessary unfoldings
+			if (/* !p.equals(place) && */ getTruncatedId(place.getId()).equals(getTruncatedId(p.getId()))) { // forcing into different unfolded place yields more necessary unfoldings
 				result.add(p);
 			}
 		}
@@ -503,7 +532,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 					for (Transition t : p.getPostset()) {
 						int number = createVariable(p.getId() + ".." + t.getId());
 						exists.add(number);
-						//System.out.println(number + " = " + p.getId() + ".." + t.getId());
+						// System.out.println(number + " = " + p.getId() + ".." + t.getId());
 						exists_transitions.put(number, p.getId() + ".." + t.getId());
 					}
 				} else {
@@ -514,7 +543,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 							truncatedIDs.add(truncatedID);
 							int number = createVariable(p.getId() + ".." + truncatedID);
 							exists.add(number);
-							//System.out.println(number + " = " + p.getId() + ".." + truncatedID);
+							// System.out.println(number + " = " + p.getId() + ".." + truncatedID);
 							exists_transitions.put(number, p.getId() + ".." + truncatedID);
 						}
 					}
@@ -530,7 +559,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 			for (int i = 1; i <= pg.getN(); ++i) {
 				int number = createVariable(p.getId() + "." + i);
 				forall.add(number);
-				//System.out.println(number + " = " + p.getId() + "." + i);
+				// System.out.println(number + " = " + p.getId() + "." + i);
 				forall_places.put(number, p.getId() /* + "." + i */);
 			}
 		}
@@ -549,22 +578,22 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 		int or_index;
 		Set<Integer> or = new HashSet<>();
 		for (Place p : additionalInfoForNonDetUnfl.keySet()) {
-			//if (endsWithEnvPlace(p)) {				// TODO is this right?
-				transitions = additionalInfoForNonDetUnfl.get(p);
-				or.clear();
-				for (Transition t : transitions) {
-					or.add(getVarNr(p.getId() + ".." + t.getId(), true));
-				}
-				or_index = createUniqueID();
-				writer.write(or_index + " = " + writeOr(or));
-				and.add(or_index);
-			//}
+			// if (endsWithEnvPlace(p)) { // TODO is this right?
+			transitions = additionalInfoForNonDetUnfl.get(p);
+			or.clear();
+			for (Transition t : transitions) {
+				or.add(getVarNr(p.getId() + ".." + t.getId(), true));
+			}
+			or_index = createUniqueID();
+			writer.write(or_index + " = " + writeOr(or));
+			and.add(or_index);
+			// }
 		}
 		int index = createUniqueID();
 		writer.write(index + " = " + writeAnd(and));
 		return index;
 	}
-	
+
 	// Additional information from nondeterministic unfolding is utilized:
 	// for each place a set of transitions is given of which EXACTLY one has to
 	// be activated by the strategy to be deadlock-avoiding
@@ -592,7 +621,8 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 					}
 				}
 				innerAnd_index = createUniqueID();
-				writer.write(innerAnd_index + " = " + writeAnd(innerAnd));;
+				writer.write(innerAnd_index + " = " + writeAnd(innerAnd));
+				;
 				or.add(innerAnd_index);
 			}
 			or_index = createUniqueID();

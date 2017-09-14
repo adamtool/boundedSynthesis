@@ -24,8 +24,12 @@ public class SafetyTest {
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void test() throws Exception {
 		//oneTest("tests/watchdog5", 15, 3, true);		// TODO search for bounds
+		oneTest("jhh/myexample1", 10, 0, false);
+		oneTest("jhh/myexample1", 10, 2, false);
 		oneTest("jhh/myexample2", 10, 2, true);
 		oneTest("jhh/myexample2", 10, 0, true);
+		oneTest("jhh/myexample7", 4, 0, true);
+		oneTest("jhh/myexample7", 3, 0, false);
 		oneTest("ndet/nondet", 5, 2, false); //TRUE
 		oneTest("burglar/burglar", 7, 3, true);
 		oneTest("burglar/burglar", 6, 2, false);
@@ -43,14 +47,10 @@ public class SafetyTest {
 		oneTest("firstExamplePaper/firstExamplePaper_extended", 10, 3, false);
 		oneTest("firstExamplePaper/firstExamplePaper", 10, 10, true);
 		oneTest("firstExamplePaper/firstExamplePaper", 4, 3, false);
-		oneTest("jhh/myexample7", 4, 0, true);
-		oneTest("jhh/myexample7", 3, 0, false);
 		oneTest("ma_vsp/vsp_1_withBadPlaces", 3, 0, true);
 		oneTest("ma_vsp/vsp_1_withBadPlaces", 2, 0, false);
 		oneTest("firstExamplePaper/firstExamplePaper", 10, 3, true);
 		oneTest("firstExamplePaper/firstExamplePaper", 10, 2, false);
-		oneTest("jhh/myexample1", 10, 0, false);
-		oneTest("jhh/myexample1", 10, 2, false);
 		oneTest("ndet/nondet_s3", 10, 0, false);
 		oneTest("ndet/nondet_s3", 10, 2, true);
 		oneTest("ndet/nondet_s3_noStrat", 15, 2, false);
