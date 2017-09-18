@@ -407,10 +407,13 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 			for (int j = i + 1; j <= pg.getN(); ++j) {
 				Set<Integer> and = new HashSet<>();
 				for (Place p : pn.getPlaces()) {
-					int p_i = getVarNr(p.getId() + "." + i, true);
-					int p_j = getVarNr(p.getId() + "." + j, true);
-					and.add(writeImplication(p_i, p_j));
-					and.add(writeImplication(p_j, p_i));
+					// additional system places cannot leave their places, they always loop
+					if (!p.getId().startsWith(additionalSystemName)) {
+						int p_i = getVarNr(p.getId() + "." + i, true);
+						int p_j = getVarNr(p.getId() + "." + j, true);
+						and.add(writeImplication(p_i, p_j));
+						and.add(writeImplication(p_j, p_i));
+					}
 				}
 				int andNumber = createUniqueID();
 				writer.write(andNumber + " = " + writeAnd(and));
@@ -427,15 +430,18 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 			for (int j = i + 1; j <= pg.getN(); ++j) {
 				Set<Integer> and = new HashSet<>();
 				for (Place p : pn.getPlaces()) {
-					int p_i = getVarNr(p.getId() + "." + i, true);
-					Set<Integer> innerOr = new HashSet<>();
-					for (Place unfoldedP : unfoldingsOf(p)) {
-						innerOr.add(getVarNr(unfoldedP.getId() + "." + j, true));
+					// additional system places cannot leave their places, they always loop
+					if (!p.getId().startsWith(additionalSystemName)) {
+						int p_i = getVarNr(p.getId() + "." + i, true);
+						Set<Integer> innerOr = new HashSet<>();
+						for (Place unfoldedP : unfoldingsOf(p)) {
+							innerOr.add(getVarNr(unfoldedP.getId() + "." + j, true));
+						}
+						int innerOrNumber = createUniqueID();
+						writer.write(innerOrNumber + " = " + writeOr(innerOr));
+						and.add(writeImplication(p_i, innerOrNumber));
+						and.add(writeImplication(innerOrNumber, p_i));
 					}
-					int innerOrNumber = createUniqueID();
-					writer.write(innerOrNumber + " = " + writeOr(innerOr));
-					and.add(writeImplication(p_i, innerOrNumber));
-					and.add(writeImplication(innerOrNumber, p_i));
 				}
 				int andNumber = createUniqueID();
 				writer.write(andNumber + " = " + writeAnd(and));
@@ -457,45 +463,51 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 			for (int j = i + 2; j <= pg.getN(); ++j) {
 				Set<Integer> and = new HashSet<>();
 				for (Place p : pn.getPlaces()) {
-					int from = getVarNr(p.getId() + "." + i, true);
-					int to = getVarNr(p.getId() + "." + j, true);
-					and.add(writeImplication(from, to));
-					and.add(writeImplication(to, from));
+					// additional system places cannot leave their places, they always loop
+					if (!p.getId().startsWith(additionalSystemName)) {
+						int p_i = getVarNr(p.getId() + "." + i, true);
+						int p_j = getVarNr(p.getId() + "." + j, true);
+						and.add(writeImplication(p_i, p_j));
+						and.add(writeImplication(p_j, p_i));
+					}
 				}
 				Set<Integer> or = new HashSet<>();
 				for (Place p : pn.getPlaces()) {
-					Set<Integer> outerAnd = new HashSet<>();
-					for (int k = i; k < j; ++k) {
-						outerAnd.add(getVarNr(p.getId() + "." + k, true));
-						Set<Integer> innerOr = new HashSet<>();
-						for (Transition t : p.getPostset()) {
-							Set<Integer> innerAnd = new HashSet<>();
-							for (Place place : t.getPreset()) {
-								innerAnd.add(getVarNr(place.getId() + "." + k, true));
-								int strat = addSysStrategy(place, t);
-								if (strat != 0) {
-									innerAnd.add(strat);
+					// additional system places are not responsible for unfair loops, exclude them
+					if (!p.getId().startsWith(additionalSystemName)) {
+						Set<Integer> outerAnd = new HashSet<>();
+						for (int k = i; k < j; ++k) {
+							outerAnd.add(getVarNr(p.getId() + "." + k, true));
+							Set<Integer> innerOr = new HashSet<>();
+							for (Transition t : p.getPostset()) {
+								Set<Integer> innerAnd = new HashSet<>();
+								for (Place place : t.getPreset()) {
+									innerAnd.add(getVarNr(place.getId() + "." + k, true));
+									int strat = addSysStrategy(place, t);
+									if (strat != 0) {
+										innerAnd.add(strat);
+									}
+								}
+								int innerAndNumber = createUniqueID();
+								writer.write(innerAndNumber + " = " + writeAnd(innerAnd));
+								innerOr.add(innerAndNumber);
+	
+								outerAnd.add(-getOneTransition(t, k));
+								// TODO this makes it correct but also expensive
+								for (Place pp : t.getPreset()) {
+									for (Transition tt : pp.getPostset()) {
+										outerAnd.add(-getOneTransition(tt, k));
+									}
 								}
 							}
-							int innerAndNumber = createUniqueID();
-							writer.write(innerAndNumber + " = " + writeAnd(innerAnd));
-							innerOr.add(innerAndNumber);
-
-							outerAnd.add(-getOneTransition(t, k));
-							// TODO this makes it correct but also expensive
-							for (Place pp : t.getPreset()) {
-								for (Transition tt : pp.getPostset()) {
-									outerAnd.add(-getOneTransition(tt, k));
-								}
-							}
+							int innerOrNumber = createUniqueID();
+							writer.write(innerOrNumber + " = " + writeOr(innerOr));
+							outerAnd.add(innerOrNumber);
 						}
-						int innerOrNumber = createUniqueID();
-						writer.write(innerOrNumber + " = " + writeOr(innerOr));
-						outerAnd.add(innerOrNumber);
+						int outerAndNumber = createUniqueID();
+						writer.write(outerAndNumber + " = " + writeAnd(outerAnd));
+						or.add(outerAndNumber);
 					}
-					int outerAndNumber = createUniqueID();
-					writer.write(outerAndNumber + " = " + writeAnd(outerAnd));
-					or.add(outerAndNumber);
 				}
 				int orNumber = createUniqueID();
 				writer.write(orNumber + " = " + writeOr(or));
