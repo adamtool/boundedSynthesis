@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Set;
 
 import uniol.apt.adt.pn.PetriNet;
@@ -305,5 +307,4 @@ public class QBFReachabilitySolver extends QBFSolver<Reachability> {
 		}
 		throw new NoStrategyExistentException();
 	}
-
 }

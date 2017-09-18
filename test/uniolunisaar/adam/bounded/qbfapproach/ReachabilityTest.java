@@ -47,19 +47,17 @@ public class ReachabilityTest {
 		test ("toyExamples", "infiniteA", true, 10, 0);
 		test ("toyExamples", "infiniteB", false, 10, 0);
 		test ("toyExamples", "infiniteC", false, 10, 0);
+		test ("toyExamples", "infiniteD", true, 10, 0);
 	
 		// correct as for some env behavior the place-to-reach is not reached
 		test ("toyExamples", "notReachable", false, 10, 0);
 		test ("toyExamples", "notReachable", false, 10, 2);
 		
 		// correct because other sys player has to activate transition which leads to loop avoiding place-to-reach
-		test ("toyExamples", "type2A", false, 10, 0);
-		test ("toyExamples", "type2A", false, 10, 2);
-		test ("toyExamples", "type2B", false, 10, 0);
-		test ("toyExamples", "type2B", false, 10, 2);
-		
-		// correct because the strategy cannot both force reaching the place and afterwards be deadlock-avoiding
-		test ("toyExamples", "question", false, 10, 0);
+		test ("toyExamples", "type2A", true, 10, 0);
+		test ("toyExamples", "type2A", true, 10, 2);
+		test ("toyExamples", "type2B", true, 10, 0);
+		test ("toyExamples", "type2B", true, 10, 2);
 	}
 
 	private void test(String folder, String name, boolean result, int n, int b) throws Exception {

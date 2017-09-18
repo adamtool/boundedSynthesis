@@ -482,6 +482,12 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 							innerOr.add(innerAndNumber);
 
 							outerAnd.add(-getOneTransition(t, k));
+							// TODO this makes it correct but also expensive
+							for (Place pp : t.getPreset()) {
+								for (Transition tt : pp.getPostset()) {
+									outerAnd.add(-getOneTransition(tt, k));
+								}
+							}
 						}
 						int innerOrNumber = createUniqueID();
 						writer.write(innerOrNumber + " = " + writeOr(innerOr));

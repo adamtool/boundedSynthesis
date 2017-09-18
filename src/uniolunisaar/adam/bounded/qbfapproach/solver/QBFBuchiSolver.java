@@ -285,5 +285,4 @@ public class QBFBuchiSolver extends QBFSolver<Buchi> {
 		}
 		throw new NoStrategyExistentException();
 	}
-
 }

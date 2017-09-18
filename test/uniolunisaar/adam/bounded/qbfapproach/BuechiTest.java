@@ -26,11 +26,9 @@ public class BuechiTest {
 	public void testBüchi() throws Exception {
 		test ("independentloops", true, 10, 0);
 		test ("independentloops", true, 10, 2);
-		test ("independentloops", true, 10, 3);
 		test ("independentloops2", true, 10, 0);
 		test ("independentloops2", true, 10, 2);
-		test ("independentloops2", true, 10, 3);
-		test ("finiteA", false, 20, 5);
+		test ("finiteA", false, 10, 0);
 		test ("infiniteA", true, 10, 0);
 		test ("infiniteB", false, 10, 0);
 		test ("type2A", true, 10, 0);
@@ -45,9 +43,9 @@ public class BuechiTest {
 		test ("goodBadLoop1", true, 10, 0);
 		test ("goodBadLoop2", true, 10, 0);
 		test ("oneGoodInfEnv", false, 10, 0);
-		test ("oneGoodInfEnv", false, 10, 3);
+		test ("oneGoodInfEnv", false, 10, 2);
 		test ("nondet", false, 10, 0);
-		test ("nondet", false, 10, 3);
+		test ("nondet", false, 10, 2);
 	}
 
 	private void test(String name, boolean result, int n, int b) throws Exception {
