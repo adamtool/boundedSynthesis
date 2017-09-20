@@ -27,7 +27,7 @@ import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 import uniolunisaar.adam.ds.exceptions.UnboundedPGException;
 import uniolunisaar.adam.ds.winningconditions.Safety;
-import uniolunisaar.adam.tools.ADAMProperties;
+import uniolunisaar.adam.tools.AdamProperties;
 import uniolunisaar.adam.tools.Tools;
 
 /**
@@ -187,10 +187,10 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 			String os = System.getProperty("os.name");
 			if (os.startsWith("Mac")) {
 				System.out.println("Your operation system is supported.");
-				pb = new ProcessBuilder(ADAMProperties.getInstance().getLibFolder() + File.separator + solver + "_mac", "--partial-assignment", file.getAbsolutePath());
+				pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + solver + "_mac", "--partial-assignment", file.getAbsolutePath());
 			} else if (os.startsWith("Linux")) {
 				System.out.println("Your operation system is supported.");
-				pb = new ProcessBuilder(ADAMProperties.getInstance().getLibFolder() + File.separator + solver + "_unix", "--partial-assignment", file.getAbsolutePath());
+				pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + solver + "_unix", "--partial-assignment", file.getAbsolutePath());
 			} else {
 				System.out.println("Your operation system is not supported.");
 				return false;
