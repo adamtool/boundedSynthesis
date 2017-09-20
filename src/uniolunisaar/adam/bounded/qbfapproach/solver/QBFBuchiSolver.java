@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -113,6 +114,7 @@ public class QBFBuchiSolver extends QBFSolver<Buchi> {
 		transitions = pn.getTransitions().toArray(new Transition[0]);
 		flowSubFormulas = new int[pg.getN() * pn.getTransitions().size()];
 		deadlockSubFormulas = new int[(pg.getN() + 1) * pn.getTransitions().size()];
+		
 		int exitcode = -1;
 		try {
 			writer.write("#QCIR-G14          " + QBFSolver.linebreak); // spaces left to add variable count in the end

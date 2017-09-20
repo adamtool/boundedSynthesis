@@ -91,8 +91,11 @@ public abstract class Unfolder {
 				if (t.isFireable(m)) {
 					Marking next = t.fire(m);
 					if (!closed.contains(next)) {
-						for (Place place : t.getPostset()) {
-							orderOfUnfolding.get(place.getId()).add(i + 1);
+						// local SYS transition (i.e. pre- and postset <= 1) cannot produce history, therefore arent unfolded
+						if (t.getPreset().size() > 1 || pg.getEnvTransitions().contains(t)) {
+							for (Place place : t.getPostset()) {
+								orderOfUnfolding.get(place.getId()).add(i + 1);
+							}
 						}
 						if (i + 1 < pg.getN()) {
 							queue.add(new Pair<>(next, i + 1));
