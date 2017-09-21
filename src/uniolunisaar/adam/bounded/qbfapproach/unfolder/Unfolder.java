@@ -83,9 +83,10 @@ public abstract class Unfolder {
 		queue.add(new Pair<>(initial, 1));
 		Set<Marking> closed = new HashSet<>();
 		Pair<Marking, Integer> p;
+		int i;
 		while ((p = queue.poll()) != null) {
 			Marking m = p.getFirst();
-			int i = p.getSecond();
+			i = p.getSecond();
 			closed.add(m);
 			for (Transition t : pn.getTransitions()) {
 				if (t.isFireable(m)) {
@@ -225,7 +226,7 @@ public abstract class Unfolder {
 		return true;
 	}
 	
-	protected boolean unfoldCondition(Place p) {
+	protected boolean unfoldConditionSatisfied(Place p) {
 		boolean boundNotReached = getCurrentValue(p) < getLimitValue(p);
 		boolean preset = p.getPreset().size() >= 2 || (p.getPreset().size() == 1 && p.getInitialToken().getValue() == 1);
 		boolean postset = p.getPostset().size() >= 1;

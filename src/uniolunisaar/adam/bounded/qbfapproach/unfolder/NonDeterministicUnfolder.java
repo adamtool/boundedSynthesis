@@ -1,6 +1,5 @@
 package uniolunisaar.adam.bounded.qbfapproach.unfolder;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -19,7 +18,7 @@ public abstract class NonDeterministicUnfolder extends Unfolder {
 		super(petriGame, max);
 	}
 	
-	protected Set<String> checkPlaceForUnfolding(Place p) {
+	protected Set<String> unfoldPlace(Place p) {
 		String p_id = getTruncatedId(p.getId());
 		if (closed.contains(p.getId()))
 			return new HashSet<>();

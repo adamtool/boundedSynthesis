@@ -21,6 +21,8 @@ import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
  *
  */
 
+// TODO this approach continuously unfolds places when bound is too high, e.g. b=10, this gives poor performance
+
 public class WhileNonDeterministicUnfolder extends NonDeterministicUnfolder {
 	private Queue<String> placesToUnfold;
 
@@ -30,14 +32,13 @@ public class WhileNonDeterministicUnfolder extends NonDeterministicUnfolder {
 
 	@Override
 	protected void createUnfolding() throws NetNotSafeException, NoSuitableDistributionFoundException, UnboundedException, FileNotFoundException {
-
 		// Initialize queue
 		placesToUnfold = initializeQueue();
 		// begin unfolding
 		while (!placesToUnfold.isEmpty()) {
 			String id = placesToUnfold.poll();
 			Place p = pn.getPlace(id);
-			placesToUnfold.addAll(checkPlaceForUnfolding(p));
+			placesToUnfold.addAll(unfoldPlace(p));
 		}
 
 		// add additional system places to unfolded env transitions
@@ -52,7 +53,7 @@ public class WhileNonDeterministicUnfolder extends NonDeterministicUnfolder {
 		for (Place p : pn.getPlaces()) {
 			if (in.getToken(p).getValue() == 0) {
 				if (p.getPreset().size() >= 2) {
-					if (p.getPostset().size() >= 1 && !noUnfolding(p)) {
+					if (p.getPostset().size() >= 1 && unfolding(p)) {
 						result.add(p.getId());
 					}
 				}
@@ -63,7 +64,7 @@ public class WhileNonDeterministicUnfolder extends NonDeterministicUnfolder {
 		for (Place p : pn.getPlaces()) {
 			if (in.getToken(p).getValue() >= 1) {
 				if (p.getPreset().size() >= 1) {
-					if (p.getPostset().size() >= 1 && !noUnfolding(p)) {
+					if (p.getPostset().size() >= 1 && unfolding(p)) {
 						result.add(p.getId());
 					}
 				}
@@ -72,31 +73,31 @@ public class WhileNonDeterministicUnfolder extends NonDeterministicUnfolder {
 		return result;
 	}
 	
-	// TODO evaluate this (for usage in QUEUE approach) and think of better name
-	private boolean noUnfolding(Place p) {
+	// TODO I have no clue what is happening here
+	private boolean unfolding(Place p) {
 		boolean first = true;
-		Set<Place> cup = null;
+		Set<Place> cap = null;
 		for (Transition pre : p.getPreset()) {
 			Set<Place> preset = new HashSet<>(pre.getPreset());
 			preset.retainAll(pre.getPostset());
 			if (!preset.isEmpty()) {
-				return false;
+				return true;
 			}
 			if (first) {
-				cup = new HashSet<>(pre.getPreset());
-				first = false;
+				cap = new HashSet<>(pre.getPreset());
+				first = true;
 			} else {
-				cup.retainAll(pre.getPreset());
+				cap.retainAll(pre.getPreset());
 			}
-			if (cup.isEmpty()) {
-				return false;
+			if (cap.isEmpty()) {
+				return true;
 			}
 			for (Place prePre : pre.getPreset()) {
 				if (pg.getEnvPlaces().contains(prePre)) {
-					return false;
+					return true;
 				}
 			}
 		}
-		return true;
+		return false;
 	}
 }

@@ -38,7 +38,7 @@ public class NewDeterministicUnfolder extends Unfolder {
 				if (!p.getId().startsWith(QBFSolver.additionalSystemName)) {
 					LinkedList<Integer> list = orderOfUnfolding.get(getTruncatedId(p.getId()));
 					if (list.size() > 0 && list.getFirst() == i) {
-						if (unfoldCondition(p) && !closed.contains(p.getId())) {	// TODO I removed additional weird !noUnfold() here
+						if (unfoldConditionSatisfied(p) && !closed.contains(p.getId())) {	// TODO I removed additional weird !noUnfold() here
 							unfoldPlaceDeterministically(p, originalPresetMap.get(p));	// ignore returned places as no queue is used
 							//closed.add(p.getId());	// TODO it might be useful to not have this?
 						}

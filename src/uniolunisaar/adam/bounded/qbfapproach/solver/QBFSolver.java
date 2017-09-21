@@ -456,8 +456,55 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 		u = createUniqueID();
 		writer.write(u + " = " + unfair);
 	}
-
+	
 	public String getUnfair() throws IOException {
+		Set<Integer> outerOr = new HashSet<>();
+		for (int i = 1; i < pg.getN(); ++i) {
+			for (int j = i + 2; j <= pg.getN(); ++j) {
+				Set<Integer> and = new HashSet<>();
+				for (Place p : pn.getPlaces()) {
+					// additional system places cannot leave their places, they always loop
+					if (!p.getId().startsWith(additionalSystemName)) {
+						int p_i = getVarNr(p.getId() + "." + i, true);
+						int p_j = getVarNr(p.getId() + "." + j, true);
+						and.add(writeImplication(p_i, p_j));
+						and.add(writeImplication(p_j, p_i));
+					}
+				}
+				Set<Integer> or = new HashSet<>();
+				for (Transition t : pn.getTransitions()) {
+					Set<Integer> innerAnd = new HashSet<>();
+					for (int k = i; k < j; ++k) {
+						for (Place p : t.getPreset()) {
+							innerAnd.add(getVarNr(p.getId() + "." + k, true));
+							int sysDecision = addSysStrategy(p, t);
+							if (sysDecision != 0) {
+								innerAnd.add(sysDecision);
+							}
+							if (!p.getId().startsWith(additionalSystemName)) {
+								for (Transition tt : p.getPostset()) {
+									innerAnd.add(-getOneTransition(tt, k));
+								}
+							}
+						}
+					}
+					int innerAndNumber = createUniqueID();
+					writer.write(innerAndNumber + " = " + writeAnd(innerAnd));
+					or.add(innerAndNumber);
+				}
+				int orNumber = createUniqueID();
+				writer.write(orNumber + " = " + writeOr(or));
+				and.add(orNumber);
+				int andNumber = createUniqueID();
+				writer.write(andNumber + " = " + writeAnd(and));
+				outerOr.add(andNumber);
+			}
+		}
+		return writeOr(outerOr);
+	}
+
+	// this has one more quantifier alternation, it should therefore be slower
+	public String getUnfairMoreQuantifierAlternation() throws IOException {
 		Set<Integer> outerOr = new HashSet<>();
 		for (int i = 1; i < pg.getN(); ++i) {
 			for (int j = i + 2; j <= pg.getN(); ++j) {
@@ -492,7 +539,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 								writer.write(innerAndNumber + " = " + writeAnd(innerAnd));
 								innerOr.add(innerAndNumber);
 	
-								outerAnd.add(-getOneTransition(t, k));
+								//outerAnd.add(-getOneTransition(t, k)); // with necessary expensive extension, this is redundant, but makes it faster
 								// TODO this makes it correct but also expensive
 								for (Place pp : t.getPreset()) {
 									for (Transition tt : pp.getPostset()) {
@@ -650,12 +697,6 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 		int index = createUniqueID();
 		writer.write(index + " = " + writeAnd(outerAnd));
 		return index;
-	}
-
-	private boolean endsWithEnvPlace(Place p) {
-		String p_id = p.getId();
-		String[] split = p_id.split("--");
-		return pg.getEnvPlaces().contains(pn.getPlace(split[split.length - 1]));
 	}
 
 	public int getVarNr(String id, boolean extraCheck) {

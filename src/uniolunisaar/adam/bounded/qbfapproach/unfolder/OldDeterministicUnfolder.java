@@ -17,9 +17,9 @@ import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
  *
  */
 
-public class DeterministicUnfolder extends Unfolder {
+public class OldDeterministicUnfolder extends Unfolder {
 
-	public DeterministicUnfolder(QBFPetriGame QBFPetriGame, Map<String, Integer> max) {
+	public OldDeterministicUnfolder(QBFPetriGame QBFPetriGame, Map<String, Integer> max) {
 		super(QBFPetriGame, max);
 	}
 
@@ -35,12 +35,12 @@ public class DeterministicUnfolder extends Unfolder {
 	private Place findNextPlaceToUnfold() {
 		// first try environment places
 		for (Place env : pg.getEnvPlaces()) {
-			if (unfoldCondition(env))
+			if (unfoldConditionSatisfied(env))
 				return env;
 		}
 		// next try system places
 		for (Place sys : pn.getPlaces()) {
-			if (unfoldCondition(sys))
+			if (unfoldConditionSatisfied(sys))
 				return sys;
 		}
 		return null;
@@ -78,7 +78,6 @@ public class DeterministicUnfolder extends Unfolder {
 	}
 
 	// TODO detect loops early before limit is reached
-
 	private void unfoldPlaceRecursion(Place newP, Place oldP) {
 		for (Transition post : oldP.getPostset()) {
 			Transition newT = copyTransition(post);
