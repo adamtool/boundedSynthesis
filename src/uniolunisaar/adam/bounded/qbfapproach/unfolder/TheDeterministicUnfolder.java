@@ -30,7 +30,7 @@ public class TheDeterministicUnfolder extends Unfolder {
 		Set<Place> intialPlaces = new HashSet<>();
 		for (Place p : pn.getPlaces()) {
 			if (initial.getToken(p).getValue() > 0) {
-				sameHistory.add(new Pair<>(null, p));
+				sameHistory.add(new Pair<Transition, Place>(null, p));
 				intialPlaces.add(p);
 			}
 		}
