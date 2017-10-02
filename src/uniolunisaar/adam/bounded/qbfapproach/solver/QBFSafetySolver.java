@@ -2,15 +2,19 @@ package uniolunisaar.adam.bounded.qbfapproach.solver;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.RandomAccessFile;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
+import org.testng.reporters.Files;
 
 import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.adt.pn.Place;
@@ -18,10 +22,7 @@ import uniol.apt.adt.pn.Transition;
 import uniol.apt.analysis.exception.UnboundedException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
-import uniolunisaar.adam.bounded.qbfapproach.unfolder.OldDeterministicUnfolder;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.ForNonDeterministicUnfolder;
-import uniolunisaar.adam.bounded.qbfapproach.unfolder.NewDeterministicUnfolder;
-import uniolunisaar.adam.bounded.qbfapproach.unfolder.WhileNonDeterministicUnfolder;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
@@ -47,7 +48,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 		bad = new int[pg.getN() + 1];
 	}
 
-	private void writeNoBadPlaces() throws IOException {
+	protected void writeNoBadPlaces() throws IOException {
 		if (!getWinningCondition().getBadPlaces().isEmpty()) {
 			String[] nobadplaces = getNoBadPlaces();
 			for (int i = 1; i <= pg.getN(); ++i) {
@@ -57,7 +58,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 		}
 	}
 
-	public String[] getNoBadPlaces() {
+	public String[] getNoBadPlaces() throws IOException {
 		String[] nobadplaces = new String[pg.getN() + 1];
 		Set<Integer> and = new HashSet<>();
 		for (int i = 1; i <= pg.getN(); ++i) {
@@ -70,7 +71,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 		return nobadplaces;
 	}
 
-	private void writeWinning() throws IOException {
+	protected void writeWinning() throws IOException {
 		Set<Integer> and = new HashSet<>();
 		for (int i = 1; i <= pg.getN(); ++i) {
 			and.clear();
@@ -112,10 +113,14 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 		deadlockSubFormulas = new int[(pg.getN() + 1) * pn.getTransitions().size()];
 		terminatingSubFormulas = new int[(pg.getN() + 1) * pn.getTransitions().size()];
 
+		oneTransitionFormulas = new int[pn.getTransitions().size()][pg.getN() + 1];
+		for (int i = 0; i < transitions.length; ++i) {
+			transitionKeys.put(transitions[i], i);
+		}
+		
 		writer.write("#QCIR-G14          " + QBFSolver.linebreak); // spaces left to add variable count in the end
 		addExists();
 		addForall();
-		writer.write("output(1)" + QBFSolver.linebreak); // 1 = \phi
 
 		writeInitial();
 		writeDeadlock();
@@ -179,23 +184,26 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 			writeQCIR();
 
 			// This line was used to create benchmarks:
-			//FileUtils.copyFile(file, new File(pn.getName() + ".qcir"));
+			if (QBFSolver.debug) {
+				FileUtils.copyFile(file, new File(pn.getName() + ".qcir"));
+			}
 
 			ProcessBuilder pb = null;
 			// Run solver on problem
-			System.out.println("You are using " + System.getProperty("os.name") + ".");
 			String os = System.getProperty("os.name");
+			
 			if (os.startsWith("Mac")) {
-				System.out.println("Your operation system is supported.");
 				pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + solver + "_mac", "--partial-assignment", file.getAbsolutePath());
 			} else if (os.startsWith("Linux")) {
-				System.out.println("Your operation system is supported.");
 				pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + solver + "_unix", "--partial-assignment", file.getAbsolutePath());
 			} else {
+				System.out.println("You are using " + os + ".");
 				System.out.println("Your operation system is not supported.");
 				return false;
 			}
-			System.out.println("A temporary file is saved to \"" + file.getAbsolutePath() + "\".");
+			if (QBFSolver.debug) {
+				System.out.println("A temporary file is saved to \"" + file.getAbsolutePath() + "\".");
+			}
 
 			Process pr = pb.start();
 			// Read caqe's output

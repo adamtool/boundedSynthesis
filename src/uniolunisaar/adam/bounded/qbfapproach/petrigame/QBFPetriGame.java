@@ -1,6 +1,8 @@
 package uniolunisaar.adam.bounded.qbfapproach.petrigame;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import uniol.apt.adt.pn.Flow;
@@ -23,9 +25,13 @@ public class QBFPetriGame extends PetriGame {
 
 	private int n; // length of the simulation, i.e., for n there are n - 1 transitions simulated
 	private int b; // number of unfoldings per place in the bounded unfolding
+	private Map<Transition, Set<Pair<Place, Place>>> fl = new HashMap<>();
 
 	public QBFPetriGame(PetriNet pn) throws UnboundedPGException {
 		super(pn);
+		for (Transition t : pn.getTransitions()) {
+			fl.put(t, new HashSet<>());
+		}
 	}
 	
 	// Before removing a place or transition, always check that it has not already been removed.
@@ -105,5 +111,13 @@ public class QBFPetriGame extends PetriGame {
 
 	public void setB(int b) {
 		this.b = b;
+	}
+	
+	public Map<Transition, Set<Pair<Place, Place>>> getFl() {
+		return fl;
+	}
+	
+	public void setFl(Map<Transition, Set<Pair<Place, Place>>> fl) {
+		this.fl = fl;
 	}
 }

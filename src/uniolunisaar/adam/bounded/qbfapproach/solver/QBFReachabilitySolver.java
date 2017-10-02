@@ -127,6 +127,11 @@ public class QBFReachabilitySolver extends QBFSolver<Reachability> {
 		deadlockSubFormulas = new int[(pg.getN() + 1) * pn.getTransitions().size()];
 		terminatingSubFormulas = new int[(pg.getN() + 1) * pn.getTransitions().size()];
 		
+		oneTransitionFormulas = new int[pn.getTransitions().size()][pg.getN() + 1];
+		for (int i = 0; i < transitions.length; ++i) {
+			transitionKeys.put(transitions[i], i);
+		}
+		
 		int exitcode = -1;
 		try {
 			writer.write("#QCIR-G14          " + QBFSolver.linebreak); // spaces left to add variable count in the end

@@ -97,10 +97,10 @@ public class TheDeterministicUnfolder extends Unfolder {
 							}
 						}
 						if (repeatedHistory != null) {
-							// already existing place
+							// already existing place TODO
 							
 						} else {
-							// new place
+							// new place TODO
 							
 						}
 					}

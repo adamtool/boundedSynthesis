@@ -24,6 +24,7 @@ public class SafetyTest {
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void test() throws Exception {
 		//oneTest("tests/watchdog5", 15, 3, true);		// TODO search for bounds
+		//oneTest("container/container", 10, 2, true);	// TODO search for bounds
 		oneTest("jhh/myexample1", 10, 0, false);
 		oneTest("jhh/myexample1", 10, 2, false);
 		oneTest("jhh/myexample2", 10, 2, true);
@@ -39,7 +40,6 @@ public class SafetyTest {
 		oneTest("constructedExample/constructedExample", 3, 0, false);
 		oneTest("constructedExampleWithoutLoop/constructedExampleWithoutLoop", 4, 0, true);
 		oneTest("constructedExampleWithoutLoop/constructedExampleWithoutLoop", 3, 0, false);
-		//oneTest("container/container", 10, 2, true);	// TODO search for bounds
 		oneTest("container/container", 20, 0, false);
 		oneTest("deadlock/missDeadlock", 4, 0, true);
 		oneTest("deadlock/missDeadlock", 3, 0, false);
@@ -70,8 +70,5 @@ public class SafetyTest {
 			Tools.savePN2PDF("strategy", sol.getStrategy(), false);
 		}
 		Assert.assertEquals(sol.existsWinningStrategy(), result);
-		
-		
-		
 	}
 }
