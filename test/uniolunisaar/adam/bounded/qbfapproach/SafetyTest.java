@@ -25,7 +25,8 @@ public class SafetyTest {
 	public void test() throws Exception {
 		//oneTest("tests/watchdog5", 15, 3, true);		// TODO search for bounds
 		//oneTest("container/container", 10, 2, true);	// TODO search for bounds
-		oneTest("jhh/myexample1", 10, 0, false);
+		oneTest("nm/sendingprotocolTwo", 11, 2, true);
+		/*oneTest("jhh/myexample1", 10, 0, false);
 		oneTest("jhh/myexample1", 10, 2, false);
 		oneTest("jhh/myexample2", 10, 2, true);
 		oneTest("jhh/myexample2", 10, 0, true);
@@ -55,7 +56,7 @@ public class SafetyTest {
 		oneTest("ndet/nondet_s3", 10, 2, true);
 		oneTest("ndet/nondet_s3_noStrat", 15, 2, false);
 		oneTest("ndet/nondet_unnecessarily_noStrat", 15, 3, false);
-		oneTest("testingNets/envSkipsSys", 15, 3, false);
+		oneTest("testingNets/envSkipsSys", 15, 3, false);*/
 	}
 	
 	private void oneTest(String str, int n, int b, boolean result) throws Exception {

@@ -20,8 +20,11 @@ import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
+import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
+import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
 import uniolunisaar.adam.ds.solver.Solver;
+import uniolunisaar.adam.ds.winningconditions.Safety;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 
 /**
@@ -62,7 +65,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 	public static String additionalSystemUniqueDivider = "_0_"; // Controller
 	public static String solver = "quabs"; // Controller
 	public static boolean deterministicStrat = true; // Controller
-	public static boolean debug = true;
+	public static boolean debug = false;
 
 	// Caches
 	private Map<Transition, Set<Place>> restCache = new HashMap<>(); // proven to be slightly useful in terms of performance
@@ -788,5 +791,72 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 			writer.write(number + " = " + writeOr(or));
 		}
 		return number;
+	}
+	
+	@Override
+	protected PetriNet calculateStrategy() throws NoStrategyExistentException {
+		if (existsWinningStrategy()) {
+			for (String outputCAQE_line : outputQBFsolver.split("\n")) {
+				if (outputCAQE_line.startsWith("V")) {
+					String[] parts = outputCAQE_line.split(" ");
+					for (int i = 0; i < parts.length; ++i) {
+						if (!parts[i].equals("V")) {
+							int num = Integer.parseInt(parts[i]);
+							if (num > 0) {
+								// System.out.println("ALLOW " + num);
+							} else if (num < 0) {
+								// System.out.println("DISALLOW " + num * (-1));
+								String remove = exists_transitions.get(num * (-1));
+								int in = remove.indexOf("..");
+								if (in != -1) { // CTL has exists variables for path EF which mean not remove
+									String place = remove.substring(0, in);
+									String transition = remove.substring(in + 2, remove.length());
+									if (place.startsWith(QBFSolver.additionalSystemName)) {
+										// additional system place exactly removes transitions
+										// Transition might already be removed by recursion
+										Set<Transition> transitions = new HashSet<>(pg.getNet().getTransitions());
+										for (Transition t : transitions) {
+											if (t.getId().equals(transition)) {
+												// System.out.println("starting " + t);
+												pg.removeTransitionRecursively(t);
+											}
+										}
+									} else {
+										// original system place removes ALL transitions
+										Set<Place> places = new HashSet<>(pg.getNet().getPlaces());
+										for (Place p : places) {
+											if (p.getId().equals(place)) {
+												Set<Transition> transitions = new HashSet<>(p.getPostset());
+												for (Transition post : transitions) {
+													if (transition.equals(getTruncatedId(post.getId()))) {
+														// System.out.println("starting " + post);
+														pg.removeTransitionRecursively(post);
+													}
+												}
+											}
+										}
+									}
+								}
+							} else {
+								// 0 is the last member
+								// System.out.println("Finished reading strategy.");
+								PGSimplifier.simplifyPG(pg, true, false);
+								strategy = pg.copy("strategy");
+								strategy_winCon = new Safety();
+								strategy_winCon.buffer(strategy);
+								return pg.getNet();
+							}
+						}
+					}
+				}
+			}
+			// There were no decision points for the system, thus the previous loop did not leave the method
+			PGSimplifier.simplifyPG(pg, true, false);
+			strategy = pg.copy("strategy");
+			strategy_winCon = new Safety();
+			strategy_winCon.buffer(strategy);
+			return pg.getNet();
+		}
+		throw new NoStrategyExistentException();
 	}
 }
