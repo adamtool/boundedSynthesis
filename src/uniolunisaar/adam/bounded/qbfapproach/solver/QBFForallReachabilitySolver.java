@@ -203,7 +203,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 		win[pg.getN()] = createUniqueID();
 		writer.write(win[pg.getN()] + " = " + writeAnd(and));
 	}
-
+	
 	public String getUnfair() throws IOException {
 		Set<Integer> outerOr = new HashSet<>();
 		Set<Integer> outerAnd = new HashSet<>();
