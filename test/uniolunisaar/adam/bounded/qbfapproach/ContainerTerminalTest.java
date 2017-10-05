@@ -21,8 +21,8 @@ import uniolunisaar.adam.ds.exceptions.SolverDontFitPetriGameException;
 import uniolunisaar.adam.ds.exceptions.UnboundedPGException;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 import uniolunisaar.adam.generators.ContainerTerminal;
+import uniolunisaar.adam.logic.util.AdamTools;
 import uniolunisaar.adam.tools.Logger;
-import uniolunisaar.adam.tools.Tools;
 
 /**
  *
@@ -60,11 +60,11 @@ public class ContainerTerminalTest {
         f.mkdir();
         System.out.println("Generate container terminal...");
         PetriNet pn = ContainerTerminal.createSafetyVersion(containerPlaces, true);
-        Tools.savePN2PDF(path + name, pn, false);
+        AdamTools.savePG2PDF(path + name, pn, false);
         QBFSolver<? extends WinningCondition> solv = QBFSolverFactory.getInstance().getSolver(pn, false, new QBFSolverOptions(15, 3));
         if (hasStrategy) {
             Assert.assertTrue(solv.existsWinningStrategy());
-            Tools.savePN2PDF(path + name + "_pg", solv.getStrategy(), true);
+            AdamTools.savePG2PDF(path + name + "_pg", solv.getStrategy(), true);
         } else {
             Assert.assertFalse(solv.existsWinningStrategy());
         }

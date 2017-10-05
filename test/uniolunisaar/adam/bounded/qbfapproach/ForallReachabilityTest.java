@@ -18,6 +18,7 @@ import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFForallReachabilitySolver;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
 import uniolunisaar.adam.ds.winningconditions.Reachability;
+import uniolunisaar.adam.logic.util.AdamTools;
 import uniolunisaar.adam.tools.Tools;
 
 @Test
@@ -86,10 +87,10 @@ public class ForallReachabilityTest {
         sol.pg.setFl(fl);
         sol.existsWinningStrategy();	// calculate first, then output games, and then check for correctness
 		// TODO put this to an appropriate place in code
-		Tools.savePN2PDF("originalGame", sol.game.getNet(), false);
-		Tools.savePN2PDF("unfolding", sol.unfolding.getNet(), false);
+		AdamTools.savePG2PDF("originalGame", sol.game.getNet(), false);
+		AdamTools.savePG2PDF("unfolding", sol.unfolding.getNet(), false);
 		if (sol.existsWinningStrategy()) {
-			Tools.savePN2PDF("strategy", sol.getStrategy(), false);
+			AdamTools.savePG2PDF("strategy", sol.getStrategy(), false);
 		}
 		Assert.assertEquals(sol.existsWinningStrategy(), result);
 	}

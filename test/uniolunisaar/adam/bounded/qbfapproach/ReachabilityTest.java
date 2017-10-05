@@ -10,6 +10,7 @@ import uniol.apt.adt.pn.PetriNet;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFReachabilitySolver;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
 import uniolunisaar.adam.ds.winningconditions.Reachability;
+import uniolunisaar.adam.logic.util.AdamTools;
 import uniolunisaar.adam.tools.Tools;
 
 @Test
@@ -65,10 +66,10 @@ public class ReachabilityTest {
 		PetriNet pn = Tools.getPetriNet(path);
 		QBFReachabilitySolver sol = new QBFReachabilitySolver(pn, new Reachability(), new QBFSolverOptions(n, b));
 		sol.existsWinningStrategy();
-		Tools.savePN2PDF("originalGame", sol.game.getNet(), false);
-		Tools.savePN2PDF("unfolding", sol.unfolding.getNet(), false);
+		AdamTools.savePG2PDF("originalGame", sol.game.getNet(), false);
+		AdamTools.savePG2PDF("unfolding", sol.unfolding.getNet(), false);
 		if (sol.existsWinningStrategy()) {
-			Tools.savePN2PDF("strategy", sol.getStrategy(), false);
+			AdamTools.savePG2PDF("strategy", sol.getStrategy(), false);
 		}
 		Assert.assertEquals(sol.existsWinningStrategy(), result);
 	}

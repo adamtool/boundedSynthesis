@@ -6,7 +6,6 @@ import java.io.IOException;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
 import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.module.exception.ModuleException;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolver;
@@ -21,8 +20,8 @@ import uniolunisaar.adam.ds.exceptions.SolverDontFitPetriGameException;
 import uniolunisaar.adam.ds.exceptions.UnboundedPGException;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 import uniolunisaar.adam.generators.SecuritySystem;
+import uniolunisaar.adam.logic.util.AdamTools;
 import uniolunisaar.adam.tools.Logger;
-import uniolunisaar.adam.tools.Tools;
 
 /**
  *
@@ -60,11 +59,11 @@ public class SSTest {
         f.mkdir();
         System.out.println("Generate security system ...");
         PetriNet pn = SecuritySystem.createSafetyVersionForBounded(intrudingPoints, true);
-        Tools.savePN2PDF(path + name, pn, false);
+        AdamTools.savePG2PDF(path + name, pn, false);
         QBFSolver<? extends WinningCondition> solv = QBFSolverFactory.getInstance().getSolver(pn, false, new QBFSolverOptions(7, 3));
         if (hasStrategy) {
             Assert.assertTrue(solv.existsWinningStrategy());
-            Tools.savePN2PDF(path + name + "_pg", solv.getStrategy(), true);
+            AdamTools.savePG2PDF(path + name + "_pg", solv.getStrategy(), true);
         } else {
             Assert.assertFalse(solv.existsWinningStrategy());
         }

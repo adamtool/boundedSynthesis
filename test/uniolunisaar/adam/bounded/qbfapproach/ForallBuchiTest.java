@@ -18,6 +18,7 @@ import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFForallBuchiSolver;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
 import uniolunisaar.adam.ds.winningconditions.Buchi;
+import uniolunisaar.adam.logic.util.AdamTools;
 import uniolunisaar.adam.tools.Tools;
 
 @Test
@@ -180,10 +181,10 @@ public class ForallBuchiTest {
         QBFForallBuchiSolver sol = new QBFForallBuchiSolver(new QBFPetriGame(pn), new Buchi(), new QBFSolverOptions(n, b));
         sol.pg.setFl(fl);
         sol.existsWinningStrategy();	// calculate first, then output games, and then check for correctness
-		Tools.savePN2PDF("originalGame", sol.game.getNet(), false);
-		Tools.savePN2PDF("unfolding", sol.unfolding.getNet(), false);
+		AdamTools.savePG2PDF("originalGame", sol.game.getNet(), false);
+		AdamTools.savePG2PDF("unfolding", sol.unfolding.getNet(), false);
 		if (sol.existsWinningStrategy()) {
-			Tools.savePN2PDF("strategy", sol.getStrategy(), false);
+			AdamTools.savePG2PDF("strategy", sol.getStrategy(), false);
 		}
 		Assert.assertEquals(sol.existsWinningStrategy(), result);
 	}

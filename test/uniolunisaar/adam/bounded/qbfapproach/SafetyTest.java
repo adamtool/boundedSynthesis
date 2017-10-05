@@ -9,6 +9,7 @@ import uniol.apt.adt.pn.PetriNet;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSafetySolver;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
 import uniolunisaar.adam.ds.winningconditions.Safety;
+import uniolunisaar.adam.logic.util.AdamTools;
 import uniolunisaar.adam.tools.Tools;
 
 @Test
@@ -65,10 +66,10 @@ public class SafetyTest {
 		QBFSafetySolver sol = new QBFSafetySolver(pn, new Safety(), new QBFSolverOptions(n, b));
 		sol.existsWinningStrategy();	// calculate first, then output games, and then check for correctness
 		// TODO put this to an appropriate place in code
-		Tools.savePN2PDF("originalGame", sol.game.getNet(), false);
-		Tools.savePN2PDF("unfolding", sol.unfolding.getNet(), false);
+		AdamTools.savePG2PDF("originalGame", sol.game.getNet(), false);
+		AdamTools.savePG2PDF("unfolding", sol.unfolding.getNet(), false);
 		if (sol.existsWinningStrategy()) {
-			Tools.savePN2PDF("strategy", sol.getStrategy(), false);
+			AdamTools.savePG2PDF("strategy", sol.getStrategy(), false);
 		}
 		Assert.assertEquals(sol.existsWinningStrategy(), result);
 	}
