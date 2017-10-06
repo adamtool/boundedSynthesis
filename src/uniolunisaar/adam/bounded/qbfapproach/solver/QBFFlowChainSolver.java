@@ -8,6 +8,7 @@ import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
+import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
@@ -16,7 +17,7 @@ import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 
 public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBFSolver<W> {
 
-	protected QBFFlowChainSolver(QBFPetriGame game, W winCon, QBFSolverOptions options) {
+	protected QBFFlowChainSolver(QBFPetriGame game, W winCon, QBFSolverOptions options) throws BoundedParameterMissingException {
 		super(game, winCon, options);
 	}
 

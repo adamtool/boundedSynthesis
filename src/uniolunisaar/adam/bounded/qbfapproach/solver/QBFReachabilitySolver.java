@@ -14,6 +14,7 @@ import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.analysis.exception.UnboundedException;
 import uniol.apt.util.Pair;
+import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.ForNonDeterministicUnfolder;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
@@ -28,7 +29,7 @@ public class QBFReachabilitySolver extends QBFSolver<Reachability> {
 	// variable to store keys of calculated components for later use (special to this winning condition)
 	private int[] goodPlaces;
 
-	public QBFReachabilitySolver(PetriNet net, Reachability win, QBFSolverOptions so) throws UnboundedPGException {
+	public QBFReachabilitySolver(PetriNet net, Reachability win, QBFSolverOptions so) throws UnboundedPGException, BoundedParameterMissingException {
 		super(new QBFPetriGame(net), win, so);
 		goodPlaces = new int[pg.getN() + 1];
 	}

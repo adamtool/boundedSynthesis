@@ -13,9 +13,9 @@ import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.analysis.exception.UnboundedException;
+import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.ForNonDeterministicUnfolder;
-import uniolunisaar.adam.bounded.qbfapproach.unfolder.WhileNonDeterministicUnfolder;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 import uniolunisaar.adam.ds.exceptions.UnboundedPGException;
@@ -34,7 +34,7 @@ public class QBFBuchiSolver extends QBFSolver<Buchi> {
 	// variable to store keys of calculated components for later use (special to this winning condition)
 	private int bl; // buchi loop
 
-	public QBFBuchiSolver(PetriNet net, Buchi win, QBFSolverOptions so) throws UnboundedPGException {
+	public QBFBuchiSolver(PetriNet net, Buchi win, QBFSolverOptions so) throws UnboundedPGException, BoundedParameterMissingException {
 		super(new QBFPetriGame(net), win, so);
 	}
 

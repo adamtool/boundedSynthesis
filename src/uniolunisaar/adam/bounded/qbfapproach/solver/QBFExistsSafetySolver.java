@@ -16,6 +16,7 @@ import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.analysis.exception.UnboundedException;
 import uniol.apt.util.Pair;
+import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.ForNonDeterministicUnfolder;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
@@ -27,7 +28,7 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 	
 	private int[] bad;
 	
-	public QBFExistsSafetySolver(QBFPetriGame game, Safety winCon, QBFSolverOptions options) {
+	public QBFExistsSafetySolver(QBFPetriGame game, Safety winCon, QBFSolverOptions options) throws BoundedParameterMissingException {
 		super(game, winCon, options);
 		bad = new int[pg.getN() + 1];
 	}

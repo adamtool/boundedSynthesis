@@ -15,6 +15,7 @@ import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.analysis.exception.UnboundedException;
+import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.ForNonDeterministicUnfolder;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
@@ -35,7 +36,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 	// variable to store keys of calculated components for later use (special to this winning condition)
 	private int[] bad;
 
-	public QBFSafetySolver(PetriNet net, Safety win, QBFSolverOptions so) throws UnboundedPGException {
+	public QBFSafetySolver(PetriNet net, Safety win, QBFSolverOptions so) throws UnboundedPGException, BoundedParameterMissingException  {
 		super(new QBFPetriGame(net), win, so);
 		bad = new int[pg.getN() + 1];
 	}

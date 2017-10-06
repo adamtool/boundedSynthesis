@@ -14,6 +14,7 @@ import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.analysis.exception.UnboundedException;
 import uniol.apt.util.Pair;
+import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.ForNonDeterministicUnfolder;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
@@ -26,7 +27,7 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 
 	private int bl; // buchi loop
 	
-	public QBFForallBuchiSolver(QBFPetriGame game, Buchi winCon, QBFSolverOptions options) {
+	public QBFForallBuchiSolver(QBFPetriGame game, Buchi winCon, QBFSolverOptions options) throws BoundedParameterMissingException{
 		super(game, winCon, options);
 	}
 	
