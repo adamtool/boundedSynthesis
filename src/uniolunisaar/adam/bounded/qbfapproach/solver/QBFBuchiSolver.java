@@ -18,7 +18,7 @@ import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.ForNonDeterministicUnfolder;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
-import uniolunisaar.adam.ds.exceptions.UnboundedPGException;
+import uniolunisaar.adam.ds.exceptions.NotSupportedGameException;
 import uniolunisaar.adam.ds.winningconditions.Buchi;
 import uniolunisaar.adam.ds.winningconditions.Safety;
 import uniolunisaar.adam.tools.AdamProperties;
@@ -34,7 +34,7 @@ public class QBFBuchiSolver extends QBFSolver<Buchi> {
 	// variable to store keys of calculated components for later use (special to this winning condition)
 	private int bl; // buchi loop
 
-	public QBFBuchiSolver(PetriNet net, Buchi win, QBFSolverOptions so) throws UnboundedPGException, BoundedParameterMissingException {
+	public QBFBuchiSolver(PetriNet net, Buchi win, QBFSolverOptions so) throws NotSupportedGameException, BoundedParameterMissingException {
 		super(new QBFPetriGame(net), win, so);
 	}
 

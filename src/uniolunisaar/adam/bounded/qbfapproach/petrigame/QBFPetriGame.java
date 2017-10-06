@@ -11,7 +11,7 @@ import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
-import uniolunisaar.adam.ds.exceptions.UnboundedPGException;
+import uniolunisaar.adam.ds.exceptions.NotSupportedGameException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 
 /**
@@ -27,7 +27,7 @@ public class QBFPetriGame extends PetriGame {
 	private int b; // number of unfoldings per place in the bounded unfolding
 	private Map<Transition, Set<Pair<Place, Place>>> fl = new HashMap<>();
 
-	public QBFPetriGame(PetriNet pn) throws UnboundedPGException {
+	public QBFPetriGame(PetriNet pn) throws NotSupportedGameException {
 		super(pn);
 		for (Transition t : pn.getTransitions()) {
 			fl.put(t, new HashSet<>());
@@ -85,7 +85,7 @@ public class QBFPetriGame extends PetriGame {
 		QBFPetriGame newPG = null;
 		try {
 			newPG = new QBFPetriGame(copy);
-		} catch (UnboundedPGException e) {
+		} catch (NotSupportedGameException e) {
 			System.out.println("Something went wrong when copying a Petri game. The copied game was found unbounded. This should not happen as the original game should not be unbounded.");
 			e.printStackTrace();
 		}
