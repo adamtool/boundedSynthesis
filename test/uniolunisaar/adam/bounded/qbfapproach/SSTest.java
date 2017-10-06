@@ -18,6 +18,7 @@ import uniolunisaar.adam.ds.exceptions.NetNotConcurrencyPreservingException;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
+import uniolunisaar.adam.ds.exceptions.ParameterMissingException;
 import uniolunisaar.adam.ds.exceptions.SolverDontFitPetriGameException;
 import uniolunisaar.adam.ds.exceptions.UnboundedPGException;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
@@ -54,7 +55,7 @@ public class SSTest {
     }
 
     //@Test(dataProvider = "secSystem")
-    public void testSecuritySystem(int intrudingPoints, boolean hasStrategy) throws NetNotSafeException, NetNotConcurrencyPreservingException, NoStrategyExistentException, IOException, InterruptedException, FileNotFoundException, ModuleException, NoSuitableDistributionFoundException, SolverDontFitPetriGameException, UnboundedPGException, CouldNotFindSuitableWinningConditionException {
+    public void testSecuritySystem(int intrudingPoints, boolean hasStrategy) throws NetNotSafeException, NetNotConcurrencyPreservingException, NoStrategyExistentException, IOException, InterruptedException, FileNotFoundException, ModuleException, NoSuitableDistributionFoundException, SolverDontFitPetriGameException, UnboundedPGException, CouldNotFindSuitableWinningConditionException, ParameterMissingException {
         final String path = outputDir;
         String name = intrudingPoints + "_secSystem";
         File f = new File(path);

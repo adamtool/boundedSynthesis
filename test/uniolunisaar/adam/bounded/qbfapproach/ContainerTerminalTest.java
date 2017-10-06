@@ -17,6 +17,7 @@ import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
 import uniolunisaar.adam.ds.exceptions.CouldNotFindSuitableWinningConditionException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
+import uniolunisaar.adam.ds.exceptions.ParameterMissingException;
 import uniolunisaar.adam.ds.exceptions.SolverDontFitPetriGameException;
 import uniolunisaar.adam.ds.exceptions.UnboundedPGException;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
@@ -53,7 +54,7 @@ public class ContainerTerminalTest {
     }
 
     //@Test(dataProvider = "conTerminal")
-    public void testContainerTerminal(int containerPlaces, boolean hasStrategy) throws NetNotSafeException, NetNotConcurrencyPreservingException, NoStrategyExistentException, IOException, InterruptedException, FileNotFoundException, ModuleException, NoSuitableDistributionFoundException, SolverDontFitPetriGameException, UnboundedPGException, CouldNotFindSuitableWinningConditionException {
+    public void testContainerTerminal(int containerPlaces, boolean hasStrategy) throws NetNotSafeException, NetNotConcurrencyPreservingException, NoStrategyExistentException, IOException, InterruptedException, FileNotFoundException, ModuleException, NoSuitableDistributionFoundException, SolverDontFitPetriGameException, UnboundedPGException, CouldNotFindSuitableWinningConditionException, ParameterMissingException {
         final String path = outputDir;
         String name = containerPlaces + "_conTerminal";
         File f = new File(path);
