@@ -65,7 +65,10 @@ public class ForallReachabilityTest {
 		final String path = System.getProperty("examplesfolder") + "/forallreachability/" + str + ".apt";
         PetriNet pn = Tools.getPetriNet(path);
         Map<Transition, Set<Pair<Place, Place>>> fl = new HashMap<>();
-        
+        for (Transition t : pn.getTransitions()) {
+        	Set<Pair<Place, Place>> set = new HashSet<>();
+        	fl.put(t, set);
+        }
         oneTest(pn, n, b, result, fl);
 	}
 	

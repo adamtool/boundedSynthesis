@@ -92,10 +92,14 @@ public abstract class Unfolder {
 				if (t.isFireable(m)) {
 					Marking next = t.fire(m);
 					if (!closed.contains(next)) {
-						// local SYS transition (i.e. pre- and postset <= 1) cannot produce history, therefore arent unfolded
-						if (t.getPreset().size() > 1 || pg.getEnvTransitions().contains(t)) {
+						// local SYS transition (i.e. pre- and postset <= 1) cannot produce history, but they CAN TRANSPORT history
+						System.out.println(t + " " + (t.getPreset().size() > 1) + " " + pg.getEnvTransitions().contains(t) + " " + transportHistory(t, orderOfUnfolding));
+						if (t.getPreset().size() > 1 || pg.getEnvTransitions().contains(t) || transportHistory(t, orderOfUnfolding)) {
 							for (Place place : t.getPostset()) {
-								orderOfUnfolding.get(place.getId()).add(i + 1);
+								// only unfold places with outgoing transitions
+								if (place.getPostset().size() > 0) {
+									orderOfUnfolding.get(place.getId()).add(i + 1);
+								}
 							}
 						}
 						if (i + 1 < pg.getN()) {
@@ -106,6 +110,16 @@ public abstract class Unfolder {
 			}
 		}
 		return orderOfUnfolding;
+	}
+	
+	private boolean transportHistory(Transition t, Map<String, LinkedList<Integer>> orderOfUnfolding) {
+		if (t.getPreset().size() == 1) {
+			Place p = t.getPreset().toArray(new Place[0])[0];
+			if (orderOfUnfolding.get(p.getId()).size() > 1) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	protected Set<Transition> getOriginalPreset (Place p) {

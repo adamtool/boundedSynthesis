@@ -123,7 +123,6 @@ public class QBFBuchiSolver extends QBFSolver<Buchi> {
 			writer.write("#QCIR-G14          " + QBFSolver.linebreak); // spaces left to add variable count in the end
 			addExists();
 			addForall();
-			writer.write("output(1)" + QBFSolver.linebreak); // 1 = \phi
 
 			writeInitial();
 			writeDeadlock();
