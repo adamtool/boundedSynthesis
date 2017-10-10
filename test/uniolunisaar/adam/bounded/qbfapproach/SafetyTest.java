@@ -26,7 +26,12 @@ public class SafetyTest {
 	public void test() throws Exception {
 		//oneTest("tests/watchdog5", 15, 3, true);		// TODO search for bounds
 		//oneTest("container/container", 10, 2, true);	// TODO search for bounds
+		//oneTest("ndet/nondet_withBad", 12,2, false);
+		oneTest("nm/sendingprotocol", 6, 2, true);
+		oneTest("nm/sendingprotocol", 5, 2, false);
 		oneTest("nm/sendingprotocolTwo", 12, 2, true);
+		oneTest("nm/sendingprotocolTwo", 11, 2, false);
+		//oneTest("burglar/burglar", 7, 3, true);
 		oneTest("jhh/myexample1", 10, 0, false);
 		oneTest("jhh/myexample1", 10, 2, false);
 		oneTest("jhh/myexample2", 10, 0, true);
@@ -36,8 +41,8 @@ public class SafetyTest {
 		oneTest("jhh/myexample7", 4, 0, true);
 		oneTest("jhh/myexample7", 3, 0, false);
 		oneTest("ndet/nondet", 5, 2, false); //TRUE
-		oneTest("burglar/burglar", 7, 3, true);
-		oneTest("burglar/burglar", 6, 2, false);
+		//oneTest("burglar/burglar", 7, 3, true);
+		//oneTest("burglar/burglar", 6, 2, false);
 		oneTest("jhh/robots_true", 20, 0, true);
 		oneTest("jhh/robots_false", 20, 0, false);
 		oneTest("constructedExample/constructedExample", 4, 0, true);

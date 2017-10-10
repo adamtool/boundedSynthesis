@@ -1,10 +1,12 @@
 package uniolunisaar.adam.bounded.qbfapproach.solver;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -19,11 +21,15 @@ import uniol.apt.adt.pn.Marking;
 import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
+import uniol.apt.analysis.exception.UnboundedException;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
+import uniolunisaar.adam.bounded.qbfapproach.unfolder.ForNonDeterministicUnfolder;
+import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
+import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 import uniolunisaar.adam.ds.solver.Solver;
 import uniolunisaar.adam.ds.util.AdamExtensions;
 import uniolunisaar.adam.ds.winningconditions.Safety;
@@ -66,7 +72,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
     public static String additionalSystemUniqueDivider = "_0_"; // Controller
     public static String solver = "quabs"; // Controller
     public static boolean deterministicStrat = true; // Controller
-    public static boolean debug = true;
+    public static boolean debug = false;
 
     // Caches
     private Map<Transition, Set<Place>> restCache = new HashMap<>(); // proven to be slightly useful in terms of performance
@@ -158,7 +164,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
         writer.write(in + " = " + getInitial());
     }
 
-    public String getInitial() {
+    public String getInitial() {					// TODO adapt when extension initial exists
         Marking initialMarking = pg.getNet().getInitialMarking();
         Set<Integer> initial = new HashSet<>();
         for (Place p : pn.getPlaces()) {
@@ -381,7 +387,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
         Transition[] sys_transitions;
         for (Place sys : pn.getPlaces()) {
             // Additional system places are not forced to behave deterministically, this is the faster variant (especially the larger the PG becomes)
-            if (!pg.getEnvPlaces().contains(sys) && !sys.getId().startsWith(QBFSolver.additionalSystemName)) {
+            if (!AdamExtensions.isEnvironment(sys) && !sys.getId().startsWith(QBFSolver.additionalSystemName)) {
                 if (sys.getPostset().size() > 1) {
                     sys_transitions = sys.getPostset().toArray(new Transition[0]);
                     for (int j = 0; j < sys_transitions.length; ++j) {
@@ -482,12 +488,6 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
         return writeOr(outerOr);
     }
 
-    protected void writeUnfair() throws IOException {
-        String unfair = getUnfair();
-        u = createUniqueID();
-        writer.write(u + " = " + unfair);
-    }
-
     private Set<Place> unfoldingsOf(Place place) {
         Set<Place> result = new HashSet<>();
         for (Place p : pn.getPlaces()) {
@@ -496,6 +496,12 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
             }
         }
         return result;
+    }
+    
+    protected void writeUnfair() throws IOException {
+        String unfair = getUnfair();
+        u = createUniqueID();
+        writer.write(u + " = " + unfair);
     }
 
     public String getUnfair() throws IOException {
@@ -609,7 +615,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
     }
 
     public int addSysStrategy(Place p, Transition t) {
-        if (!pg.getEnvPlaces().contains(p)) {
+        if (!AdamExtensions.isEnvironment(p)) {
             if (p.getId().startsWith(QBFSolver.additionalSystemName)) {
                 return getVarNr(p.getId() + ".." + t.getId(), true);
             } else {
@@ -623,7 +629,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
     public void addExists() throws IOException {
         Set<Integer> exists = new HashSet<>();
         for (Place p : pg.getNet().getPlaces()) {
-            if (!pg.getEnvPlaces().contains(p)) {
+            if (!AdamExtensions.isEnvironment(p)) {
                 if (p.getId().startsWith(QBFSolver.additionalSystemName)) {
                     for (Transition t : p.getPostset()) {
                         int number = createVariable(p.getId() + ".." + t.getId());
@@ -718,7 +724,6 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
                 }
                 innerAnd_index = createUniqueID();
                 writer.write(innerAnd_index + " = " + writeAnd(innerAnd));
-                ;
                 or.add(innerAnd_index);
             }
             or_index = createUniqueID();
@@ -810,6 +815,104 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
         }
         return number;
     }
+    
+    protected Map<Place, Set<Transition>> unfoldPG() {
+    	game = pg.copy("originalGame");
+		game_winCon = new Safety();
+		game_winCon.buffer(game);
+		
+		ForNonDeterministicUnfolder unfolder = new ForNonDeterministicUnfolder(pg, null); // null forces unfolder to use b as bound for every place
+		try {
+			unfolder.prepareUnfolding();
+		} catch (UnboundedException | FileNotFoundException | NetNotSafeException | NoSuitableDistributionFoundException e1) {
+			System.out.println("Error: The bounded unfolding of the game failed.");
+		}
+		// Adding the newly unfolded places to the set of bad places
+		getWinningCondition().buffer(pg);
+		
+
+		unfolding = pg.copy("unfolding");
+		unfolding_winCon = new Safety();
+		unfolding_winCon.buffer(unfolding);
+		
+		return unfolder.systemHasToDecideForAtLeastOne;
+    }
+    
+    protected void initializeVariablesForWriteQCIR() {
+    	transitions = pn.getTransitions().toArray(new Transition[0]);
+		flowSubFormulas = new int[pg.getN() * pn.getTransitions().size()];
+		deadlockSubFormulas = new int[(pg.getN() + 1) * pn.getTransitions().size()];
+		terminatingSubFormulas = new int[(pg.getN() + 1) * pn.getTransitions().size()];
+
+		oneTransitionFormulas = new int[pn.getTransitions().size()][pg.getN() + 1];
+		for (int i = 0; i < transitions.length; ++i) {
+			transitionKeys.put(transitions[i], i);
+		}
+    }
+    
+    protected abstract void writeQCIR() throws IOException;
+    
+    @Override
+	protected boolean exWinStrat() {
+		int exitcode = -1;
+		try {
+			writeQCIR();
+
+			ProcessBuilder pb = null;
+			// Run solver on problem
+			String os = System.getProperty("os.name");
+			
+			if (os.startsWith("Mac")) {
+				pb = new ProcessBuilder("./" + solver + "_mac", "--partial-assignment", file.getAbsolutePath());
+				//pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + solver + "_mac", "--partial-assignment", file.getAbsolutePath());
+			} else if (os.startsWith("Linux")) {
+				pb = new ProcessBuilder("./" + solver + "_unix", "--partial-assignment", file.getAbsolutePath());
+				//pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + solver + "_mac", "--partial-assignment", file.getAbsolutePath());
+			} else {
+				System.out.println("You are using " + os + ".");
+				System.out.println("Your operation system is not supported.");
+				return false;
+			}
+			if (QBFSolver.debug) {
+				System.out.println("A temporary file is saved to \"" + file.getAbsolutePath() + "\".");
+			}
+
+			Process pr = pb.start();
+			// Read caqe's output
+			BufferedReader inputReader = new BufferedReader(new InputStreamReader(pr.getInputStream()));
+			String line_read;
+			outputQBFsolver = "";
+			while ((line_read = inputReader.readLine()) != null) {
+				outputQBFsolver += line_read + "\n";
+			}
+
+			exitcode = pr.waitFor();
+			inputReader.close();
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+			e.printStackTrace();
+		}
+		// Storing results
+		if (exitcode == 20) {
+			solvable = true;
+			sat = false;
+			error = false;
+			System.out.println("UNSAT ");
+			return false;
+		} else if (exitcode == 10) {
+			solvable = true;
+			sat = true;
+			error = false;
+			System.out.println("SAT");
+			return true;
+		} else {
+			System.out.println("QCIR ERROR with FULL output:" + outputQBFsolver);
+			solvable = false;
+			sat = null;
+			error = true;
+			return false;
+		}
+	}
 
     @Override
     protected PetriNet calculateStrategy() throws NoStrategyExistentException {

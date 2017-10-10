@@ -93,7 +93,6 @@ public abstract class Unfolder {
 					Marking next = t.fire(m);
 					if (!closed.contains(next)) {
 						// local SYS transition (i.e. pre- and postset <= 1) cannot produce history, but they CAN TRANSPORT history
-						System.out.println(t + " " + (t.getPreset().size() > 1) + " " + pg.getEnvTransitions().contains(t) + " " + transportHistory(t, orderOfUnfolding));
 						if (t.getPreset().size() > 1 || pg.getEnvTransitions().contains(t) || transportHistory(t, orderOfUnfolding)) {
 							for (Place place : t.getPostset()) {
 								// only unfold places with outgoing transitions

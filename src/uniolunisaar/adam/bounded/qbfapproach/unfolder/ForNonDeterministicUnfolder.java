@@ -24,7 +24,6 @@ public class ForNonDeterministicUnfolder extends NonDeterministicUnfolder {
 	protected void createUnfolding() throws NetNotSafeException, NoSuitableDistributionFoundException, UnboundedException, FileNotFoundException {
 		Set<Place> places = new HashSet<>(pn.getPlaces());
 		Map<String, LinkedList<Integer>> orderOfUnfolding = calculateOrderOfUnfoldingBasedOnGameSimulation();
-		System.out.println(orderOfUnfolding);
 		for (int i = 2; i <= pg.getN(); ++i) {
 			for (Place p : places) {						// TODO hashCode determines order; order according to size of preset or postset
 				LinkedList<Integer> list = orderOfUnfolding.get(p.getId());

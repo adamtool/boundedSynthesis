@@ -1,13 +1,15 @@
 package uniolunisaar.adam.bounded.benchmarks;
 
-import uniol.apt.adt.pn.PetriNet;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSafetySolver;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
-import uniolunisaar.adam.ds.winningconditions.Safety;
-import uniolunisaar.adam.generators.SelfOrganizingRobots;
+import org.testng.annotations.Test;
 
+import uniol.apt.adt.pn.PetriNet;
+import uniolunisaar.adam.generators.SelfOrganizingRobots;
+import uniolunisaar.adam.tools.Tools;
+
+@Test
 public class SelfReconfiguringRobotsBenchmark {
 
+	@Test
 	public void test() throws Exception {
 		oneBenchmark(2, 1, 6, 2, "SR-sat-");
 		oneBenchmark(3, 1, 7, 2, "SR-sat-");
@@ -34,8 +36,6 @@ public class SelfReconfiguringRobotsBenchmark {
 		PetriNet pn = SelfOrganizingRobots.generate(robot1, robot2, true, true);
 		pn.setName("Benchmarks/SelfReconfiguringRobots/" + "" + id + String.format("%02d", robot1) + "-" + String.format("%02d", robot2) + "-" + String.format("%02d", n) + "-" + b);
 		
-		QBFSafetySolver sol = new QBFSafetySolver(pn, new Safety(), new QBFSolverOptions(n, b));
-		
-		sol.writeQCIR();
+		Tools.saveFile("Benchmarks/SelfReconfiguringRobots/" + "" + id + String.format("%02d", robot1) + "-" + String.format("%02d", robot2) + "-" + String.format("%02d", n) + "-" + b + ".apt", Tools.getPN(pn));
 	}
 }

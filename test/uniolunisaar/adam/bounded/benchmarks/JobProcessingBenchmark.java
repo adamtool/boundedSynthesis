@@ -1,13 +1,15 @@
 package uniolunisaar.adam.bounded.benchmarks;
 
-import uniol.apt.adt.pn.PetriNet;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSafetySolver;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
-import uniolunisaar.adam.ds.winningconditions.Safety;
-import uniolunisaar.adam.generators.ManufactorySystem;
+import org.testng.annotations.Test;
 
+import uniol.apt.adt.pn.PetriNet;
+import uniolunisaar.adam.generators.ManufactorySystem;
+import uniolunisaar.adam.tools.Tools;
+
+@Test
 public class JobProcessingBenchmark {
 
+	@Test
 	public void test() throws Exception {
 		oneBenchmark(2, 7, 3, "JP-sat-");
 		oneBenchmark(3, 8, 4, "JP-sat-");
@@ -34,8 +36,6 @@ public class JobProcessingBenchmark {
 		PetriNet pn = ManufactorySystem.generate(problemSize, true, true, true);
 		pn.setName("Benchmarks/JobProcessing/" + "" + id + String.format("%02d", problemSize) + "-" + String.format("%02d", n) + "-" + b);
 		
-		QBFSafetySolver sol = new QBFSafetySolver(pn, new Safety(), new QBFSolverOptions(n, b));
-		
-		sol.writeQCIR();
+		Tools.saveFile("Benchmarks/JobProcessing/" + "" + id + String.format("%02d", problemSize) + "-" + String.format("%02d", n) + "-" + b + ".apt", Tools.getPN(pn));
 	}
 }
