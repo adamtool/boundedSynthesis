@@ -34,6 +34,7 @@ import uniolunisaar.adam.ds.solver.Solver;
 import uniolunisaar.adam.ds.util.AdamExtensions;
 import uniolunisaar.adam.ds.winningconditions.Safety;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
+import uniolunisaar.adam.tools.AdamProperties;
 
 /**
  *
@@ -105,6 +106,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 
     public QBFSolver(QBFPetriGame game, W winCon, QBFSolverOptions so) throws BoundedParameterMissingException {
         super(game, winCon, so);
+        
         pg = game;
         int n = so.getN();
         int b = so.getB();
@@ -863,11 +865,11 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 			String os = System.getProperty("os.name");
 			
 			if (os.startsWith("Mac")) {
-				pb = new ProcessBuilder("./" + solver + "_mac", "--partial-assignment", file.getAbsolutePath());
-				//pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + solver + "_mac", "--partial-assignment", file.getAbsolutePath());
+				//pb = new ProcessBuilder("./" + solver + "_mac", "--partial-assignment", file.getAbsolutePath());
+				pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + solver + "_mac", "--partial-assignment", file.getAbsolutePath());
 			} else if (os.startsWith("Linux")) {
-				pb = new ProcessBuilder("./" + solver + "_unix", "--partial-assignment", file.getAbsolutePath());
-				//pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + solver + "_mac", "--partial-assignment", file.getAbsolutePath());
+				//pb = new ProcessBuilder("./" + solver + "_unix", "--partial-assignment", file.getAbsolutePath());
+				pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + solver + "_unix", "--partial-assignment", file.getAbsolutePath());
 			} else {
 				System.out.println("You are using " + os + ".");
 				System.out.println("Your operation system is not supported.");
