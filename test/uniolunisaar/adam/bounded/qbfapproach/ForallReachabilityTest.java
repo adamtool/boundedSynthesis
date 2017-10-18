@@ -3,6 +3,7 @@ package uniolunisaar.adam.bounded.qbfapproach;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -17,8 +18,11 @@ import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFForallReachabilitySolver;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
+import uniolunisaar.adam.ds.petrigame.TokenFlow;
+import uniolunisaar.adam.ds.util.AdamExtensions;
 import uniolunisaar.adam.ds.winningconditions.Reachability;
 import uniolunisaar.adam.logic.util.AdamTools;
+import uniolunisaar.adam.logic.util.PetriGameAnnotator;
 import uniolunisaar.adam.tools.Tools;
 
 @Test
@@ -33,10 +37,18 @@ public class ForallReachabilityTest {
 	
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void test() throws Exception {
-		exp1emptyFL("jhh/myexample1", 3, 0, false);
-		exp1trivialFL("jhh/myexample1", 3, 0, true);
-		exp2emptyFL("jhh/myexample2", 3, 0, false);
-		exp2choiceFL("jhh/myexample2", 3, 0, true);
+		//exp1emptyFL("jhh/myexample1", 3, 0, false);
+		//exp1trivialFL("jhh/myexample1", 3, 0, true);
+		//exp2emptyFL("jhh/myexample2", 3, 0, false);
+		//exp2choiceFL("jhh/myexample2", 3, 0, true);
+		/*burglar2("burglar/burglar", 10, 0, false);
+		burglar2("burglar/burglar", 10, 2, true);
+		burglar2("burglar/burglar1", 10, 0, false);
+		burglar2("burglar/burglar1", 10, 2, true);
+		burglar2("burglar/burglar2", 10, 0, false);
+		burglar2("burglar/burglar2", 10, 2, false);*/
+		//burglar2("burglar/burglarDirectlyWon", 10, 0, true);
+		infiniteFlowChain("toyexamples/infiniteFlowChains", 20, 0, true);
 	}
 	
 	private void exp1emptyFL(String str, int n, int b, boolean result) throws Exception {
@@ -82,6 +94,46 @@ public class ForallReachabilityTest {
         Set<Pair<Place, Place>> set2 = new HashSet<>();
         
         fl.put(pn.getTransition("t2"), set2);
+        oneTest(pn, n, b, result, fl);
+	}
+	
+	private void burglar2(String str, int n, int b, boolean result) throws Exception {
+		final String path = System.getProperty("examplesfolder") + "/forallreachability/" + str + ".apt";
+        PetriNet pn = Tools.getPetriNet(path);
+        PetriGameAnnotator.parseNetOptionsAndAnnotate(pn);
+        Map<Transition, Set<Pair<Place, Place>>> fl = new HashMap<>();
+        for (Transition t : pn.getTransitions()) {
+            List<TokenFlow> list = AdamExtensions.getTokenFlow(t);
+            Set<Pair<Place, Place>> set = new HashSet<>();
+            for (TokenFlow tf : list) {
+            	for (Place pre : tf.getPreset()) {
+            		for (Place post : tf.getPostset()) {
+            			set.add(new Pair<>(pre, post));
+            		}
+            	}
+            }
+        	fl.put(t, set);
+        }
+        oneTest(pn, n, b, result, fl);
+	}
+	
+	private void infiniteFlowChain(String str, int n, int b, boolean result) throws Exception {
+		final String path = System.getProperty("examplesfolder") + "/forallreachability/" + str + ".apt";
+        PetriNet pn = Tools.getPetriNet(path);
+        PetriGameAnnotator.parseNetOptionsAndAnnotate(pn);
+        Map<Transition, Set<Pair<Place, Place>>> fl = new HashMap<>();
+        for (Transition t : pn.getTransitions()) {
+            List<TokenFlow> list = AdamExtensions.getTokenFlow(t);
+            Set<Pair<Place, Place>> set = new HashSet<>();
+            for (TokenFlow tf : list) {
+            	for (Place pre : tf.getPreset()) {
+            		for (Place post : tf.getPostset()) {
+            			set.add(new Pair<>(pre, post));
+            		}
+            	}
+            }
+        	fl.put(t, set);
+        }
         oneTest(pn, n, b, result, fl);
 	}
 	

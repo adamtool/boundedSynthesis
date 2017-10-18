@@ -75,9 +75,9 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 					and.add(getVarNr(p.getId() + "." + (i + 1) + "." + "unsafe", true));
 				} else {
 					// unsafe flow chain before
-					and.add(writeImplication(getOneUnsafeFlowChain(p, t, i), getVarNr(p.getId() + "." + (i + 1) + "." + "unsafe", true)));
+					and.add(writeImplication(getAllUnsafeFlowChain(p, t, i), getVarNr(p.getId() + "." + (i + 1) + "." + "unsafe", true)));
 					// safe flow chain before
-					and.add(writeImplication(getAllSafeFlowChain(p, t, i),  getVarNr(p.getId() + "." + (i + 1) + "." + "safe", true)));
+					and.add(writeImplication(getOneSafeFlowChain(p, t, i),  getVarNr(p.getId() + "." + (i + 1) + "." + "safe", true)));
 				}
 			}
 			
@@ -128,21 +128,25 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 		Set<Integer> innerAnd = new HashSet<>();
 		
 		for (Place p : pn.getPlaces()) {
-			outerAnd.add(-getVarNr(p.getId() + "." + pg.getN() + "." + "safe", true));
+			if (!p.getId().startsWith(QBFSolver.additionalSystemName)) {
+				outerAnd.add(-getVarNr(p.getId() + "." + pg.getN() + "." + "safe", true));
+			}
 		}
 		for (Transition t : pn.getTransitions()) {
 			boolean addFlow = false;
 			for (Place p : t.getPreset()) {
-				boolean cont = false;
-				for (Pair<Place, Place> pair : pg.getFl().get(t)) {
-					if (pair.getFirst().equals(p)) {
-						cont = true;
+				if (!p.getId().startsWith(QBFSolver.additionalSystemName)) {
+					boolean cont = false;
+					for (Pair<Place, Place> pair : pg.getFl().get(t)) {
+						if (pair.getFirst().equals(p)) {
+							cont = true;
+							break;
+						}
+					}
+					if (!cont) {
+						addFlow = true;
 						break;
 					}
-				}
-				if (!cont) {
-					addFlow = true;
-					break;
 				}
 			}
 			if (addFlow) {

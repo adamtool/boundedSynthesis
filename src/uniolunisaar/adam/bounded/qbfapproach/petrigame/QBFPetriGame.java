@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import uniol.apt.adt.pn.Flow;
 import uniol.apt.adt.pn.Marking;
 import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.adt.pn.Place;
@@ -15,7 +14,7 @@ import uniolunisaar.adam.ds.exceptions.NotSupportedGameException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 
 /**
- * Parameters four bounded synthesis added.
+ * Parameters for bounded synthesis added.
  * Possibilities to remove places/transitions according to (winning) strategy implemented.
  * Petri game can be copied.
  * 
@@ -57,44 +56,6 @@ public class QBFPetriGame extends PetriGame {
 			// remove transition t as soon as one place in pre(t) is removed
 			removeTransitionRecursively(t);
 		}
-	}
-
-	public QBFPetriGame copy(String name) {
-		PetriNet copy = new PetriNet(getNet().getName() + "_" + name);
-
-		for (Place p : getNet().getPlaces()) {
-			Place copyPlace = copy.createPlace(p.getId());
-			for (Pair<String, Object> pair : p.getExtensions()) {
-				copyPlace.putExtension(pair.getFirst(), pair.getSecond());
-			}
-		}
-		for (Transition t : getNet().getTransitions()) {
-			copy.createTransition(t.getId());
-		}
-		for (Flow f : getNet().getEdges()) {
-			copy.createFlow(f.getSource().getId(), f.getTarget().getId());
-		}
-
-		Marking in = getNet().getInitialMarking();
-		for (Place p : getNet().getPlaces()) {
-			if (in.getToken(p).getValue() == 1) {
-				copy.getPlace(p.getId()).setInitialToken(1);
-			}
-		}
-
-		QBFPetriGame newPG = null;
-		try {
-			newPG = new QBFPetriGame(copy);
-		} catch (NotSupportedGameException e) {
-			System.out.println("Something went wrong when copying a Petri game. The copied game was found unbounded. This should not happen as the original game should not be unbounded.");
-			e.printStackTrace();
-		}
-		for (Place p : getNet().getPlaces()) {
-			if (getEnvPlaces().contains(p)) {
-				newPG.getEnvPlaces().add(p);
-			}
-		}
-		return newPG;
 	}
 
 	public int getN() {

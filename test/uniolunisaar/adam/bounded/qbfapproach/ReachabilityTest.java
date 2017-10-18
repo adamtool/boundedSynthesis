@@ -25,10 +25,10 @@ public class ReachabilityTest {
 	
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testReachability() throws Exception {
-		test ("toyExamples", "simple", false, 10, 0);
-		test ("toyExamples", "question", true, 10, 2);
-		test ("toyExamples", "shortestStrategy0", true, 10, 0);
-		test ("toyExamples", "shortestStrategy1", true, 10, 0);
+		// testing unfair loop, i.e., environment decision against reaching the good place
+		test ("unfair", "unfair", false, 10, 0);
+		test ("unfair", "unfair2", false, 10, 0);
+		test ("unfair", "unfair3", true, 10, 0);
 		
 		// correct because after unfolding all runs can be forced by strategy to reach place-to-reach
 		test ("burglar", "burglar", false, 10, 0);
@@ -44,6 +44,14 @@ public class ReachabilityTest {
 		test ("ndet", "nondet", false, 10, 2);
 		test ("ndet", "nondet2", false, 10, 2);
 		
+		// Nothing special, problematic for BDDs
+		test ("toyExamples", "dontCutEnv_long", true, 10, 0);
+		test ("toyExamples", "dontCutEnv_long", true, 5, 0);
+		test ("toyExamples", "dontCutEnv_long", false, 4, 0);
+		test ("toyExamples", "dontCutEnv", true, 10, 0);
+		test ("toyExamples", "dontCutEnv", true, 4, 0);
+		test ("toyExamples", "dontCutEnv", false, 3, 0);
+		
 		// correct because unfair loops should not change the result
 		test ("toyExamples", "infiniteA", true, 10, 0);
 		test ("toyExamples", "infiniteB", false, 10, 0);
@@ -53,6 +61,10 @@ public class ReachabilityTest {
 		// correct as for some env behavior the place-to-reach is not reached
 		test ("toyExamples", "notReachable", false, 10, 0);
 		test ("toyExamples", "notReachable", false, 10, 2);
+		test ("toyExamples", "simple", false, 10, 0);
+		test ("toyExamples", "question", true, 10, 2);
+		test ("toyExamples", "shortestStrategy0", true, 10, 0);
+		test ("toyExamples", "shortestStrategy1", true, 10, 0);
 		
 		// correct because other sys player has to activate transition which leads to loop avoiding place-to-reach
 		test ("toyExamples", "type2A", true, 10, 0);

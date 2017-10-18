@@ -264,9 +264,11 @@ public abstract class Unfolder {
 	protected Transition copyTransition(Transition t) {
 		String id = getTruncatedId(t.getId());
 		Transition ret = pg.getNet().createTransition(id + "__" + getCopyCounter(id));
+		pg.getFl().put(ret, new HashSet<>());
 		return ret;
 	}
 	
+	// only used in deterministic unfolder, don't care about flow chains until now
 	protected Place copyPlace(Place p) {
 		String id = getTruncatedId(p.getId());
 		Place ret = pg.getNet().createPlace(id + "__" + current.get(id));

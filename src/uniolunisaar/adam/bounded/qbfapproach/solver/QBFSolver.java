@@ -30,9 +30,9 @@ import uniolunisaar.adam.bounded.qbfapproach.unfolder.ForNonDeterministicUnfolde
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
+import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.solver.Solver;
 import uniolunisaar.adam.ds.util.AdamExtensions;
-import uniolunisaar.adam.ds.winningconditions.Safety;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 import uniolunisaar.adam.tools.AdamProperties;
 
@@ -83,12 +83,9 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
     public QBFPetriGame pg;
     protected PetriNet pn;
 
-    public QBFPetriGame game;
-    protected WinningCondition game_winCon;
-    public QBFPetriGame unfolding;
-    protected WinningCondition unfolding_winCon;
-    public QBFPetriGame strategy;
-    protected WinningCondition strategy_winCon;
+    public PetriGame game;
+    public PetriGame unfolding;
+    public PetriGame strategy;
 
     // Solving
     protected BufferedWriter writer;
@@ -819,9 +816,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
     }
     
     protected Map<Place, Set<Transition>> unfoldPG() {
-    	game = pg.copy("originalGame");
-		game_winCon = new Safety();
-		game_winCon.buffer(game);
+    	game = new PetriGame(pg);
 		
 		ForNonDeterministicUnfolder unfolder = new ForNonDeterministicUnfolder(pg, null); // null forces unfolder to use b as bound for every place
 		try {
@@ -833,9 +828,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 		getWinningCondition().buffer(pg);
 		
 
-		unfolding = pg.copy("unfolding");
-		unfolding_winCon = new Safety();
-		unfolding_winCon.buffer(unfolding);
+		unfolding = new PetriGame(pg);
 		
 		return unfolder.systemHasToDecideForAtLeastOne;
     }
@@ -964,9 +957,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
                                 // 0 is the last member
                                 // System.out.println("Finished reading strategy.");
                                 PGSimplifier.simplifyPG(pg, true, false);
-                                strategy = pg.copy("strategy");
-                                strategy_winCon = new Safety();
-                                strategy_winCon.buffer(strategy);
+                                strategy = new PetriGame(pg);
                                 return pg.getNet();
                             }
                         }
@@ -975,9 +966,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
             }
             // There were no decision points for the system, thus the previous loop did not leave the method
             PGSimplifier.simplifyPG(pg, true, false);
-            strategy = pg.copy("strategy");
-            strategy_winCon = new Safety();
-            strategy_winCon.buffer(strategy);
+            strategy = new PetriGame(pg);
             return pg.getNet();
         }
         throw new NoStrategyExistentException();

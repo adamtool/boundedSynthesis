@@ -3,7 +3,9 @@ package uniolunisaar.adam.bounded.qbfapproach.solver;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -15,6 +17,7 @@ import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
+import uniolunisaar.adam.ds.petrigame.TokenFlow;
 import uniolunisaar.adam.ds.util.AdamExtensions;
 import uniolunisaar.adam.ds.winningconditions.Reachability;
 
@@ -25,6 +28,21 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 	public QBFForallReachabilitySolver(QBFPetriGame game, Reachability winCon, QBFSolverOptions options) throws BoundedParameterMissingException {
 		super(game, winCon, options);
 		goodPlaces = new int[pg.getN() + 1];
+		
+		Map<Transition, Set<Pair<Place, Place>>> tfl = new HashMap<>();
+        for (Transition t : pn.getTransitions()) {
+            List<TokenFlow> list = AdamExtensions.getTokenFlow(t);
+            Set<Pair<Place, Place>> set = new HashSet<>();
+            for (TokenFlow tf : list) {
+            	for (Place pre : tf.getPreset()) {
+            		for (Place post : tf.getPostset()) {
+            			set.add(new Pair<>(pre, post));
+            		}
+            	}
+            }
+        	tfl.put(t, set);
+        }
+        pg.setFl(tfl);
 	}
 	
 	@Override
@@ -75,10 +93,11 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 				if (AdamExtensions.isReach(p)) {
 					and.add(getVarNr(p.getId() + "." + (i + 1) + "." + "unsafe", true));
 				} else {
+					
 					// unsafe flow chain before
-					and.add(writeImplication(getOneUnsafeFlowChain(p, t, i), getVarNr(p.getId() + "." + (i + 1) + "." + "unsafe", true)));
+					and.add(writeImplication(getAllUnsafeFlowChain(p, t, i), getVarNr(p.getId() + "." + (i + 1) + "." + "unsafe", true)));
 					// safe flow chain before
-					and.add(writeImplication(getAllSafeFlowChain(p, t, i),  getVarNr(p.getId() + "." + (i + 1) + "." + "safe", true)));
+					and.add(writeImplication(getOneSafeFlowChain(p, t, i), getVarNr(p.getId() + "." + (i + 1) + "." + "safe", true)));
 				}
 			}
 			
@@ -133,25 +152,29 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 		for (int i = 1; i <= pg.getN(); ++i) {
 			and.clear();
 			for (Place p : pn.getPlaces()) {
-				and.add(-getVarNr(p.getId() + "." + i + "." + "safe", true));
+				if (!p.getId().startsWith(QBFSolver.additionalSystemName)) {
+					and.add(-getVarNr(p.getId() + "." + i + "." + "safe", true));
+				}
 			}
 			for (Transition t : pn.getTransitions()) {
 				for (Place p : t.getPreset()) {
-					boolean notPresent = true;
-					for (Pair<Place, Place> pair : pg.getFl().get(t)) {
-						if (pair.getFirst().equals(p)) {
-							notPresent = false;
-							break;
+					if (!p.getId().startsWith(QBFSolver.additionalSystemName)) {
+						boolean notPresent = true;
+						for (Pair<Place, Place> pair : pg.getFl().get(t)) {
+							if (pair.getFirst().equals(p)) {
+								notPresent = false;
+								break;
+							}
 						}
-					}
-					if (notPresent) {
-						for (int j = 1; j < i; ++j) {
-							or.clear();
-							or.add(getVarNr(p.getId() + "." + j + "." + "unsafe", true));
-							or.add(-getOneTransition(t, j));
-							int id = createUniqueID();
-							writer.write(id + " = " + writeOr(or));
-							and.add(id);
+						if (notPresent) {
+							for (int j = 1; j < i; ++j) {
+								or.clear();
+								or.add(getVarNr(p.getId() + "." + j + "." + "unsafe", true));
+								or.add(-getOneTransition(t, j));
+								int id = createUniqueID();
+								writer.write(id + " = " + writeOr(or));
+								and.add(id);
+							}
 						}
 					}
 				}

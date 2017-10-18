@@ -124,7 +124,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 
 		writer.write("1 = " + writeAnd(phi));
 		writer.close();
-
+		
 		// Total number of gates is only calculated during encoding and added to the file afterwards
 		if (variablesCounter < 999999999) { // added 9 blanks as more than 999.999.999 variables wont be solvable
 			RandomAccessFile raf = new RandomAccessFile(file, "rw");

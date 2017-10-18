@@ -20,8 +20,9 @@ public abstract class NonDeterministicUnfolder extends Unfolder {
 	
 	protected Set<String> unfoldPlace(Place p) {
 		String p_id = getTruncatedId(p.getId());
-		if (closed.contains(p.getId()))
+		if (closed.contains(p.getId())) {
 			return new HashSet<>();
+		}
 		closed.add(p.getId());
 
 		// only unfold transitions which were originally present (i.e. only transitions with same ID as truncated ID) plus some additional test satisfier in originalPREset
@@ -77,6 +78,7 @@ public abstract class NonDeterministicUnfolder extends Unfolder {
 						for (Transition trans : otherTransitions) {
 							pn.createFlow(newSysPlace, trans);
 							pn.createFlow(trans, newSysPlace);
+							pg.getFl().get(trans).add(new Pair<> (newSysPlace, newSysPlace));
 						}
 					}
 				}
@@ -120,6 +122,9 @@ public abstract class NonDeterministicUnfolder extends Unfolder {
 			Place newP = pg.getNet().createPlace(p_id + "__" + current.get(p_id));
 			copies.add(newP);
 			current.put(p_id, current.get(p_id) + 1);
+			for (Pair<String, Object> pair : p.getExtensions()) {
+				newP.putExtension(pair.getFirst(), pair.getSecond());
+			}
 			copyEnv(newP, p);
 			// copyTotalSelfLoops(newP, totalSelfLoops);
 			// copy incoming transitions (except self-loops)
@@ -137,6 +142,16 @@ public abstract class NonDeterministicUnfolder extends Unfolder {
 						pg.getNet().createFlow(newT, newP);
 					} else {
 						pg.getNet().createFlow(newT, prePost);
+					}
+				}
+				
+				for (Pair<Place, Place> fl : pg.getFl().get(pre_transition)) {
+					Place first = fl.getFirst();
+					Place second = fl.getSecond();
+					if (second.equals(p)) {
+						pg.getFl().get(newT).add(new Pair<>(first, newP));
+					} else {
+						pg.getFl().get(newT).add(new Pair<>(first, second));
 					}
 				}
 			}
@@ -157,6 +172,16 @@ public abstract class NonDeterministicUnfolder extends Unfolder {
 				for (Place postPost : post_transition.getPostset()) {
 					pg.getNet().createFlow(newT, postPost);
 				}
+				
+				for (Pair<Place, Place> fl : pg.getFl().get(post_transition)) {
+					Place first = fl.getFirst();
+					Place second = fl.getSecond();
+					if (first.equals(p)) {
+						pg.getFl().get(newT).add(new Pair<>(newP, second));
+					} else {
+						pg.getFl().get(newT).add(new Pair<>(first, second));
+					}
+				}
 			}
 
 			for (Transition t : p_originalPostset) {
@@ -171,17 +196,14 @@ public abstract class NonDeterministicUnfolder extends Unfolder {
 		// interconnect via self-loops
 		if (!selfLoops.isEmpty()) {
 			// from p to all unfolded places via all selfloops
+			// TODO was hat es mit p2 und p weiter unten auf sich?
 			for (Place p2 : copies) {
 				for (Transition loop : selfLoops) {
 					Transition newT = copyTransition(loop);
 
 					for (Place postPre : loop.getPreset()) {
 						placesWithCopiedTransitions.add(postPre);
-						if (postPre.equals(p)) {
-							pg.getNet().createFlow(p, newT);
-						} else {
-							pg.getNet().createFlow(postPre, newT);
-						}
+						pg.getNet().createFlow(postPre, newT);
 					}
 
 					for (Place prePost : loop.getPostset()) {
@@ -189,6 +211,16 @@ public abstract class NonDeterministicUnfolder extends Unfolder {
 							pg.getNet().createFlow(newT, p2);
 						} else {
 							pg.getNet().createFlow(newT, prePost);
+						}
+					}
+					
+					for (Pair<Place, Place> fl : pg.getFl().get(loop)) {
+						Place first = fl.getFirst();
+						Place second = fl.getSecond();
+						if (first.equals(p)) {
+							pg.getFl().get(newT).add(new Pair<>(first, p2));
+						} else {
+							pg.getFl().get(newT).add(new Pair<>(first, second));
 						}
 					}
 				}

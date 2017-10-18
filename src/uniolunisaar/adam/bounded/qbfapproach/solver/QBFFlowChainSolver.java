@@ -12,7 +12,7 @@ import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingE
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
-import uniolunisaar.adam.ds.winningconditions.Safety;
+import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 
 public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBFSolver<W> {
@@ -59,30 +59,30 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 		}
 	}
 	
-	protected int getOneUnsafeFlowChain(Place p, Transition t, int i) throws IOException {
-		Pair<Boolean, Integer> result = getVarNrWithResult("oneUNSAFEFlowChain" + p.getId() + "." + t.getId() + "." + i);
-		if (result.getFirst()) {
-			Set<Integer> or = new HashSet<>();
-			for (Pair<Place, Place> pair : pg.getFl().get(t)) {
-				if (pair.getSecond().equals(p)) {
-					or.add(getVarNr(pair.getFirst().getId() + "." + i + "." + "unsafe", true));
-				}
-			}
-			writer.write(result.getSecond() + " = " + writeOr(or));
-		}
-		return result.getSecond();
-	}
-	
-	protected int getAllSafeFlowChain(Place p, Transition t, int i) throws IOException {
-		Pair<Boolean, Integer> result = getVarNrWithResult("allSAFEFlowChain" + p.getId() + "." + t.getId() + "." + i);
+	protected int getAllUnsafeFlowChain(Place p, Transition t, int i) throws IOException {
+		Pair<Boolean, Integer> result = getVarNrWithResult("allUNSAFEFlowChain" + p.getId() + "." + t.getId() + "." + i);
 		if (result.getFirst()) {
 			Set<Integer> and = new HashSet<>();
 			for (Pair<Place, Place> pair : pg.getFl().get(t)) {
 				if (pair.getSecond().equals(p)) {
-					and.add(getVarNr(pair.getFirst().getId() + "." + i + "." + "safe", true));
+					and.add(getVarNr(pair.getFirst().getId() + "." + i + "." + "unsafe", true));
 				}
 			}
 			writer.write(result.getSecond() + " = " + writeAnd(and));
+		}
+		return result.getSecond();
+	}
+	
+	protected int getOneSafeFlowChain(Place p, Transition t, int i) throws IOException {
+		Pair<Boolean, Integer> result = getVarNrWithResult("oneSAFEFlowChain" + p.getId() + "." + t.getId() + "." + i);
+		if (result.getFirst()) {
+			Set<Integer> or = new HashSet<>();
+			for (Pair<Place, Place> pair : pg.getFl().get(t)) {
+				if (pair.getSecond().equals(p)) {
+					or.add(getVarNr(pair.getFirst().getId() + "." + i + "." + "safe", true));
+				}
+			}
+			writer.write(result.getSecond() + " = " + writeOr(or));
 		}
 		return result.getSecond();
 	}
@@ -252,9 +252,7 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 								// 0 is the last member
 								// System.out.println("Finished reading strategy.");
 								PGSimplifier.simplifyPG(pg, true, false);
-								strategy = pg.copy("strategy");
-								strategy_winCon = new Safety();
-								strategy_winCon.buffer(strategy);
+								strategy = new PetriGame(pg);
 								return pg.getNet();
 							}
 						}
@@ -263,9 +261,7 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 			}
 			// There were no decision points for the system, thus the previous loop did not leave the method
 			PGSimplifier.simplifyPG(pg, true, false);
-			strategy = pg.copy("strategy");
-			strategy_winCon = new Safety();
-			strategy_winCon.buffer(strategy);
+			strategy = new PetriGame(pg);
 			return pg.getNet();
 		}
 		throw new NoStrategyExistentException();
