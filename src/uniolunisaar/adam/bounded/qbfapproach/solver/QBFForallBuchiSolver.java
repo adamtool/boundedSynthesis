@@ -33,15 +33,12 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 		for (Place p : pn.getPlaces()) {
 			if (initialMarking.getToken(p).getValue() == 1) {
 				if (AdamExtensions.isBuchi(p)) {
-					initial.add( getVarNr(p.getId() + "." + 1 + "." + false, true));
-					initial.add(-getVarNr(p.getId() + "." + 1 + "." + true, true));
+					initial.add(getVarNr(p.getId() + "." + 1 + "." + "objective", true));
 				} else {
-					initial.add(-getVarNr(p.getId() + "." + 1 + "." + false, true));
-					initial.add( getVarNr(p.getId() + "." + 1 + "." + true, true));
+					initial.add(getVarNr(p.getId() + "." + 1 + "." + "notobjective", true));
 				}
 			} else {
-				initial.add(-getVarNr(p.getId() + "." + 1 + "." + false, true));
-				initial.add(-getVarNr(p.getId() + "." + 1 + "." + true, true));
+				initial.add(getVarNr(p.getId() + "." + 1 + "." + "empty", true));
 			}
 		}
 		return writeAnd(initial);
@@ -57,8 +54,8 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 			for (Place p : t.getPreset()) {
 				// preset
 				or.clear();
-				or.add(getVarNr(p.getId() + "." + i + "." + true, true));
-				or.add(getVarNr(p.getId() + "." + i + "." + false, true));
+				or.add(getVarNr(p.getId() + "." + i + "." + "objective", true));
+				or.add(getVarNr(p.getId() + "." + i + "." + "notobjective", true));
 				id = createUniqueID();
 				writer.write(id + " = " + writeOr(or));
 				and.add(id);
@@ -72,12 +69,10 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 			for (Place p : t.getPostset()) {
 				// bad place reached
 				if (AdamExtensions.isBuchi(p)) {
-					and.add(getVarNr(p.getId() + "." + (i + 1) + "." + "unsafe", true));
+					and.add(getVarNr(p.getId() + "." + (i + 1) + "." + "objective", true));
 				} else {
-					// unsafe flow chain before
-					and.add(writeImplication(getAllUnsafeFlowChain(p, t, i), getVarNr(p.getId() + "." + (i + 1) + "." + "unsafe", true)));
-					// safe flow chain before
-					and.add(writeImplication(getOneSafeFlowChain(p, t, i),  getVarNr(p.getId() + "." + (i + 1) + "." + "safe", true)));
+					and.add(writeImplication(getAllObjectiveFlowChain(p, t, i), getVarNr(p.getId() + "." + (i + 1) + "." + "objective", true)));
+					and.add(writeImplication(getOneNotObjectiveFlowChain(p, t, i),  getVarNr(p.getId() + "." + (i + 1) + "." + "notobjective", true)));
 				}
 			}
 			
@@ -86,12 +81,12 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 			places.removeAll(t.getPostset());
 			for (Place p : places) {
 				// rest stays the same
-				int p_i_safe = getVarNr(p.getId() + "." + i + "." + "safe", true);
-				int p_i1_safe = getVarNr(p.getId() + "." + (i + 1) + "." + "safe", true);
+				int p_i_safe = getVarNr(p.getId() + "." + i + "." + "objective", true);
+				int p_i1_safe = getVarNr(p.getId() + "." + (i + 1) + "." + "objective", true);
 				and.add(writeImplication(p_i_safe, p_i1_safe));
 				and.add(writeImplication(p_i1_safe, p_i_safe));
-				int p_i_unsafe = getVarNr(p.getId() + "." + i + "." + "unsafe", true);
-				int p_i1_unsafe = getVarNr(p.getId() + "." + (i + 1) + "." + "unsafe", true);
+				int p_i_unsafe = getVarNr(p.getId() + "." + i + "." + "notobjective", true);
+				int p_i1_unsafe = getVarNr(p.getId() + "." + (i + 1) + "." + "notobjective", true);
 				and.add(writeImplication(p_i_unsafe, p_i1_unsafe));
 				and.add(writeImplication(p_i1_unsafe, p_i_unsafe));
 				int p_i_empty = getVarNr(p.getId() + "." + i + "." + "empty", true);
@@ -124,14 +119,11 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 
 	public String getBuchiLoop() throws IOException {
 		Set<Integer> outerAnd = new HashSet<>();
-		Set<Integer> or = new HashSet<>();
+		Set<Integer> outerOr = new HashSet<>();
 		Set<Integer> innerAnd = new HashSet<>();
+		Set<Integer> innerOr = new HashSet<>();
+		Set<Integer> innerInnerAnd = new HashSet<>();
 		
-		for (Place p : pn.getPlaces()) {
-			if (!p.getId().startsWith(QBFSolver.additionalSystemName)) {
-				outerAnd.add(-getVarNr(p.getId() + "." + pg.getN() + "." + "safe", true));
-			}
-		}
 		for (Transition t : pn.getTransitions()) {
 			boolean addFlow = false;
 			for (Place p : t.getPreset()) {
@@ -158,16 +150,14 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 		
 		for (int i = 1; i < pg.getN(); ++i) {
 			innerAnd.clear();
-			for (Place p : pn.getPlaces()) {
-				innerAnd.add(-getVarNr(p.getId() + "." + i + "." + "safe", true));
-				
-				int p_i_safe = getVarNr(p.getId() + "." + i + "." + "safe", true);
-				int p_n_safe = getVarNr(p.getId() + "." + pg.getN() + "." + "safe", true);
+			for (Place p : pn.getPlaces()) {				
+				int p_i_safe = getVarNr(p.getId() + "." + i + "." + "objective", true);
+				int p_n_safe = getVarNr(p.getId() + "." + pg.getN() + "." + "objective", true);
 				innerAnd.add(writeImplication(p_i_safe, p_n_safe));
 				innerAnd.add(writeImplication(p_n_safe, p_i_safe));
 				
-				int p_i_unsafe = getVarNr(p.getId() + "." + i + "." + "unsafe", true);
-				int p_n_unsafe = getVarNr(p.getId() + "." + pg.getN() + "." + "unsafe", true);
+				int p_i_unsafe = getVarNr(p.getId() + "." + i + "." + "notobjective", true);
+				int p_n_unsafe = getVarNr(p.getId() + "." + pg.getN() + "." + "notobjective", true);
 				innerAnd.add(writeImplication(p_i_unsafe, p_n_unsafe));
 				innerAnd.add(writeImplication(p_n_unsafe, p_i_unsafe));
 				
@@ -176,12 +166,29 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 				innerAnd.add(writeImplication(p_i_empty, p_n_empty));
 				innerAnd.add(writeImplication(p_n_empty, p_i_empty));
 			}
+			
+			innerOr.clear();
+			for (int j = i; j < pg.getN(); ++j) {
+				innerInnerAnd.clear();
+				for (Place p : pn.getPlaces()) {
+					innerInnerAnd.add(-getVarNr(p.getId() + "." + j + "." + "notobjective", true));
+					innerInnerAnd.add(writeImplication(getVarNr(p.getId() + "." +  j + "." + "objective", true), getVarNr(p.getId() + "." +  (j + 1) + "." + "notobjective", true)));
+				}
+			}
 			int id = createUniqueID();
-			writer.write(id + " = " + writeAnd(innerAnd));
-			or.add(id);
+			writer.write(id + " = " + writeAnd(innerInnerAnd));
+			innerOr.add(id);
+			
+			id = createUniqueID();
+			writer.write(id + " = " + writeOr(innerOr));
+			innerAnd.add(id);
 		}
 		int id = createUniqueID();
-		writer.write(id + " = " + writeOr(or));
+		writer.write(id + " = " + writeAnd(innerAnd));
+		outerOr.add(id);
+		
+		id = createUniqueID();
+		writer.write(id + " = " + writeOr(outerOr));
 		outerAnd.add(id);
 		return writeAnd(outerAnd);
 	}
@@ -212,13 +219,13 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 				outerAnd.clear();
 				for (Place p : pn.getPlaces()) {
 					if (!p.getId().startsWith(additionalSystemName)) {
-						int p_i_safe = getVarNr(p.getId() + "." + i + "." + "safe", true);
-						int p_j_safe = getVarNr(p.getId() + "." + j + "." + "safe", true);
+						int p_i_safe = getVarNr(p.getId() + "." + i + "." + "objective", true);
+						int p_j_safe = getVarNr(p.getId() + "." + j + "." + "objective", true);
 						outerAnd.add(writeImplication(p_i_safe, p_j_safe));
 						outerAnd.add(writeImplication(p_j_safe, p_i_safe));
 						
-						int p_i_unsafe = getVarNr(p.getId() + "." + i + "." + "unsafe", true);
-						int p_j_unsafe = getVarNr(p.getId() + "." + j + "." + "unsafe", true);
+						int p_i_unsafe = getVarNr(p.getId() + "." + i + "." + "notobjective", true);
+						int p_j_unsafe = getVarNr(p.getId() + "." + j + "." + "notobjective", true);
 						outerAnd.add(writeImplication(p_i_unsafe, p_j_unsafe));
 						outerAnd.add(writeImplication(p_j_unsafe, p_i_unsafe));
 						
@@ -234,7 +241,7 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 					for (int k = i; k < j; ++k){
 						for (Place p : t.getPreset()) {
 							int id = createUniqueID();
-							writer.write(id + " = or(" + getVarNr(p.getId() + "." + k + "." + "safe", true) + "," + getVarNr(p.getId() + "." + k + "." + "unsafe", true) + ")" + QBFSolver.linebreak);
+							writer.write(id + " = or(" + getVarNr(p.getId() + "." + k + "." + "objective", true) + "," + getVarNr(p.getId() + "." + k + "." + "notobjective", true) + ")" + QBFSolver.linebreak);
 							innerAnd.add(id);
 							int strategy = addSysStrategy(p, t);
 							if (strategy != 0) {

@@ -47,10 +47,10 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 				top = getVarNr(p.getId() + "." + i + "." + true, true);
 				bot = getVarNr(p.getId() + "." + i + "." + false, true);
 				
-				id = createVariable(p.getId() + "." + i + "." + "safe");
+				id = createVariable(p.getId() + "." + i + "." + "objective");
 				writer.write(id + " = and(" + top + "," + "-" + bot + ")" + QBFSolver.linebreak);
 				
-				id = createVariable(p.getId() + "." + i + "." + "unsafe");
+				id = createVariable(p.getId() + "." + i + "." + "notobjective");
 				writer.write(id + " = and(" + "-" + top + "," + bot + ")" + QBFSolver.linebreak);
 				
 				id = createVariable(p.getId() + "." + i + "." + "empty");
@@ -59,13 +59,13 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 		}
 	}
 	
-	protected int getAllUnsafeFlowChain(Place p, Transition t, int i) throws IOException {
-		Pair<Boolean, Integer> result = getVarNrWithResult("allUNSAFEFlowChain" + p.getId() + "." + t.getId() + "." + i);
+	protected int getAllObjectiveFlowChain(Place p, Transition t, int i) throws IOException {
+		Pair<Boolean, Integer> result = getVarNrWithResult("allOBJECTIVEFlowChain" + p.getId() + "." + t.getId() + "." + i);
 		if (result.getFirst()) {
 			Set<Integer> and = new HashSet<>();
 			for (Pair<Place, Place> pair : pg.getFl().get(t)) {
 				if (pair.getSecond().equals(p)) {
-					and.add(getVarNr(pair.getFirst().getId() + "." + i + "." + "unsafe", true));
+					and.add(getVarNr(pair.getFirst().getId() + "." + i + "." + "objective", true));
 				}
 			}
 			writer.write(result.getSecond() + " = " + writeAnd(and));
@@ -73,13 +73,13 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 		return result.getSecond();
 	}
 	
-	protected int getOneSafeFlowChain(Place p, Transition t, int i) throws IOException {
-		Pair<Boolean, Integer> result = getVarNrWithResult("oneSAFEFlowChain" + p.getId() + "." + t.getId() + "." + i);
+	protected int getOneNotObjectiveFlowChain(Place p, Transition t, int i) throws IOException {
+		Pair<Boolean, Integer> result = getVarNrWithResult("oneNOTOBJECTIVEFlowChain" + p.getId() + "." + t.getId() + "." + i);
 		if (result.getFirst()) {
 			Set<Integer> or = new HashSet<>();
 			for (Pair<Place, Place> pair : pg.getFl().get(t)) {
 				if (pair.getSecond().equals(p)) {
-					or.add(getVarNr(pair.getFirst().getId() + "." + i + "." + "safe", true));
+					or.add(getVarNr(pair.getFirst().getId() + "." + i + "." + "notobjective", true));
 				}
 			}
 			writer.write(result.getSecond() + " = " + writeOr(or));
@@ -163,12 +163,12 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 				for (Place p : pn.getPlaces()) {
 					// additional system places cannot leave their places, they always loop
 					if (!p.getId().startsWith(additionalSystemName)) {
-						int p_i_safe = getVarNr(p.getId() + "." + i + "." + "safe", true);
-						int p_j_safe = getVarNr(p.getId() + "." + j + "." + "safe", true);
+						int p_i_safe = getVarNr(p.getId() + "." + i + "." + "objective", true);
+						int p_j_safe = getVarNr(p.getId() + "." + j + "." + "objective", true);
 						and.add(writeImplication(p_i_safe, p_j_safe));
 						and.add(writeImplication(p_j_safe, p_i_safe));
-						int p_i_unsafe = getVarNr(p.getId() + "." + i + "." + "unsafe", true);
-						int p_j_unsafe = getVarNr(p.getId() + "." + j + "." + "unsafe", true);
+						int p_i_unsafe = getVarNr(p.getId() + "." + i + "." + "notobjective", true);
+						int p_j_unsafe = getVarNr(p.getId() + "." + j + "." + "notobjective", true);
 						and.add(writeImplication(p_i_unsafe, p_j_unsafe));
 						and.add(writeImplication(p_j_unsafe, p_i_unsafe));
 						int p_i_empty = getVarNr(p.getId() + "." + i + "." + "empty", true);
@@ -252,6 +252,7 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 								// 0 is the last member
 								// System.out.println("Finished reading strategy.");
 								PGSimplifier.simplifyPG(pg, true, false);
+								System.out.println(pg.getNet().getInitialMarking());
 								strategy = new PetriGame(pg);
 								return pg.getNet();
 							}

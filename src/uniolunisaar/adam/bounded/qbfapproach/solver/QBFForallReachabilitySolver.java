@@ -52,15 +52,12 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 		for (Place p : pn.getPlaces()) {
 			if (initialMarking.getToken(p).getValue() == 1) {
 				if (AdamExtensions.isReach(p)) {
-					initial.add( getVarNr(p.getId() + "." + 1 + "." + false, true));
-					initial.add(-getVarNr(p.getId() + "." + 1 + "." + true, true));
+					initial.add(getVarNr(p.getId() + "." + 1 + "." + "objective", true));
 				} else {
-					initial.add(-getVarNr(p.getId() + "." + 1 + "." + false, true));
-					initial.add( getVarNr(p.getId() + "." + 1 + "." + true, true));
+					initial.add(getVarNr(p.getId() + "." + 1 + "." + "notobjective", true));
 				}
 			} else {
-				initial.add(-getVarNr(p.getId() + "." + 1 + "." + false, true));
-				initial.add(-getVarNr(p.getId() + "." + 1 + "." + true, true));
+				initial.add(-getVarNr(p.getId() + "." + 1 + "." + "empty", true));
 			}
 		}
 		return writeAnd(initial);
@@ -76,8 +73,8 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 			for (Place p : t.getPreset()) {
 				// preset
 				or.clear();
-				or.add(getVarNr(p.getId() + "." + i + "." + true, true));
-				or.add(getVarNr(p.getId() + "." + i + "." + false, true));
+				or.add(getVarNr(p.getId() + "." + i + "." + "objective", true));
+				or.add(getVarNr(p.getId() + "." + i + "." + "notobjective", true));
 				id = createUniqueID();
 				writer.write(id + " = " + writeOr(or));
 				and.add(id);
@@ -91,13 +88,10 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 			for (Place p : t.getPostset()) {
 				// bad place reached
 				if (AdamExtensions.isReach(p)) {
-					and.add(getVarNr(p.getId() + "." + (i + 1) + "." + "unsafe", true));
+					and.add(getVarNr(p.getId() + "." + (i + 1) + "." + "objective", true));
 				} else {
-					
-					// unsafe flow chain before
-					and.add(writeImplication(getAllUnsafeFlowChain(p, t, i), getVarNr(p.getId() + "." + (i + 1) + "." + "unsafe", true)));
-					// safe flow chain before
-					and.add(writeImplication(getOneSafeFlowChain(p, t, i), getVarNr(p.getId() + "." + (i + 1) + "." + "safe", true)));
+					and.add(writeImplication(getAllObjectiveFlowChain(p, t, i), getVarNr(p.getId() + "." + (i + 1) + "." + "objective", true)));
+					and.add(writeImplication(getOneNotObjectiveFlowChain(p, t, i),  getVarNr(p.getId() + "." + (i + 1) + "." + "notobjective", true)));
 				}
 			}
 			
@@ -106,12 +100,12 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 			places.removeAll(t.getPostset());
 			for (Place p : places) {
 				// rest stays the same
-				int p_i_safe = getVarNr(p.getId() + "." + i + "." + "safe", true);
-				int p_i1_safe = getVarNr(p.getId() + "." + (i + 1) + "." + "safe", true);
+				int p_i_safe = getVarNr(p.getId() + "." + i + "." + "objective", true);
+				int p_i1_safe = getVarNr(p.getId() + "." + (i + 1) + "." + "objective", true);
 				and.add(writeImplication(p_i_safe, p_i1_safe));
 				and.add(writeImplication(p_i1_safe, p_i_safe));
-				int p_i_unsafe = getVarNr(p.getId() + "." + i + "." + "unsafe", true);
-				int p_i1_unsafe = getVarNr(p.getId() + "." + (i + 1) + "." + "unsafe", true);
+				int p_i_unsafe = getVarNr(p.getId() + "." + i + "." + "notobjective", true);
+				int p_i1_unsafe = getVarNr(p.getId() + "." + (i + 1) + "." + "notobjective", true);
 				and.add(writeImplication(p_i_unsafe, p_i1_unsafe));
 				and.add(writeImplication(p_i1_unsafe, p_i_unsafe));
 				int p_i_empty = getVarNr(p.getId() + "." + i + "." + "empty", true);
@@ -153,7 +147,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 			and.clear();
 			for (Place p : pn.getPlaces()) {
 				if (!p.getId().startsWith(QBFSolver.additionalSystemName)) {
-					and.add(-getVarNr(p.getId() + "." + i + "." + "safe", true));
+					and.add(-getVarNr(p.getId() + "." + i + "." + "notobjective", true));
 				}
 			}
 			for (Transition t : pn.getTransitions()) {
@@ -169,7 +163,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 						if (notPresent) {
 							for (int j = 1; j < i; ++j) {
 								or.clear();
-								or.add(getVarNr(p.getId() + "." + j + "." + "unsafe", true));
+								or.add(getVarNr(p.getId() + "." + j + "." + "objective", true));
 								or.add(-getOneTransition(t, j));
 								int id = createUniqueID();
 								writer.write(id + " = " + writeOr(or));
@@ -232,13 +226,13 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 				outerAnd.clear();
 				for (Place p : pn.getPlaces()) {
 					if (!p.getId().startsWith(additionalSystemName)) {
-						int p_i_safe = getVarNr(p.getId() + "." + i + "." + "safe", true);
-						int p_j_safe = getVarNr(p.getId() + "." + j + "." + "safe", true);
+						int p_i_safe = getVarNr(p.getId() + "." + i + "." + "objective", true);
+						int p_j_safe = getVarNr(p.getId() + "." + j + "." + "objective", true);
 						outerAnd.add(writeImplication(p_i_safe, p_j_safe));
 						outerAnd.add(writeImplication(p_j_safe, p_i_safe));
 						
-						int p_i_unsafe = getVarNr(p.getId() + "." + i + "." + "unsafe", true);
-						int p_j_unsafe = getVarNr(p.getId() + "." + j + "." + "unsafe", true);
+						int p_i_unsafe = getVarNr(p.getId() + "." + i + "." + "notobjective", true);
+						int p_j_unsafe = getVarNr(p.getId() + "." + j + "." + "notobjective", true);
 						outerAnd.add(writeImplication(p_i_unsafe, p_j_unsafe));
 						outerAnd.add(writeImplication(p_j_unsafe, p_i_unsafe));
 						
@@ -254,7 +248,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 					for (int k = i; k < j; ++k){
 						for (Place p : t.getPreset()) {
 							int id = createUniqueID();
-							writer.write(id + " = or(" + getVarNr(p.getId() + "." + k + "." + "safe", true) + "," + getVarNr(p.getId() + "." + k + "." + "unsafe", true) + ")" + QBFSolver.linebreak);
+							writer.write(id + " = or(" + getVarNr(p.getId() + "." + k + "." + "objective", true) + "," + getVarNr(p.getId() + "." + k + "." + "notobjective", true) + ")" + QBFSolver.linebreak);
 							innerAnd.add(id);
 							int strategy = addSysStrategy(p, t);
 							if (strategy != 0) {

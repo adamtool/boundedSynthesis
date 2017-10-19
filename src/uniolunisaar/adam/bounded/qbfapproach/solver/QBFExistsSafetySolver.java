@@ -34,15 +34,12 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 		for (Place p : pn.getPlaces()) {
 			if (initialMarking.getToken(p).getValue() == 1) {
 				if (AdamExtensions.isBad(p)) {
-					initial.add( getVarNr(p.getId() + "." + 1 + "." + false, true));
-					initial.add(-getVarNr(p.getId() + "." + 1 + "." + true, true));
+					initial.add(getVarNr(p.getId() + "." + 1 + "." + "objective", true));
 				} else {
-					initial.add(-getVarNr(p.getId() + "." + 1 + "." + false, true));
-					initial.add( getVarNr(p.getId() + "." + 1 + "." + true, true));
+					initial.add(getVarNr(p.getId() + "." + 1 + "." + "notobjective", true));
 				}
 			} else {
-				initial.add(-getVarNr(p.getId() + "." + 1 + "." + false, true));
-				initial.add(-getVarNr(p.getId() + "." + 1 + "." + true, true));
+				initial.add(getVarNr(p.getId() + "." + 1 + "." + "empty", true));
 			}
 		}
 		return writeAnd(initial);
@@ -58,8 +55,8 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 			for (Place p : t.getPreset()) {
 				// preset
 				or.clear();
-				or.add(getVarNr(p.getId() + "." + i + "." + true, true));
-				or.add(getVarNr(p.getId() + "." + i + "." + false, true));
+				or.add(getVarNr(p.getId() + "." + i + "." + "objective", true));
+				or.add(getVarNr(p.getId() + "." + i + "." + "notobjective", true));
 				id = createUniqueID();
 				writer.write(id + " = " + writeOr(or));
 				and.add(id);
@@ -73,12 +70,12 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 			for (Place p : t.getPostset()) {
 				// bad place reached
 				if (AdamExtensions.isBad(p)) {
-					and.add(getVarNr(p.getId() + "." + (i + 1) + "." + "unsafe", true));
+					and.add(getVarNr(p.getId() + "." + (i + 1) + "." + "objective", true));
 				} else {
-					// unsafe flow chain before
-					and.add(writeImplication(getAllUnsafeFlowChain(p, t, i), getVarNr(p.getId() + "." + (i + 1) + "." + "unsafe", true)));
+					// all unsafe flow chains before
+					and.add(writeImplication(getAllObjectiveFlowChain(p, t, i), getVarNr(p.getId() + "." + (i + 1) + "." + "objective", true)));
 					// safe flow chain before
-					and.add(writeImplication(getOneSafeFlowChain(p, t, i),  getVarNr(p.getId() + "." + (i + 1) + "." + "safe", true)));
+					and.add(writeImplication(getOneNotObjectiveFlowChain(p, t, i),  getVarNr(p.getId() + "." + (i + 1) + "." + "notobjective", true)));
 				}
 			}
 			
@@ -87,12 +84,12 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 			places.removeAll(t.getPostset());
 			for (Place p : places) {
 				// rest stays the same
-				int p_i_safe = getVarNr(p.getId() + "." + i + "." + "safe", true);
-				int p_i1_safe = getVarNr(p.getId() + "." + (i + 1) + "." + "safe", true);
+				int p_i_safe = getVarNr(p.getId() + "." + i + "." + "objective", true);
+				int p_i1_safe = getVarNr(p.getId() + "." + (i + 1) + "." + "objective", true);
 				and.add(writeImplication(p_i_safe, p_i1_safe));
 				and.add(writeImplication(p_i1_safe, p_i_safe));
-				int p_i_unsafe = getVarNr(p.getId() + "." + i + "." + "unsafe", true);
-				int p_i1_unsafe = getVarNr(p.getId() + "." + (i + 1) + "." + "unsafe", true);
+				int p_i_unsafe = getVarNr(p.getId() + "." + i + "." + "notobjective", true);
+				int p_i1_unsafe = getVarNr(p.getId() + "." + (i + 1) + "." + "notobjective", true);
 				and.add(writeImplication(p_i_unsafe, p_i1_unsafe));
 				and.add(writeImplication(p_i1_unsafe, p_i_unsafe));
 				int p_i_empty = getVarNr(p.getId() + "." + i + "." + "empty", true);
@@ -134,7 +131,7 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 			or.clear();
 			for (Place p : pn.getPlaces()) {
 				if (!p.getId().startsWith(QBFSolver.additionalSystemName)) {
-					or.add(getVarNr(p.getId() + "." + i + "." + "safe", true));
+					or.add(getVarNr(p.getId() + "." + i + "." + "notobjective", true));
 				}
 			}
 			for (Transition t : pn.getTransitions()) {
@@ -150,7 +147,7 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 						if (notPresent) {
 							for (int j = 1; j < i; ++j) {
 								and.clear();
-								and.add(getVarNr(p.getId() + "." + j + "." + "safe", true));
+								and.add(getVarNr(p.getId() + "." + j + "." + "notobjective", true));
 								and.add(getOneTransition(t, j));
 								int id = createUniqueID();
 								writer.write(id + " = " + writeAnd(and));

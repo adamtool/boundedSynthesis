@@ -37,14 +37,16 @@ public class ExistsSafetyTest {
 	
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void test() throws Exception {
-		/*oneTest("jhh/oneTransitionEnv1", 3, 0, false);
+		oneTest("jhh/oneTransitionEnv1", 3, 0, false);
 		oneTest("jhh/oneTransitionEnv1", 10, 0, false);
 		oneTest("jhh/oneTransitionEnv2", 3, 0, true);
 		oneTest("jhh/oneTransitionEnv2", 10, 0, true);
+		oneTest("jhh/oneTransitionEnv3", 3, 0, false);
+		oneTest("jhh/oneTransitionEnv3", 10, 0, false);
 		oneTest("jhh/oneTransitionSys1", 3, 0, false);
 		oneTest("jhh/oneTransitionSys1", 10, 0, false);
 		oneTest("jhh/oneTransitionSys2", 3, 0, true);
-		oneTest("jhh/oneTransitionSys2", 10, 0, true);*/
+		oneTest("jhh/oneTransitionSys2", 10, 0, true);
 		oneTest("jhh/oneTransitionBoth1", 3, 0, true);
 		oneTest("jhh/oneTransitionBoth1", 10, 0, true);
 		oneTest("jhh/oneTransitionBoth2", 3, 0, false);
@@ -55,6 +57,10 @@ public class ExistsSafetyTest {
 		oneTest("jhh/oneTransitionBoth4", 10, 0, true);
 		oneTest("jhh/oneTransitionBoth5", 3, 0, true);
 		oneTest("jhh/oneTransitionBoth5", 10, 0, true);
+		oneTest("jhh/decision1", 3, 0, false);
+		oneTest("jhh/decision1", 10, 0, false);
+		oneTest("jhh/decision2", 3, 0, true);
+		oneTest("jhh/decision2", 10, 0, true);
 	}
 	
 	private void oneTest(String str, int n, int b, boolean result) throws Exception {
