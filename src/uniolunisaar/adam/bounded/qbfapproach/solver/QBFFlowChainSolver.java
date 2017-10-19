@@ -39,19 +39,17 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 	}
 	
 	private void makeThreeValuedLogic() throws IOException {
-		int top;
-		int bot;
-		int id;
+		int top, bot, id;
 		for (Place p : pg.getNet().getPlaces()) {
 			for (int i = 1; i <= pg.getN(); ++i) {
 				top = getVarNr(p.getId() + "." + i + "." + true, true);
 				bot = getVarNr(p.getId() + "." + i + "." + false, true);
 				
 				id = createVariable(p.getId() + "." + i + "." + "objective");
-				writer.write(id + " = and(" + top + "," + "-" + bot + ")" + QBFSolver.linebreak);
+				writer.write(id + " = and("       + top + "," + "-" + bot + ")" + QBFSolver.linebreak);
 				
 				id = createVariable(p.getId() + "." + i + "." + "notobjective");
-				writer.write(id + " = and(" + "-" + top + "," + bot + ")" + QBFSolver.linebreak);
+				writer.write(id + " = and(" + "-" + top + ","       + bot + ")" + QBFSolver.linebreak);
 				
 				id = createVariable(p.getId() + "." + i + "." + "empty");
 				writer.write(id + " = and(" + "-" + top + "," + "-" + bot + ")" + QBFSolver.linebreak);
@@ -191,16 +189,16 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 		Set<Integer> or = new HashSet<>();
 		for (int i = 1; i <= pg.getN(); ++i) {
 			for (Place p : pn.getPlaces()) {
-				and.clear();
-				and.add(getVarNr(p.getId() + "." + i + "." + true, true));
-				and.add(getVarNr(p.getId() + "." + i + "." + false, true));
+				or.clear();
+				or.add(-getVarNr(p.getId() + "." + i + "." + true, true));
+				or.add(-getVarNr(p.getId() + "." + i + "." + false, true));
 				int id = createUniqueID();
-				writer.write(id + " = " + writeAnd(and));
-				or.add(id);
+				writer.write(id + " = " + writeOr(or));
+				and.add(id);
 			}
 		}
 		int returnValue = createUniqueID();
-		writer.write(returnValue + " = " + writeOr(or));
+		writer.write(returnValue + " = " + writeAnd(and));
 		return returnValue;
 	}
 	
@@ -252,7 +250,6 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 								// 0 is the last member
 								// System.out.println("Finished reading strategy.");
 								PGSimplifier.simplifyPG(pg, true, false);
-								System.out.println(pg.getNet().getInitialMarking());
 								strategy = new PetriGame(pg);
 								return pg.getNet();
 							}

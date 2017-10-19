@@ -226,10 +226,15 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 		seqImpliesWin[pg.getN()] = createUniqueID();
 		writer.write(seqImpliesWin[pg.getN()] + " = " + "or(-" + seq[pg.getN()] + "," + wnandLoop + ")" + QBFSolver.linebreak);
 		phi.add(seqImpliesWin[pg.getN()]);
+		
+		// use valid()
 		int number = createUniqueID();
 		writer.write(number + " = " + writeAnd(phi));
-
 		writer.write("1 = or(-" + valid() + "," + number + ")" + QBFSolver.linebreak);
+		
+		// dont use valid()
+		//writer.write("1 = " + writeAnd(phi));
+		
 		writer.close();
 
 		// Total number of gates is only calculated during encoding and added to the file afterwards

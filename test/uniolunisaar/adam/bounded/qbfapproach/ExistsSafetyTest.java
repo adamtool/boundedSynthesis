@@ -61,6 +61,12 @@ public class ExistsSafetyTest {
 		oneTest("jhh/decision1", 10, 0, false);
 		oneTest("jhh/decision2", 3, 0, true);
 		oneTest("jhh/decision2", 10, 0, true);
+		oneTest("jhh/twoDecisions1", 3, 0, false);
+		oneTest("jhh/twoDecisions1", 5, 0, false);
+		oneTest("jhh/twoDecisions1", 10, 0, false);
+		oneTest("jhh/twoDecisions2", 3, 0, false);
+		oneTest("jhh/twoDecisions2", 5, 0, true);
+		oneTest("jhh/twoDecisions2", 10, 0, true);
 	}
 	
 	private void oneTest(String str, int n, int b, boolean result) throws Exception {
