@@ -90,8 +90,13 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 				if (AdamExtensions.isReach(p)) {
 					and.add(getVarNr(p.getId() + "." + (i + 1) + "." + "objective", true));
 				} else {
-					and.add(writeImplication(getAllObjectiveFlowChain(p, t, i), getVarNr(p.getId() + "." + (i + 1) + "." + "objective", true)));
-					and.add(writeImplication(getOneNotObjectiveFlowChain(p, t, i),  getVarNr(p.getId() + "." + (i + 1) + "." + "notobjective", true)));
+					Set<Place> tokenFlow = getIncomingTokenFlow(t, p);
+					if (tokenFlow.isEmpty()) {
+						and.add(getVarNr(p.getId() + "." + (i + 1) + "." + "notobjective", true));
+					} else {
+						and.add(writeImplication(getAllObjectiveFlowChain(p, t, i, tokenFlow), getVarNr(p.getId() + "." + (i + 1) + "." + "objective", true)));
+						and.add(writeImplication(getOneNotObjectiveFlowChain(p, t, i, tokenFlow),  getVarNr(p.getId() + "." + (i + 1) + "." + "notobjective", true)));
+					}
 				}
 			}
 			

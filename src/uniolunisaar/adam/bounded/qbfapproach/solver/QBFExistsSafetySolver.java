@@ -12,7 +12,6 @@ import org.apache.commons.io.FileUtils;
 import uniol.apt.adt.pn.Marking;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
-import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.ds.util.AdamExtensions;
@@ -21,6 +20,7 @@ import uniolunisaar.adam.ds.winningconditions.Safety;
 public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 	
 	private int[] bad;
+	private int sFlCE;
 	
 	public QBFExistsSafetySolver(QBFPetriGame game, Safety winCon, QBFSolverOptions options) throws BoundedParameterMissingException {
 		super(game, winCon, options);
@@ -72,10 +72,15 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 				if (AdamExtensions.isBad(p)) {
 					and.add(getVarNr(p.getId() + "." + (i + 1) + "." + "objective", true));
 				} else {
-					// all unsafe flow chains before
-					and.add(writeImplication(getAllObjectiveFlowChain(p, t, i), getVarNr(p.getId() + "." + (i + 1) + "." + "objective", true)));
-					// safe flow chain before
-					and.add(writeImplication(getOneNotObjectiveFlowChain(p, t, i),  getVarNr(p.getId() + "." + (i + 1) + "." + "notobjective", true)));
+					Set<Place> tokenFlow = getIncomingTokenFlow(t, p);
+					if (tokenFlow.isEmpty()) {
+						and.add(getVarNr(p.getId() + "." + (i + 1) + "." + "notobjective", true));
+					} else {
+						// all unsafe flow chains before
+						and.add(writeImplication(getAllObjectiveFlowChain(p, t, i, tokenFlow), getVarNr(p.getId() + "." + (i + 1) + "." + "objective", true)));
+						// safe flow chain before
+						and.add(writeImplication(getOneNotObjectiveFlowChain(p, t, i, tokenFlow), getVarNr(p.getId() + "." + (i + 1) + "." + "notobjective", true)));
+					}
 				}
 			}
 			
@@ -112,7 +117,7 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 			return oneTransitionFormulas[transitionKeys.get(t)][i];
 		}
 	}
-	
+
 	protected void writeNoBadPlaces() throws IOException {
 		if (!getWinningCondition().getBadPlaces().isEmpty()) {
 			String[] nobadplaces = getNoBadPlaces();
@@ -126,7 +131,6 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 	public String[] getNoBadPlaces() throws IOException {
 		String[] nobadplaces = new String[pg.getN() + 1];
 		Set<Integer> or = new HashSet<>();
-		Set<Integer> and = new HashSet<>();
 		for (int i = 1; i <= pg.getN(); ++i) {
 			or.clear();
 			for (Place p : pn.getPlaces()) {
@@ -134,50 +138,91 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 					or.add(getVarNr(p.getId() + "." + i + "." + "notobjective", true));
 				}
 			}
-			for (Transition t : pn.getTransitions()) {
-				for (Place p : t.getPreset()) {
-					if (!p.getId().startsWith(QBFSolver.additionalSystemName)) {
-						boolean notPresent = true;
-						for (Pair<Place, Place> pair : pg.getFl().get(t)) {
-							if (pair.getFirst().equals(p)) {
-								notPresent = false;
-								break;
-							}
-						}
-						if (notPresent) {
-							for (int j = 1; j < i; ++j) {
-								and.clear();
-								and.add(getVarNr(p.getId() + "." + j + "." + "notobjective", true));
-								and.add(getOneTransition(t, j));
-								int id = createUniqueID();
-								writer.write(id + " = " + writeAnd(and));
-								or.add(id);
-							}
-						}
-					}
-				}
-			}
 			nobadplaces[i] = writeOr(or);
 		}
 		return nobadplaces;
 	}
 	
+	protected void writeSafeFlowChainEnd() throws IOException {
+		sFlCE = createUniqueID();
+		writer.write(sFlCE + " = " + getSafeFlowChainEnd());
+	}
+	
+	public String getSafeFlowChainEnd() throws IOException {
+		Set<Integer> and = new HashSet<>();
+		Set<Integer> or = new HashSet<>();
+		for (Transition t : pn.getTransitions()) {
+			for (Place p : t.getPreset()) {
+				if (!p.getId().startsWith(QBFSolver.additionalSystemName)) {
+					Set<Place> outFlowChain = getOutgoingTokenFlow(t, p);
+					if (outFlowChain.isEmpty()) {
+						for (int i = 1; i < pg.getN() - 1; ++i) {
+							and.clear();
+							and.add(getVarNr(p.getId() + "." + i + "." + "notobjective", true));
+							and.add(getOneTransition(t, i));
+							int id = createUniqueID();
+							writer.write(id + " = " + writeAnd(and));
+							or.add(id);
+						}
+					}
+				}
+			}
+		}
+		return writeOr(or);
+	}
+	
+	@Override
+	public String getLoopIJ() throws IOException {
+		Set<Integer> or = new HashSet<>();
+		for (int i = 1; i < pg.getN(); ++i) {
+			for (int j = i + 1; j <= pg.getN(); ++j) {
+				Set<Integer> and = new HashSet<>();
+				for (Place p : pn.getPlaces()) {
+					// additional system places cannot leave their places, they always loop
+					if (!p.getId().startsWith(additionalSystemName)) {
+						int p_i_safe = getVarNr(p.getId() + "." + i + "." + "objective", true);
+						int p_j_safe = getVarNr(p.getId() + "." + j + "." + "objective", true);
+						and.add(writeImplication(p_i_safe, p_j_safe));
+						and.add(writeImplication(p_j_safe, p_i_safe));
+						int p_i_unsafe = getVarNr(p.getId() + "." + i + "." + "notobjective", true);
+						int p_j_unsafe = getVarNr(p.getId() + "." + j + "." + "notobjective", true);
+						and.add(writeImplication(p_i_unsafe, p_j_unsafe));
+						and.add(writeImplication(p_j_unsafe, p_i_unsafe));
+						int p_i_empty = getVarNr(p.getId() + "." + i + "." + "empty", true);
+						int p_j_empty = getVarNr(p.getId() + "." + j + "." + "empty", true);
+						and.add(writeImplication(p_i_empty, p_j_empty));
+						and.add(writeImplication(p_j_empty, p_i_empty));
+					}
+				}
+				int id = createUniqueID();
+				writer.write(id + " = or(" + sFlCE + "," + bad[j] + ")" + QBFSolver.linebreak);
+				and.add(id);
+				int andNumber = createUniqueID();
+				writer.write(andNumber + " = " + writeAnd(and));
+				or.add(andNumber);
+			}
+		}
+		return writeOr(or);
+	}
+	
 	protected void writeWinning() throws IOException {
 		Set<Integer> and = new HashSet<>();
-		for (int i = 1; i <= pg.getN(); ++i) {
+		for (int i = 1; i < pg.getN(); ++i) {
 			and.clear();
-			if (bad[i] != 0) {
-				and.add(bad[i]);
-			}
-			if (dlt[i] != 0) {
-				and.add(dlt[i]);
-			}
-			if (det[i] != 0) {
-				and.add(det[i]);
-			}
+			and.add(dlt[i]);
+			and.add(det[i]);
+			int id = createUniqueID();
+			writer.write(id + " = or(" + sFlCE + "," + bad[i] + ")" + QBFSolver.linebreak);
+			and.add(writeImplication(term[i], id));
 			win[i] = createUniqueID();
 			writer.write(win[i] + " = " + writeAnd(and));
 		}
+		and.clear();
+		int n = pg.getN();
+		and.add(dlt[n]);
+		and.add(det[n]);
+		win[n] = createUniqueID();
+		writer.write(win[n] + " = " + writeAnd(and));
 	}
 	
 	@Override
@@ -197,6 +242,7 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 		writeNoBadPlaces();
 		writeTerminating();
 		writeDeterministic();
+		writeSafeFlowChainEnd();
 		writeLoop();
 		writeDeadlocksterm();
 		writeWinning();

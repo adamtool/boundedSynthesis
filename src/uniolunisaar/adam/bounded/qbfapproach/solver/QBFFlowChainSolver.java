@@ -57,28 +57,48 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 		}
 	}
 	
-	protected int getAllObjectiveFlowChain(Place p, Transition t, int i) throws IOException {
+	protected Set<Place> getIncomingTokenFlow(Transition t, Place p) {
+		Set<Place> result = new HashSet<> ();
+		for (Pair<Place, Place> pair : pg.getFl().get(t)) {
+			if (pair.getSecond().equals(p)) {
+				if (!p.getId().startsWith(QBFSolver.additionalSystemName)) {
+					result.add(pair.getFirst());
+				}
+			}
+		}
+		return result;
+	}
+	
+	protected Set<Place> getOutgoingTokenFlow(Transition t, Place p) {
+		Set<Place> result = new HashSet<> ();
+		for (Pair<Place, Place> pair : pg.getFl().get(t)) {
+			if (pair.getFirst().equals(p)) {
+				if (!p.getId().startsWith(QBFSolver.additionalSystemName)) {
+					result.add(pair.getSecond());
+				}
+			}
+		}
+		return result;
+	}
+	
+	protected int getAllObjectiveFlowChain(Place p, Transition t, int i, Set<Place> tokenFlow) throws IOException {
 		Pair<Boolean, Integer> result = getVarNrWithResult("allOBJECTIVEFlowChain" + p.getId() + "." + t.getId() + "." + i);
 		if (result.getFirst()) {
 			Set<Integer> and = new HashSet<>();
-			for (Pair<Place, Place> pair : pg.getFl().get(t)) {
-				if (pair.getSecond().equals(p)) {
-					and.add(getVarNr(pair.getFirst().getId() + "." + i + "." + "objective", true));
-				}
+			for (Place pre : tokenFlow) {
+				and.add(getVarNr(pre.getId() + "." + i + "." + "objective", true));
 			}
 			writer.write(result.getSecond() + " = " + writeAnd(and));
 		}
 		return result.getSecond();
 	}
 	
-	protected int getOneNotObjectiveFlowChain(Place p, Transition t, int i) throws IOException {
+	protected int getOneNotObjectiveFlowChain(Place p, Transition t, int i, Set<Place> tokenflow) throws IOException {
 		Pair<Boolean, Integer> result = getVarNrWithResult("oneNOTOBJECTIVEFlowChain" + p.getId() + "." + t.getId() + "." + i);
 		if (result.getFirst()) {
 			Set<Integer> or = new HashSet<>();
-			for (Pair<Place, Place> pair : pg.getFl().get(t)) {
-				if (pair.getSecond().equals(p)) {
-					or.add(getVarNr(pair.getFirst().getId() + "." + i + "." + "notobjective", true));
-				}
+			for (Place pre : tokenflow) {
+				or.add(getVarNr(pre.getId() + "." + i + "." + "notobjective", true));
 			}
 			writer.write(result.getSecond() + " = " + writeOr(or));
 		}
