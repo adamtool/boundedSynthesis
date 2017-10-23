@@ -213,65 +213,6 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 		}
 	}
 	
-	public String getUnfair() throws IOException {
-		Set<Integer> outerOr = new HashSet<>();
-		Set<Integer> outerAnd = new HashSet<>();
-		Set<Integer> innerOr = new HashSet<>();
-		Set<Integer> innerAnd = new HashSet<>();
-		
-		for (int i = 1; i < pg.getN() - 1; ++i) {
-			for (int j = i + 1; j <= pg.getN(); ++j) {
-				outerAnd.clear();
-				for (Place p : pn.getPlaces()) {
-					if (!p.getId().startsWith(additionalSystemName)) {
-						int p_i_safe = getVarNr(p.getId() + "." + i + "." + "objective", true);
-						int p_j_safe = getVarNr(p.getId() + "." + j + "." + "objective", true);
-						outerAnd.add(writeImplication(p_i_safe, p_j_safe));
-						outerAnd.add(writeImplication(p_j_safe, p_i_safe));
-						
-						int p_i_unsafe = getVarNr(p.getId() + "." + i + "." + "notobjective", true);
-						int p_j_unsafe = getVarNr(p.getId() + "." + j + "." + "notobjective", true);
-						outerAnd.add(writeImplication(p_i_unsafe, p_j_unsafe));
-						outerAnd.add(writeImplication(p_j_unsafe, p_i_unsafe));
-						
-						int p_i_empty = getVarNr(p.getId() + "." + i + "." + "empty", true);
-						int p_j_empty = getVarNr(p.getId() + "." + j + "." + "empty", true);
-						outerAnd.add(writeImplication(p_i_empty, p_j_empty));
-						outerAnd.add(writeImplication(p_j_empty, p_i_empty));
-					}
-				}
-				innerOr.clear();
-				for (Transition t : pn.getTransitions()) {
-					innerAnd.clear();
-					for (int k = i; k < j; ++k){
-						for (Place p : t.getPreset()) {
-							int id = createUniqueID();
-							writer.write(id + " = or(" + getVarNr(p.getId() + "." + k + "." + "objective", true) + "," + getVarNr(p.getId() + "." + k + "." + "notobjective", true) + ")" + QBFSolver.linebreak);
-							innerAnd.add(id);
-							int strategy = addSysStrategy(p, t);
-							if (strategy != 0) {
-								innerAnd.add(strategy);
-							}
-							for (Transition tt : p.getPostset()) {
-								innerAnd.add(-getOneTransition(tt, k));
-							}
-						}
-					}
-					int id = createUniqueID();
-					writer.write(id + " = " + writeAnd(innerAnd));
-					innerOr.add(id);
-				}
-				int id = createUniqueID();
-				writer.write(id + " = " + writeOr(innerOr));
-				outerAnd.add(id);
-				id = createUniqueID();
-				writer.write(id + " = " + writeAnd(outerAnd));
-				outerOr.add(id);
-			}
-		}
-		return writeOr(outerOr);
-	}
-	
 	@Override
 	protected void writeQCIR() throws IOException {
 		Map<Place, Set<Transition>> systemHasToDecideForAtLeastOne = unfoldPG();

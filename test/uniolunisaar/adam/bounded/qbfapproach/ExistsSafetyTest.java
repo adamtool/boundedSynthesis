@@ -37,7 +37,25 @@ public class ExistsSafetyTest {
 	
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void test() throws Exception {
-		oneTest("toyexamples/oneTransitionEnv1", 3, 0, false);
+		oneTest("toyexamples/unfair1", 6, 0, true);
+		oneTest("toyexamples/unfair1", 10, 0, true);
+		oneTest("toyexamples/unfair2", 6, 0, true);
+		oneTest("toyexamples/unfair2", 10, 0, true);
+		oneTest("toyexamples/unfair3", 6, 0, true);
+		oneTest("toyexamples/unfair3", 10, 0, true);
+		oneTest("toyexamples/unfair4", 4, 0, true);
+		oneTest("toyexamples/unfair4", 10, 0, true);
+		oneTest("toyexamples/unfair5", 4, 0, true);
+		oneTest("toyexamples/unfair5", 10, 0, true);
+		oneTest("toyexamples/unfair6", 4, 0, false);
+		oneTest("toyexamples/unfair6", 10, 0, false);
+		oneTest("toyexamples/unfair7", 4, 0, false);
+		oneTest("toyexamples/unfair7", 10, 0, false);
+		oneTest("toyexamples/unfair8", 8, 0, true);
+		oneTest("toyexamples/unfair8", 10, 0, true);
+		oneTest("toyexamples/unfair9", 12, 0, true);
+		oneTest("toyexamples/unfair10", 12, 0, true);
+		/*oneTest("toyexamples/oneTransitionEnv1", 3, 0, false);
 		oneTest("toyexamples/oneTransitionEnv1", 10, 0, false);
 		oneTest("toyexamples/oneTransitionEnv2", 3, 0, true);
 		oneTest("toyexamples/oneTransitionEnv2", 10, 0, true);
@@ -75,7 +93,7 @@ public class ExistsSafetyTest {
 		oneTest("escape/escape21", 3, 0, false);
 		oneTest("escape/escape21", 6, 0, true);
 		oneTest("escape/escape21", 10, 0, true);
-		oneTest("infflowchains/infflowchains", 5, 0, true);
+		oneTest("infflowchains/infflowchains", 10, 0, true);*/
 	}
 	
 	private void oneTest(String str, int n, int b, boolean result) throws Exception {

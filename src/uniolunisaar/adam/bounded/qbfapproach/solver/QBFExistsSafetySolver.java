@@ -174,6 +174,7 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 	@Override
 	public String getLoopIJ() throws IOException {
 		Set<Integer> or = new HashSet<>();
+		Set<Integer> innerOr = new HashSet<>();
 		for (int i = 1; i < pg.getN(); ++i) {
 			for (int j = i + 1; j <= pg.getN(); ++j) {
 				Set<Integer> and = new HashSet<>();
@@ -195,7 +196,12 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 					}
 				}
 				int id = createUniqueID();
-				writer.write(id + " = or(" + sFlCE + "," + bad[j] + ")" + QBFSolver.linebreak);
+				innerOr.clear();
+				innerOr.add(sFlCE);
+				for (int k = j; k <= j; ++k) {			// UNFAIR (scheinbar) ZWINGT dass transition immer VOR schleife gefeuert wird
+					innerOr.add(bad[k]);
+				}
+				writer.write(id + " = " + writeOr(innerOr));
 				and.add(id);
 				int andNumber = createUniqueID();
 				writer.write(andNumber + " = " + writeAnd(and));
@@ -246,6 +252,7 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 		writeLoop();
 		writeDeadlocksterm();
 		writeWinning();
+		writeUnfair();
 
 		Set<Integer> phi = new HashSet<>();
 		// When unfolding non-deterministically we add system places to
@@ -270,7 +277,7 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 		writer.write(wnandLoop + " = " + writeAnd(wnandLoopSet));
 
 		seqImpliesWin[pg.getN()] = createUniqueID();
-		writer.write(seqImpliesWin[pg.getN()] + " = " + "or(-" + seq[pg.getN()] + "," + wnandLoop + ")" + QBFSolver.linebreak);
+		writer.write(seqImpliesWin[pg.getN()] + " = " + "or(-" + seq[pg.getN()] + "," + wnandLoop + "," + u + ")" + QBFSolver.linebreak);
 		phi.add(seqImpliesWin[pg.getN()]);
 		
 		// use valid()
