@@ -55,7 +55,7 @@ public class ExistsSafetyTest {
 		oneTest("toyexamples/unfair8", 10, 0, true);
 		oneTest("toyexamples/unfair9", 12, 0, true);
 		oneTest("toyexamples/unfair10", 12, 0, true);
-		/*oneTest("toyexamples/oneTransitionEnv1", 3, 0, false);
+		oneTest("toyexamples/oneTransitionEnv1", 3, 0, false);
 		oneTest("toyexamples/oneTransitionEnv1", 10, 0, false);
 		oneTest("toyexamples/oneTransitionEnv2", 3, 0, true);
 		oneTest("toyexamples/oneTransitionEnv2", 10, 0, true);
@@ -93,7 +93,7 @@ public class ExistsSafetyTest {
 		oneTest("escape/escape21", 3, 0, false);
 		oneTest("escape/escape21", 6, 0, true);
 		oneTest("escape/escape21", 10, 0, true);
-		oneTest("infflowchains/infflowchains", 10, 0, true);*/
+		oneTest("infflowchains/infflowchains", 20, 0, false);
 	}
 	
 	private void oneTest(String str, int n, int b, boolean result) throws Exception {

@@ -20,11 +20,13 @@ import uniolunisaar.adam.ds.winningconditions.Safety;
 public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 	
 	private int[] bad;
+	private int[] simultan;
 	private int sFlCE;
 	
 	public QBFExistsSafetySolver(QBFPetriGame game, Safety winCon, QBFSolverOptions options) throws BoundedParameterMissingException {
 		super(game, winCon, options);
 		bad = new int[pg.getN() + 1];
+		simultan = new int[pg.getN() + 1];
 	}
 	
 	@Override
@@ -171,6 +173,62 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 		return writeOr(or);
 	}
 	
+	public Set<Transition> getCandidateTransitions() {
+		Set<Transition> result = new HashSet<>();
+		for (Transition t : pn.getTransitions()) {
+			for (Place p : t.getPostset()) {
+				if (getIncomingTokenFlow(t, p).isEmpty()) {
+					result.add(t);
+				}
+			}
+		}
+		return result;
+	}
+	
+	public Set<Integer> getSimultaneousSpawnAndBad (Transition t, int i) throws IOException {
+		Set<Integer> or = new HashSet<>();
+		for (Place post : t.getPostset()) {
+			Set<Place> tokenFlow = getIncomingTokenFlow(t, post);
+			if (!(tokenFlow.isEmpty())) {
+				if (!getWinningCondition().getBadPlaces().contains(post)) {
+					or.add(getOneNotObjectiveFlowChain(post, t, i, tokenFlow));
+				} else {
+					or.add(-getVarNr(post.getId() + "." + (i + 1) + "." + "objective", true));
+				}
+			}
+		}
+		return or;
+	}
+	
+	public String [] getNoSimultaneousSpawnAndBad () throws IOException {
+		String[] result = new String[pg.getN() + 1];
+		Set<Integer> and = new HashSet<>();
+		for (int i = 1; i < pg.getN(); ++i) {
+			and.clear();
+			for (Transition t : getCandidateTransitions()) {
+				Set<Integer> or = getSimultaneousSpawnAndBad(t, i);
+				if (!or.isEmpty()) {
+					System.out.println(getOneTransition(t, i) + " " + t + " " + i);
+					or.add(-getOneTransition(t, i));
+					int id = createUniqueID();
+					writer.write(id + " = " + writeOr(or));
+					System.out.println(writeOr(or));
+					and.add(id);
+				}
+			}
+			result[i] = writeAnd(and);
+		}
+		return result;
+	}
+	
+	protected void writeSimultaneousSpawnAndBad () throws IOException {
+		String[] result = getNoSimultaneousSpawnAndBad();
+		for (int i = 1; i < pg.getN(); ++i) {
+			simultan[i] = createUniqueID();
+			writer.write(simultan[i] + " = " + result[i]);
+		}
+	}
+	
 	@Override
 	public String getLoopIJ() throws IOException {
 		Set<Integer> or = new HashSet<>();
@@ -202,6 +260,11 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 					innerOr.add(bad[k]);
 				}
 				writer.write(id + " = " + writeOr(innerOr));
+				for (int k = i; k < j; ++k) {
+					if (simultan[k] != 0) {
+						and.add(simultan[k]);
+					}
+				}
 				and.add(id);
 				int andNumber = createUniqueID();
 				writer.write(andNumber + " = " + writeAnd(and));
@@ -249,6 +312,7 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 		writeTerminating();
 		writeDeterministic();
 		writeSafeFlowChainEnd();
+		writeSimultaneousSpawnAndBad();
 		writeLoop();
 		writeDeadlocksterm();
 		writeWinning();
