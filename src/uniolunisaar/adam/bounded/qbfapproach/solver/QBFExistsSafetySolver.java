@@ -12,8 +12,10 @@ import org.apache.commons.io.FileUtils;
 import uniol.apt.adt.pn.Marking;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
+import uniol.apt.io.parser.ParseException;
 import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
+import uniolunisaar.adam.ds.exceptions.CouldNotFindSuitableWinningConditionException;
 import uniolunisaar.adam.ds.util.AdamExtensions;
 import uniolunisaar.adam.ds.winningconditions.Safety;
 
@@ -23,10 +25,11 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 	private int[] simultan;
 	private int sFlCE;
 	
-	public QBFExistsSafetySolver(QBFPetriGame game, Safety winCon, QBFSolverOptions options) throws BoundedParameterMissingException {
+	public QBFExistsSafetySolver(QBFPetriGame game, Safety winCon, QBFSolverOptions options) throws BoundedParameterMissingException, CouldNotFindSuitableWinningConditionException, ParseException {
 		super(game, winCon, options);
 		bad = new int[pg.getN() + 1];
 		simultan = new int[pg.getN() + 1];
+		setTokenFlow();
 	}
 	
 	@Override
@@ -121,12 +124,10 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 	}
 
 	protected void writeNoBadPlaces() throws IOException {
-		if (!getWinningCondition().getBadPlaces().isEmpty()) {
-			String[] nobadplaces = getNoBadPlaces();
-			for (int i = 1; i <= pg.getN(); ++i) {
-				bad[i] = createUniqueID();
-				writer.write(bad[i] + " = " + nobadplaces[i]);
-			}
+		String[] nobadplaces = getNoBadPlaces();
+		for (int i = 1; i <= pg.getN(); ++i) {
+			bad[i] = createUniqueID();
+			writer.write(bad[i] + " = " + nobadplaces[i]);
 		}
 	}
 	
@@ -208,11 +209,9 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 			for (Transition t : getCandidateTransitions()) {
 				Set<Integer> or = getSimultaneousSpawnAndBad(t, i);
 				if (!or.isEmpty()) {
-					System.out.println(getOneTransition(t, i) + " " + t + " " + i);
 					or.add(-getOneTransition(t, i));
 					int id = createUniqueID();
 					writer.write(id + " = " + writeOr(or));
-					System.out.println(writeOr(or));
 					and.add(id);
 				}
 			}
@@ -253,19 +252,22 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 						and.add(writeImplication(p_j_empty, p_i_empty));
 					}
 				}
-				int id = createUniqueID();
 				innerOr.clear();
 				innerOr.add(sFlCE);
+
 				for (int k = j; k <= j; ++k) {			// UNFAIR (scheinbar) ZWINGT dass transition immer VOR schleife gefeuert wird
 					innerOr.add(bad[k]);
 				}
-				writer.write(id + " = " + writeOr(innerOr));
+				if (innerOr.size() > 0) {
+					int id = createUniqueID();
+					writer.write(id + " = " + writeOr(innerOr));
+					and.add(id);
+				}
 				for (int k = i; k < j; ++k) {
 					if (simultan[k] != 0) {
 						and.add(simultan[k]);
 					}
 				}
-				and.add(id);
 				int andNumber = createUniqueID();
 				writer.write(andNumber + " = " + writeAnd(and));
 				or.add(andNumber);
@@ -276,12 +278,17 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 	
 	protected void writeWinning() throws IOException {
 		Set<Integer> and = new HashSet<>();
+		Set<Integer> or = new HashSet<>();
 		for (int i = 1; i < pg.getN(); ++i) {
 			and.clear();
 			and.add(dlt[i]);
 			and.add(det[i]);
+			or.clear();
+			or.add(sFlCE);
+			or.add(bad[i]);
+
 			int id = createUniqueID();
-			writer.write(id + " = or(" + sFlCE + "," + bad[i] + ")" + QBFSolver.linebreak);
+			writer.write(id + " = " + writeOr(or));
 			and.add(writeImplication(term[i], id));
 			win[i] = createUniqueID();
 			writer.write(win[i] + " = " + writeAnd(and));

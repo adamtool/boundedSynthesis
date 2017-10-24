@@ -3,9 +3,7 @@ package uniolunisaar.adam.bounded.qbfapproach.solver;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -14,37 +12,24 @@ import org.apache.commons.io.FileUtils;
 import uniol.apt.adt.pn.Marking;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
+import uniol.apt.io.parser.ParseException;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
-import uniolunisaar.adam.ds.petrigame.TokenFlow;
+import uniolunisaar.adam.ds.exceptions.CouldNotFindSuitableWinningConditionException;
 import uniolunisaar.adam.ds.util.AdamExtensions;
 import uniolunisaar.adam.ds.winningconditions.Reachability;
 
 public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability> {
-	
+
 	private int[] goodPlaces;
-	
-	public QBFForallReachabilitySolver(QBFPetriGame game, Reachability winCon, QBFSolverOptions options) throws BoundedParameterMissingException {
+
+	public QBFForallReachabilitySolver(QBFPetriGame game, Reachability winCon, QBFSolverOptions options) throws BoundedParameterMissingException, CouldNotFindSuitableWinningConditionException, ParseException {
 		super(game, winCon, options);
 		goodPlaces = new int[pg.getN() + 1];
-		
-		Map<Transition, Set<Pair<Place, Place>>> tfl = new HashMap<>();
-        for (Transition t : pn.getTransitions()) {
-            List<TokenFlow> list = AdamExtensions.getTokenFlow(t);
-            Set<Pair<Place, Place>> set = new HashSet<>();
-            for (TokenFlow tf : list) {
-            	for (Place pre : tf.getPreset()) {
-            		for (Place post : tf.getPostset()) {
-            			set.add(new Pair<>(pre, post));
-            		}
-            	}
-            }
-        	tfl.put(t, set);
-        }
-        pg.setFl(tfl);
+		setTokenFlow();
 	}
-	
+
 	@Override
 	public String getInitial() {
 		Marking initialMarking = pg.getNet().getInitialMarking();
@@ -62,7 +47,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 		}
 		return writeAnd(initial);
 	}
-	
+
 	@Override
 	public int getOneTransition(Transition t, int i) throws IOException {
 		if (oneTransitionFormulas[transitionKeys.get(t)][i] == 0) {
@@ -86,7 +71,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 			}
 			
 			for (Place p : t.getPostset()) {
-				// bad place reached
+				// good place reached
 				if (AdamExtensions.isReach(p)) {
 					and.add(getVarNr(p.getId() + "." + (i + 1) + "." + "objective", true));
 				} else {
@@ -94,8 +79,10 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 					if (tokenFlow.isEmpty()) {
 						and.add(getVarNr(p.getId() + "." + (i + 1) + "." + "notobjective", true));
 					} else {
+						// all unsafe flow chains before
 						and.add(writeImplication(getAllObjectiveFlowChain(p, t, i, tokenFlow), getVarNr(p.getId() + "." + (i + 1) + "." + "objective", true)));
-						and.add(writeImplication(getOneNotObjectiveFlowChain(p, t, i, tokenFlow),  getVarNr(p.getId() + "." + (i + 1) + "." + "notobjective", true)));
+						// safe flow chain before
+						and.add(writeImplication(getOneNotObjectiveFlowChain(p, t, i, tokenFlow), getVarNr(p.getId() + "." + (i + 1) + "." + "notobjective", true)));
 					}
 				}
 			}
@@ -133,17 +120,17 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 			return oneTransitionFormulas[transitionKeys.get(t)][i];
 		}
 	}
-	
+
 	private void writeGoodPlaces() throws IOException {
 		if (!getWinningCondition().getPlaces2Reach().isEmpty()) {
 			String[] good = getGoodPlaces();
 			for (int i = 1; i <= pg.getN(); ++i) {
 				goodPlaces[i] = createUniqueID();
-				writer.write(goodPlaces[i] + " = " + good[i]);//"or()" + "\n");
+				writer.write(goodPlaces[i] + " = " + good[i]);// "or()" + "\n");
 			}
 		}
 	}
-	
+
 	public String[] getGoodPlaces() throws IOException {
 		String[] goodPlaces = new String[pg.getN() + 1];
 		Set<Integer> or = new HashSet<>();
@@ -182,7 +169,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 		}
 		return goodPlaces;
 	}
-	
+
 	private void writeWinning() throws IOException {
 		Set<Integer> and = new HashSet<>();
 		for (int i = 1; i < pg.getN(); ++i) {
@@ -190,7 +177,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 			and.add(dlt[i]);
 			and.add(det[i]);
 			if (goodPlaces[i] != 0) {
-				and.add(writeImplication(dl[i], goodPlaces[i]));
+				and.add(writeImplication(term[i], goodPlaces[i]));
 			} else {
 				// empty set of places to reach never lets system win
 				Pair<Boolean, Integer> result = getVarNrWithResult("or()");
@@ -219,13 +206,13 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 		win[pg.getN()] = createUniqueID();
 		writer.write(win[pg.getN()] + " = " + writeAnd(and));
 	}
-	
+
 	@Override
 	protected void writeQCIR() throws IOException {
 		Map<Place, Set<Transition>> systemHasToDecideForAtLeastOne = unfoldPG();
 
 		initializeVariablesForWriteQCIR();
-		
+
 		writer.write("#QCIR-G14          " + QBFSolver.linebreak); // spaces left to add variable count in the end
 		addExists();
 		addForall();
@@ -263,7 +250,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 		winandLoopSet.add(l);
 		winandLoopSet.add(win[pg.getN()]);
 		writer.write(winandLoop + " = " + writeAnd(winandLoopSet));
-		
+
 		// TODO loop direkt bei getWinning hinzufügen
 		seqImpliesWin[pg.getN()] = createUniqueID();
 		writer.write(seqImpliesWin[pg.getN()] + " = " + "or(-" + seq[pg.getN()] + "," + winandLoop + "," + u + ")" + QBFSolver.linebreak);
@@ -285,7 +272,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 			}
 			raf.close();
 		}
-		
+
 		if (QBFSolver.debug) {
 			FileUtils.copyFile(file, new File(pn.getName() + ".qcir"));
 		}

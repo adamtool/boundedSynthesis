@@ -1,28 +1,17 @@
 package uniolunisaar.adam.bounded.qbfapproach;
 
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import uniol.apt.adt.pn.PetriNet;
-import uniol.apt.adt.pn.Place;
-import uniol.apt.adt.pn.Transition;
-import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFExistsSafetySolver;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
-import uniolunisaar.adam.ds.petrigame.TokenFlow;
-import uniolunisaar.adam.ds.util.AdamExtensions;
 import uniolunisaar.adam.ds.winningconditions.Safety;
+import uniolunisaar.adam.generators.Escape;
 import uniolunisaar.adam.logic.util.AdamTools;
-import uniolunisaar.adam.logic.util.PetriGameAnnotator;
 import uniolunisaar.adam.tools.Tools;
 
 @Test
@@ -94,27 +83,32 @@ public class ExistsSafetyTest {
 		oneTest("escape/escape21", 6, 0, true);
 		oneTest("escape/escape21", 10, 0, true);
 		oneTest("infflowchains/infflowchains", 20, 0, false);
+		PetriNet pn = Escape.createESafetyVersion(1, 0, true);
+		nextTest(pn, 10, 0, true);
+		pn = Escape.createESafetyVersion(1, 1, true);
+		nextTest(pn, 10, 0, false);
+		pn = Escape.createESafetyVersion(2, 1, true);
+		nextTest(pn, 10, 0, true);
+		pn = Escape.createESafetyVersion(2, 2, true);
+		nextTest(pn, 10, 0, false);
+		pn = Escape.createESafetyVersion(2, 3, true);
+		nextTest(pn, 10, 0, false);
+		pn = Escape.createESafetyVersion(2, 4, true);
+		nextTest(pn, 10, 0, false);
+		pn = Escape.createESafetyVersion(3, 2, true);
+		nextTest(pn, 10, 0, true);
+		pn = Escape.createESafetyVersion(4, 2, true);
+		nextTest(pn, 10, 0, true);
 	}
 	
 	private void oneTest(String str, int n, int b, boolean result) throws Exception {
         final String path = System.getProperty("examplesfolder") + "/existssafety/" + str + ".apt";
         PetriNet pn = Tools.getPetriNet(path);
-        PetriGameAnnotator.parseNetOptionsAndAnnotate(pn);
-        Map<Transition, Set<Pair<Place, Place>>> fl = new HashMap<>();
-        for (Transition t : pn.getTransitions()) {
-            List<TokenFlow> list = AdamExtensions.getTokenFlow(t);
-            Set<Pair<Place, Place>> set = new HashSet<>();
-            for (TokenFlow tf : list) {
-            	for (Place pre : tf.getPreset()) {
-            		for (Place post : tf.getPostset()) {
-            			set.add(new Pair<>(pre, post));
-            		}
-            	}
-            }
-        	fl.put(t, set);
-        }
-        QBFExistsSafetySolver sol = new QBFExistsSafetySolver(new QBFPetriGame(pn), new Safety(), new QBFSolverOptions(n, b));
-        sol.pg.setFl(fl);
+        nextTest(pn, n, b, result);
+	}
+	
+	private void nextTest (PetriNet pn, int n, int b, boolean result) throws Exception {
+		QBFExistsSafetySolver sol = new QBFExistsSafetySolver(new QBFPetriGame(pn), new Safety(), new QBFSolverOptions(n, b));
         sol.existsWinningStrategy();	// calculate first, then output games, and then check for correctness
 		AdamTools.savePG2PDF("originalGame", sol.game.getNet(), false);
 		AdamTools.savePG2PDF("unfolding", sol.unfolding.getNet(), false);

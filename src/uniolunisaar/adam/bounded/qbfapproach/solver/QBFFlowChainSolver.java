@@ -1,24 +1,50 @@
 package uniolunisaar.adam.bounded.qbfapproach.solver;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
+import uniol.apt.io.parser.ParseException;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
+import uniolunisaar.adam.ds.exceptions.CouldNotFindSuitableWinningConditionException;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
+import uniolunisaar.adam.ds.petrigame.TokenFlow;
+import uniolunisaar.adam.ds.util.AdamExtensions;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
+import uniolunisaar.adam.logic.util.PetriGameAnnotator;
 
 public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBFSolver<W> {
 
 	protected QBFFlowChainSolver(QBFPetriGame game, W winCon, QBFSolverOptions options) throws BoundedParameterMissingException {
 		super(game, winCon, options);
+	}
+	
+	protected void setTokenFlow () throws CouldNotFindSuitableWinningConditionException, ParseException {
+		PetriGameAnnotator.parseAndAnnotateTokenflow(pn);
+		Map<Transition, Set<Pair<Place, Place>>> tfl = new HashMap<>();
+        for (Transition t : pn.getTransitions()) {
+            List<TokenFlow> list = AdamExtensions.getTokenFlow(t);
+            Set<Pair<Place, Place>> set = new HashSet<>();
+            for (TokenFlow tf : list) {
+            	for (Place pre : tf.getPreset()) {
+            		for (Place post : tf.getPostset()) {
+            			set.add(new Pair<>(pre, post));
+            		}
+            	}
+            }
+        	tfl.put(t, set);
+        }
+        pg.setFl(tfl);
 	}
 
 	@Override
