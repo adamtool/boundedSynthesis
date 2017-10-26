@@ -13,7 +13,6 @@ import uniol.apt.adt.pn.Marking;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.io.parser.ParseException;
-import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.ds.exceptions.CouldNotFindSuitableWinningConditionException;
@@ -23,10 +22,14 @@ import uniolunisaar.adam.ds.winningconditions.Reachability;
 public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability> {
 
 	private int[] goodPlaces;
+	private int[] notUnreachEnded;
+	private int[] goodSimultan;
 
 	public QBFForallReachabilitySolver(QBFPetriGame game, Reachability winCon, QBFSolverOptions options) throws BoundedParameterMissingException, CouldNotFindSuitableWinningConditionException, ParseException {
 		super(game, winCon, options);
 		goodPlaces = new int[pg.getN() + 1];
+		notUnreachEnded = new int[pg.getN() + 1];
+		goodSimultan = new int[pg.getN() + 1];
 		setTokenFlow();
 	}
 
@@ -42,7 +45,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 					initial.add(getVarNr(p.getId() + "." + 1 + "." + "notobjective", true));
 				}
 			} else {
-				initial.add(-getVarNr(p.getId() + "." + 1 + "." + "empty", true));
+				initial.add(getVarNr(p.getId() + "." + 1 + "." + "empty", true));
 			}
 		}
 		return writeAnd(initial);
@@ -122,18 +125,15 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 	}
 
 	private void writeGoodPlaces() throws IOException {
-		if (!getWinningCondition().getPlaces2Reach().isEmpty()) {
-			String[] good = getGoodPlaces();
-			for (int i = 1; i <= pg.getN(); ++i) {
-				goodPlaces[i] = createUniqueID();
-				writer.write(goodPlaces[i] + " = " + good[i]);// "or()" + "\n");
-			}
+		String[] good = getGoodPlaces();
+		for (int i = 1; i <= pg.getN(); ++i) {
+			goodPlaces[i] = createUniqueID();
+			writer.write(goodPlaces[i] + " = " + good[i]);
 		}
 	}
-
+	
 	public String[] getGoodPlaces() throws IOException {
 		String[] goodPlaces = new String[pg.getN() + 1];
-		Set<Integer> or = new HashSet<>();
 		Set<Integer> and = new HashSet<>();
 		for (int i = 1; i <= pg.getN(); ++i) {
 			and.clear();
@@ -142,50 +142,132 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 					and.add(-getVarNr(p.getId() + "." + i + "." + "notobjective", true));
 				}
 			}
-			for (Transition t : pn.getTransitions()) {
-				for (Place p : t.getPreset()) {
-					if (!p.getId().startsWith(QBFSolver.additionalSystemName)) {
-						boolean notPresent = true;
-						for (Pair<Place, Place> pair : pg.getFl().get(t)) {
-							if (pair.getFirst().equals(p)) {
-								notPresent = false;
-								break;
-							}
-						}
-						if (notPresent) {
-							for (int j = 1; j < i; ++j) {
-								or.clear();
-								or.add(getVarNr(p.getId() + "." + j + "." + "objective", true));
-								or.add(-getOneTransition(t, j));
-								int id = createUniqueID();
-								writer.write(id + " = " + writeOr(or));
-								and.add(id);
-							}
-						}
-					}
-				}
-			}
 			goodPlaces[i] = writeAnd(and);
 		}
 		return goodPlaces;
 	}
-
+	
+	private void writeNotUnreachEnded() throws IOException {
+		String[] unreach = getNotUnreachEnded();
+		for (int i = 1; i < pg.getN(); ++i) {
+			notUnreachEnded[i] = createUniqueID();
+			writer.write(notUnreachEnded[i] + " = " + unreach[i]);
+		}
+	}
+	
+	public String[] getNotUnreachEnded() throws IOException {
+		String[] unreachEnded = new String[pg.getN() + 1];
+		Set<Integer> and = new HashSet<>();
+		Set<Integer> or = new HashSet<>();
+		for (int i = 1; i < pg.getN(); ++i) {
+			and.clear();
+			for (Transition t : pn.getTransitions()) {
+				for (Place p : t.getPreset()) {
+					if (getOutgoingTokenFlow(p, t).isEmpty()) {
+						or.clear();
+						or.add(getVarNr(p.getId() + "." + i + "." + "objective", true));
+						or.add(-getOneTransition(t, i));
+						int id = createUniqueID();
+						writer.write(id + " = " + writeOr(or));
+						and.add(id);
+					}
+				}
+			}
+			unreachEnded[i] = writeAnd(and);
+		}
+		return unreachEnded;
+	}
+	
+	@Override
+	public String getLoopIJ() throws IOException {
+		Set<Integer> or = new HashSet<>();
+		Set<Integer> innerOr = new HashSet<>();
+		for (int i = 1; i < pg.getN(); ++i) {
+			for (int j = i + 1; j <= pg.getN(); ++j) {
+				Set<Integer> and = new HashSet<>();
+				for (Place p : pn.getPlaces()) {
+					// additional system places cannot leave their places, they always loop
+					if (!p.getId().startsWith(additionalSystemName)) {
+						int p_i_safe = getVarNr(p.getId() + "." + i + "." + "objective", true);
+						int p_j_safe = getVarNr(p.getId() + "." + j + "." + "objective", true);
+						and.add(writeImplication(p_i_safe, p_j_safe));
+						and.add(writeImplication(p_j_safe, p_i_safe));
+						int p_i_unsafe = getVarNr(p.getId() + "." + i + "." + "notobjective", true);
+						int p_j_unsafe = getVarNr(p.getId() + "." + j + "." + "notobjective", true);
+						and.add(writeImplication(p_i_unsafe, p_j_unsafe));
+						and.add(writeImplication(p_j_unsafe, p_i_unsafe));
+						int p_i_empty = getVarNr(p.getId() + "." + i + "." + "empty", true);
+						int p_j_empty = getVarNr(p.getId() + "." + j + "." + "empty", true);
+						and.add(writeImplication(p_i_empty, p_j_empty));
+						and.add(writeImplication(p_j_empty, p_i_empty));
+					}
+				}
+				if (getCandidateTransitions().isEmpty()) {
+					innerOr.clear();
+					for (int k = i; k < i; ++k) {
+						innerOr.add(goodPlaces[k]);
+					}
+					int id = createUniqueID();
+					writer.write(id + " = " + writeOr(innerOr));
+					and.add(id);
+				} else {
+					innerOr.clear();
+					for (int k = i + 1; k <= j; ++k) {
+						innerOr.add(goodSimultan[k]);
+					}
+					int id = createUniqueID();
+					writer.write(id + " = " + writeOr(innerOr));
+					and.add(id);
+				}
+				
+				int andNumber = createUniqueID();
+				writer.write(andNumber + " = " + writeAnd(and));
+				or.add(andNumber);
+			}	
+		}
+		return writeOr(or);
+	}
+	
+	protected void writeGoodSimultan() throws IOException {
+		String[] goodSimu = getGoodSimultan();
+		for (int i = 2; i <= pg.getN(); ++i) {
+			goodSimultan[i] = createUniqueID();
+			writer.write(goodSimultan[i] + " = " + goodSimu[i]);
+		}
+	}
+	
+	public String[] getGoodSimultan() throws IOException {
+		String[] goodSimultan = new String[pg.getN() + 1];
+		Set<Integer> and = new HashSet<>();
+		Set<Integer> or = new HashSet<>();
+		for (int i = 2; i <= pg.getN(); ++i) {
+			and.clear();
+			for (Place p : pn.getPlaces()) {
+				or.clear();
+				or.add(getVarNr(p.getId() + "." + i + "." + "empty", true));
+				or.add(getVarNr(p.getId() + "." + i + "." + "objective", true));
+				for (Transition t : getCandidateTransitions()) {
+					if (t.getPostset().contains(p)) {
+						or.add(getOneTransition(t, i - 1));
+					}
+				}
+				int id = createUniqueID();
+				writer.write(id + " = " + writeOr(or));
+				and.add(id);
+			}
+			goodSimultan[i] = writeAnd(and);
+		}
+		return goodSimultan;
+	}
+				
 	private void writeWinning() throws IOException {
 		Set<Integer> and = new HashSet<>();
 		for (int i = 1; i < pg.getN(); ++i) {
 			and.clear();
 			and.add(dlt[i]);
 			and.add(det[i]);
-			if (goodPlaces[i] != 0) {
-				and.add(writeImplication(term[i], goodPlaces[i]));
-			} else {
-				// empty set of places to reach never lets system win
-				Pair<Boolean, Integer> result = getVarNrWithResult("or()");
-				if (result.getFirst()) {
-					writer.write(result.getSecond() + " = or()" + QBFSolver.linebreak);
-				}
-				and.add(writeImplication(dl[i], result.getSecond()));
-			}
+			and.add(notUnreachEnded[i]);
+			and.add(writeImplication(term[i], goodPlaces[i]));
 			win[i] = createUniqueID();
 			writer.write(win[i] + " = " + writeAnd(and));
 
@@ -193,16 +275,6 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 		and.clear();
 		and.add(dlt[pg.getN()]);
 		and.add(det[pg.getN()]);
-		if (goodPlaces[pg.getN()] != 0) {
-			and.add(goodPlaces[pg.getN()]);
-		} else {
-			// empty set of places to reach never lets system win
-			Pair<Boolean, Integer> result = getVarNrWithResult("or()");
-			if (result.getFirst()) {
-				writer.write(result.getSecond() + " = or()" + QBFSolver.linebreak);
-			}
-			and.add(result.getSecond());
-		}
 		win[pg.getN()] = createUniqueID();
 		writer.write(win[pg.getN()] + " = " + writeAnd(and));
 	}
@@ -221,6 +293,10 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 		writeFlow();
 		writeSequence();
 		writeGoodPlaces();
+		if (!getCandidateTransitions().isEmpty()) {
+			writeGoodSimultan();
+		}
+		writeNotUnreachEnded();
 		writeDeadlock();
 		writeTerminating();
 		writeDeadlocksterm();

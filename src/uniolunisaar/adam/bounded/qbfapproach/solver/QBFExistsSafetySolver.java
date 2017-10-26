@@ -157,7 +157,7 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 		for (Transition t : pn.getTransitions()) {
 			for (Place p : t.getPreset()) {
 				if (!p.getId().startsWith(QBFSolver.additionalSystemName)) {
-					Set<Place> outFlowChain = getOutgoingTokenFlow(t, p);
+					Set<Place> outFlowChain = getOutgoingTokenFlow(p, t);
 					if (outFlowChain.isEmpty()) {
 						for (int i = 1; i < pg.getN() - 1; ++i) {
 							and.clear();
@@ -172,18 +172,6 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 			}
 		}
 		return writeOr(or);
-	}
-	
-	public Set<Transition> getCandidateTransitions() {
-		Set<Transition> result = new HashSet<>();
-		for (Transition t : pn.getTransitions()) {
-			for (Place p : t.getPostset()) {
-				if (getIncomingTokenFlow(t, p).isEmpty()) {
-					result.add(t);
-				}
-			}
-		}
-		return result;
 	}
 	
 	public Set<Integer> getSimultaneousSpawnAndBad (Transition t, int i) throws IOException {
@@ -255,7 +243,7 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 				innerOr.clear();
 				innerOr.add(sFlCE);
 
-				for (int k = j; k <= j; ++k) {			// UNFAIR (scheinbar) ZWINGT dass transition immer VOR schleife gefeuert wird
+				for (int k = j; k <= j; ++k) {			// UNFAIR (scheinbar) ZWINGT dass transition immer VOR schleife gefeuert wird schleifen;;; nur mit n testen?
 					innerOr.add(bad[k]);
 				}
 				if (innerOr.size() > 0) {

@@ -25,13 +25,23 @@ public class ForallReachabilityTest {
 	
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void test() throws Exception {
-		oneTest("jhh/myexample11", 3, 0, false);
-		oneTest("jhh/myexample11", 10, 0, false);
-		oneTest("jhh/myexample12", 3, 0, true);
-		oneTest("jhh/myexample12", 10, 0, true);
-		oneTest("jhh/myexample21", 3, 0, false);
-		oneTest("jhh/myexample21", 10, 0, false);
-		oneTest("jhh/myexample22", 20, 0, true);
+		oneTest("toyexamples/infiniteFlowChains", 20, 0, true);
+		oneTest("jhh/myexampleWithSysNoStrat", 3, 0, false);
+		oneTest("jhh/myexampleWithSysNoStrat", 10, 0, false);
+		oneTest("jhh/myexampleWithSys", 3, 0, true);
+		oneTest("jhh/myexampleWithSys", 10, 0, true);
+		oneTest("jhh/myexample2WithEnvNoStrat", 3, 0, false);
+		oneTest("jhh/myexample2WithEnvNoStrat", 10, 0, false);
+		oneTest("jhh/myexample2WithEnv", 3, 0, true);
+		oneTest("jhh/myexample2WithEnv", 10, 0, true);
+		oneTest("jhh/myexample2WithEnvNoStrat", 3, 0, false);
+		oneTest("jhh/myexample2WithEnvNoStrat", 10, 0, false);
+		oneTest("jhh/myexampleStrat", 3, 0, true);
+		oneTest("jhh/myexampleStrat", 10, 0, true);
+		oneTest("jhh/myexampleNoStrat", 3, 0, false);
+		oneTest("jhh/myexampleNoStrat", 10, 0, false);
+		oneTest("jhh/unfair", 10, 0, false);
+		oneTest("jhh/unfair", 20, 0, false);
 		oneTest("burglar/burglar", 10, 0, false);
 		oneTest("burglar/burglar", 10, 2, true);
 		oneTest("burglar/burglar1", 10, 0, false);
@@ -39,7 +49,6 @@ public class ForallReachabilityTest {
 		oneTest("burglar/burglar2", 10, 0, false);
 		oneTest("burglar/burglar2", 10, 2, false);
 		oneTest("burglar/burglarDirectlyWon", 10, 0, true);
-		oneTest("toyexamples/infiniteFlowChains", 20, 0, false);		// TODO add check for simultaneous
 	}
 	
 	private void oneTest(String str, int n, int b, boolean result) throws Exception {

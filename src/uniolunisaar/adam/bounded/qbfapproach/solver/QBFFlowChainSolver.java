@@ -95,7 +95,7 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 		return result;
 	}
 	
-	protected Set<Place> getOutgoingTokenFlow(Transition t, Place p) {
+	protected Set<Place> getOutgoingTokenFlow(Place p, Transition t) {
 		Set<Place> result = new HashSet<> ();
 		for (Pair<Place, Place> pair : pg.getFl().get(t)) {
 			if (pair.getFirst().equals(p)) {
@@ -305,6 +305,18 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 		int returnValue = createUniqueID();
 		writer.write(returnValue + " = " + writeAnd(and));
 		return returnValue;
+	}
+	
+	protected Set<Transition> getCandidateTransitions() {
+		Set<Transition> result = new HashSet<>();
+		for (Transition t : pn.getTransitions()) {
+			for (Place p : t.getPostset()) {
+				if (getIncomingTokenFlow(t, p).isEmpty()) {
+					result.add(t);
+				}
+			}
+		}
+		return result;
 	}
 	
 	@Override
