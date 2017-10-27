@@ -163,13 +163,15 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 			and.clear();
 			for (Transition t : pn.getTransitions()) {
 				for (Place p : t.getPreset()) {
-					if (getOutgoingTokenFlow(p, t).isEmpty()) {
-						or.clear();
-						or.add(getVarNr(p.getId() + "." + i + "." + "objective", true));
-						or.add(-getOneTransition(t, i));
-						int id = createUniqueID();
-						writer.write(id + " = " + writeOr(or));
-						and.add(id);
+					if (!p.getId().startsWith(additionalSystemName)) {
+						if (getOutgoingTokenFlow(p, t).isEmpty()) {
+							or.clear();
+							or.add(getVarNr(p.getId() + "." + i + "." + "objective", true));
+							or.add(-getOneTransition(t, i));
+							int id = createUniqueID();
+							writer.write(id + " = " + writeOr(or));
+							and.add(id);
+						}
 					}
 				}
 			}
@@ -202,9 +204,9 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 						and.add(writeImplication(p_j_empty, p_i_empty));
 					}
 				}
-				if (getCandidateTransitions().isEmpty()) {
+				if (getCandidateTransitions().isEmpty()) {		// TODO redundancy weil goodSimultan statt goodPlaces wegen additional system obwohl eigentlich gleich
 					innerOr.clear();
-					for (int k = i; k < i; ++k) {
+					for (int k = i; k < j; ++k) {
 						innerOr.add(goodPlaces[k]);
 					}
 					int id = createUniqueID();
@@ -243,17 +245,19 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 		for (int i = 2; i <= pg.getN(); ++i) {
 			and.clear();
 			for (Place p : pn.getPlaces()) {
-				or.clear();
-				or.add(getVarNr(p.getId() + "." + i + "." + "empty", true));
-				or.add(getVarNr(p.getId() + "." + i + "." + "objective", true));
-				for (Transition t : getCandidateTransitions()) {
-					if (t.getPostset().contains(p)) {
-						or.add(getOneTransition(t, i - 1));
+				if (!p.getId().startsWith(QBFSolver.additionalSystemName)) {
+					or.clear();
+					or.add(getVarNr(p.getId() + "." + i + "." + "empty", true));
+					or.add(getVarNr(p.getId() + "." + i + "." + "objective", true));
+					for (Transition t : getCandidateTransitions()) {
+						if (t.getPostset().contains(p) && getIncomingTokenFlow(t, p).isEmpty()) {
+							or.add(getOneTransition(t, i - 1));
+						}
 					}
+					int id = createUniqueID();
+					writer.write(id + " = " + writeOr(or));
+					and.add(id);
 				}
-				int id = createUniqueID();
-				writer.write(id + " = " + writeOr(or));
-				and.add(id);
 			}
 			goodSimultan[i] = writeAnd(and);
 		}
@@ -282,7 +286,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 	@Override
 	protected void writeQCIR() throws IOException {
 		Map<Place, Set<Transition>> systemHasToDecideForAtLeastOne = unfoldPG();
-
+		
 		initializeVariablesForWriteQCIR();
 
 		writer.write("#QCIR-G14          " + QBFSolver.linebreak); // spaces left to add variable count in the end
