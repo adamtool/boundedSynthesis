@@ -29,7 +29,6 @@ public class CMTest { // Concurrent Machines / WF
 		PetriNet pn = Workflow.generate(ps1, ps2, true, true);
 		QBFSafetySolver sol = new QBFSafetySolver(pn, new Safety(), new QBFSolverOptions(n, b));
 		sol.existsWinningStrategy(); // calculate first, then output games, and then check for correctness
-		// TODO put this to an appropriate place in code
 		AdamTools.savePG2PDF("originalGame", sol.game.getNet(), false);
 		AdamTools.savePG2PDF("unfolding", sol.unfolding.getNet(), false);
 		if (sol.existsWinningStrategy()) {

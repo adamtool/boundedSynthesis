@@ -163,7 +163,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
         writer.write(in + " = " + getInitial());
     }
 
-    public String getInitial() {					// TODO adapt when extension initial exists
+    protected String getInitial() {					// TODO adapt when extension initial exists
         Marking initialMarking = pg.getNet().getInitialMarking();
         Set<Integer> initial = new HashSet<>();
         for (Place p : pn.getPlaces()) {
@@ -184,7 +184,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
         }
     }
 
-    public String[] getDeadlock() throws IOException {
+    protected String[] getDeadlock() throws IOException {
         writeDeadlockSubFormulas(1, pg.getN());
         String[] deadlock = new String[pg.getN() + 1];
         Set<Integer> and = new HashSet<>();
@@ -230,7 +230,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
         }
     }
 
-    public String[] getTerminating() throws IOException {
+    protected String[] getTerminating() throws IOException {
         writeTerminatingSubFormulas(1, pg.getN());
         String[] terminating = new String[pg.getN() + 1];
         Set<Integer> and = new HashSet<>();
@@ -288,7 +288,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 
     }
 
-    public String[] getFlow() throws IOException {
+    protected String[] getFlow() throws IOException {
         // writeFlowSubFormulas(); // slower
         String[] flow = new String[pg.getN() + 1];
         Set<Integer> or = new HashSet<>();
@@ -303,7 +303,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
         return flow;
     }
 
-    public int getOneTransition(Transition t, int i) throws IOException {
+    protected int getOneTransition(Transition t, int i) throws IOException {
         if (oneTransitionFormulas[transitionKeys.get(t)][i] == 0) {
             Set<Integer> and = new HashSet<>();
             int strat;
@@ -376,7 +376,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
         }
     }
 
-    public String[] getDeterministic() throws IOException { // faster than naive implementation
+    protected String[] getDeterministic() throws IOException { // faster than naive implementation
         List<Set<Integer>> and = new ArrayList<>(pg.getN() + 1);
         and.add(null); // first element is never accessed
         for (int i = 1; i <= pg.getN(); ++i) {
@@ -437,7 +437,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
         writer.write(l + " = " + loop);
     }
 
-    public String getLoopIJ() throws IOException {
+    protected String getLoopIJ() throws IOException {
         Set<Integer> or = new HashSet<>();
         for (int i = 1; i < pg.getN(); ++i) {
             for (int j = i + 1; j <= pg.getN(); ++j) {
@@ -460,7 +460,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
     }
 
     // wahrscheinlich nur hilfreich für deterministic unfolding, macht aber auf jeden fall nichts kaputt, wohl nur langsamer
-    public String getLoopIJunfolded() throws IOException {
+    protected String getLoopIJunfolded() throws IOException {
         Set<Integer> outerOr = new HashSet<>();
         for (int i = 1; i < pg.getN(); ++i) {
             for (int j = i + 1; j <= pg.getN(); ++j) {
@@ -503,7 +503,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
         writer.write(u + " = " + unfair);
     }
 
-    public String getUnfair() throws IOException {
+    protected String getUnfair() throws IOException {
         Set<Integer> outerOr = new HashSet<>();
         for (int i = 1; i < pg.getN(); ++i) {
             for (int j = i + 2; j <= pg.getN(); ++j) {
@@ -550,7 +550,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
     }
 
     // this has one more quantifier alternation, it should therefore be slower
-    public String getUnfairMoreQuantifierAlternation() throws IOException {
+    protected String getUnfairMoreQuantifierAlternation() throws IOException {
         Set<Integer> outerOr = new HashSet<>();
         for (int i = 1; i < pg.getN(); ++i) {
             for (int j = i + 2; j <= pg.getN(); ++j) {
@@ -613,7 +613,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
         return writeOr(outerOr);
     }
 
-    public int addSysStrategy(Place p, Transition t) {
+    protected int addSysStrategy(Place p, Transition t) {
         if (!AdamExtensions.isEnvironment(p)) {
             if (p.getId().startsWith(QBFSolver.additionalSystemName)) {
                 return getVarNr(p.getId() + ".." + t.getId(), true);
@@ -625,7 +625,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
         }
     }
 
-    public void addExists() throws IOException {
+    protected void addExists() throws IOException {
         Set<Integer> exists = new HashSet<>();
         for (Place p : pg.getNet().getPlaces()) {
             if (!AdamExtensions.isEnvironment(p)) {
@@ -670,7 +670,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
     // Additional information from nondeterministic unfolding is utilized:
     // for each place a set of transitions is given of which at least one has to
     // be activated by the strategy to be deadlock-avoiding
-    public int enumerateStratForNonDetUnfold(Map<Place, Set<Transition>> additionalInfoForNonDetUnfl) throws IOException {
+    protected int enumerateStratForNonDetUnfold(Map<Place, Set<Transition>> additionalInfoForNonDetUnfl) throws IOException {
         if (additionalInfoForNonDetUnfl.keySet().isEmpty()) {
             return -1;
         }
@@ -698,7 +698,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
     // Additional information from nondeterministic unfolding is utilized:
     // for each place a set of transitions is given of which EXACTLY one has to
     // be activated by the strategy to be deadlock-avoiding
-    public int enumerateStratForNonDetUnfoldEXACTLYONE(Map<Place, Set<Transition>> additionalInfoForNonDetUnfl) throws IOException {
+    protected int enumerateStratForNonDetUnfoldEXACTLYONE(Map<Place, Set<Transition>> additionalInfoForNonDetUnfl) throws IOException {
         if (additionalInfoForNonDetUnfl.keySet().isEmpty()) {
             return -1;
         }

@@ -22,15 +22,17 @@ import uniolunisaar.adam.ds.winningconditions.Buchi;
 
 public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 
+	private int[] noFlowChainEnded;
 	private int bl; // buchi loop
 	
 	public QBFForallBuchiSolver(QBFPetriGame game, Buchi winCon, QBFSolverOptions options) throws BoundedParameterMissingException, CouldNotFindSuitableWinningConditionException, ParseException{
 		super(game, winCon, options);
 		setTokenFlow();
+		noFlowChainEnded = new int[pg.getN() + 1];
 	}
 	
 	@Override
-	public String getInitial() {
+	protected String getInitial() {
 		Marking initialMarking = pg.getNet().getInitialMarking();
 		Set<Integer> initial = new HashSet<>();
 		for (Place p : pn.getPlaces()) {
@@ -48,7 +50,7 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 	}
 	
 	@Override
-	public int getOneTransition(Transition t, int i) throws IOException {
+	protected int getOneTransition(Transition t, int i) throws IOException {
 		if (oneTransitionFormulas[transitionKeys.get(t)][i] == 0) {
 			Set<Integer> and = new HashSet<>();
 			Set<Integer> or = new HashSet<>();
@@ -70,7 +72,7 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 			}
 			
 			for (Place p : t.getPostset()) {
-				// bad place reached
+				// Buchi place reached
 				if (AdamExtensions.isBuchi(p)) {
 					and.add(getVarNr(p.getId() + "." + (i + 1) + "." + "objective", true));
 				} else {
@@ -78,7 +80,9 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 					if (tokenFlow.isEmpty()) {
 						and.add(getVarNr(p.getId() + "." + (i + 1) + "." + "notobjective", true));
 					} else {
+						// all flow chains reached before
 						and.add(writeImplication(getAllObjectiveFlowChain(p, t, i, tokenFlow), getVarNr(p.getId() + "." + (i + 1) + "." + "objective", true)));
+						// one flow chain did not reach before
 						and.add(writeImplication(getOneNotObjectiveFlowChain(p, t, i, tokenFlow),  getVarNr(p.getId() + "." + (i + 1) + "." + "notobjective", true)));
 					}
 				}
@@ -118,6 +122,33 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 		}
 	}
 	
+	protected void writeNoFlowChainEnded() throws IOException {
+		String[] noflended = getNoFlowChainEnded();
+		for (int i = 1; i < pg.getN(); ++i) {
+			noFlowChainEnded[i] = createUniqueID();
+			writer.write(noFlowChainEnded[i] + " = " + noflended[i]);
+		}
+	}
+	
+	protected String[] getNoFlowChainEnded() throws IOException {
+		String[] unreachEnded = new String[pg.getN() + 1];
+		Set<Integer> and = new HashSet<>();
+		for (int i = 1; i < pg.getN(); ++i) {
+			and.clear();
+			for (Transition t : pn.getTransitions()) {
+				for (Place p : t.getPreset()) {
+					if (!p.getId().startsWith(additionalSystemName)) {
+						if (getOutgoingTokenFlow(p, t).isEmpty()) {
+							and.add(-getOneTransition(t, i));
+						}
+					}
+				}
+			}
+			unreachEnded[i] = writeAnd(and);
+		}
+		return unreachEnded;
+	}
+	
 	@Override
 	protected void writeLoop() throws IOException {
 		String loop = getBuchiLoop();
@@ -125,7 +156,7 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 		writer.write(bl + " = " + loop);
 	}
 
-	public String getBuchiLoop() throws IOException {
+	protected String getBuchiLoop() throws IOException {
 		Set<Integer> outerAnd = new HashSet<>();
 		Set<Integer> outerOr = new HashSet<>();
 		Set<Integer> innerAnd = new HashSet<>();
@@ -200,20 +231,23 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 		outerAnd.add(id);
 		return writeAnd(outerAnd);
 	}
-
-	private void writeWinning() throws IOException {
+	
+	protected void writeWinning() throws IOException {
 		Set<Integer> and = new HashSet<>();
-		for (int i = 1; i <= pg.getN(); ++i) {
+		for (int i = 1; i < pg.getN(); ++i) {
 			and.clear();
-			if (dl[i] != 0) {
-				and.add(-dl[i]);
-			}
-			if (det[i] != 0) {
-				and.add(det[i]);
-			}
+			and.add(-dl[i]);
+			and.add(det[i]);
+			and.add(noFlowChainEnded[i]);
 			win[i] = createUniqueID();
 			writer.write(win[i] + " = " + writeAnd(and));
+
 		}
+		and.clear();
+		and.add(-dl[pg.getN()]);
+		and.add(det[pg.getN()]);
+		win[pg.getN()] = createUniqueID();
+		writer.write(win[pg.getN()] + " = " + writeAnd(and));
 	}
 	
 	@Override

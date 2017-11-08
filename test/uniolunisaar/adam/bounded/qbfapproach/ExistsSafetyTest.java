@@ -10,7 +10,6 @@ import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFExistsSafetySolver;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
 import uniolunisaar.adam.ds.winningconditions.Safety;
-import uniolunisaar.adam.generators.Escape;
 import uniolunisaar.adam.logic.util.AdamTools;
 import uniolunisaar.adam.tools.Tools;
 
@@ -83,22 +82,9 @@ public class ExistsSafetyTest {
 		oneTest("escape/escape21", 6, 0, true);
 		oneTest("escape/escape21", 10, 0, true);
 		oneTest("infflowchains/infflowchains", 20, 0, false);
-		PetriNet pn = Escape.createESafetyVersion(1, 0, true);
-		nextTest(pn, 10, 0, true);
-		pn = Escape.createESafetyVersion(1, 1, true);
-		nextTest(pn, 10, 0, false);
-		pn = Escape.createESafetyVersion(2, 1, true);
-		nextTest(pn, 10, 0, true);
-		pn = Escape.createESafetyVersion(2, 2, true);
-		nextTest(pn, 10, 0, false);
-		pn = Escape.createESafetyVersion(2, 3, true);
-		nextTest(pn, 10, 0, false);
-		pn = Escape.createESafetyVersion(2, 4, true);
-		nextTest(pn, 10, 0, false);
-		pn = Escape.createESafetyVersion(3, 2, true);
-		nextTest(pn, 10, 0, true);
-		pn = Escape.createESafetyVersion(4, 2, true);
-		nextTest(pn, 10, 0, true);
+		oneTest("infflowchains/infflowchains1", 20, 0, true);
+		oneTest("infflowchains/infflowchains2", 20, 0, false);
+		oneTest("infflowchains/infflowchains3", 20, 0, true);
 	}
 	
 	private void oneTest(String str, int n, int b, boolean result) throws Exception {

@@ -33,7 +33,7 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 	}
 	
 	@Override
-	public String getInitial() {
+	protected String getInitial() {
 		Marking initialMarking = pg.getNet().getInitialMarking();
 		Set<Integer> initial = new HashSet<>();
 		for (Place p : pn.getPlaces()) {
@@ -51,7 +51,7 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 	}
 	
 	@Override
-	public int getOneTransition(Transition t, int i) throws IOException {
+	protected int getOneTransition(Transition t, int i) throws IOException {
 		if (oneTransitionFormulas[transitionKeys.get(t)][i] == 0) {
 			Set<Integer> and = new HashSet<>();
 			Set<Integer> or = new HashSet<>();
@@ -131,7 +131,7 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 		}
 	}
 	
-	public String[] getNoBadPlaces() throws IOException {
+	protected String[] getNoBadPlaces() throws IOException {
 		String[] nobadplaces = new String[pg.getN() + 1];
 		Set<Integer> or = new HashSet<>();
 		for (int i = 1; i <= pg.getN(); ++i) {
@@ -151,7 +151,7 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 		writer.write(sFlCE + " = " + getSafeFlowChainEnd());
 	}
 	
-	public String getSafeFlowChainEnd() throws IOException {
+	protected String getSafeFlowChainEnd() throws IOException {
 		Set<Integer> and = new HashSet<>();
 		Set<Integer> or = new HashSet<>();
 		for (Transition t : pn.getTransitions()) {
@@ -174,7 +174,7 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 		return writeOr(or);
 	}
 	
-	public Set<Integer> getSimultaneousSpawnAndBad (Transition t, int i) throws IOException {
+	protected Set<Integer> getSimultaneousSpawnAndBad (Transition t, int i) throws IOException {
 		Set<Integer> or = new HashSet<>();
 		for (Place post : t.getPostset()) {
 			Set<Place> tokenFlow = getIncomingTokenFlow(t, post);
@@ -189,7 +189,7 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 		return or;
 	}
 	
-	public String [] getNoSimultaneousSpawnAndBad () throws IOException {
+	protected String [] getNoSimultaneousSpawnAndBad () throws IOException {
 		String[] result = new String[pg.getN() + 1];
 		Set<Integer> and = new HashSet<>();
 		for (int i = 1; i < pg.getN(); ++i) {
@@ -217,7 +217,7 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 	}
 	
 	@Override
-	public String getLoopIJ() throws IOException {
+	protected String getLoopIJ() throws IOException {
 		Set<Integer> or = new HashSet<>();
 		Set<Integer> innerOr = new HashSet<>();
 		for (int i = 1; i < pg.getN(); ++i) {

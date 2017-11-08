@@ -34,7 +34,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 	}
 
 	@Override
-	public String getInitial() {
+	protected String getInitial() {
 		Marking initialMarking = pg.getNet().getInitialMarking();
 		Set<Integer> initial = new HashSet<>();
 		for (Place p : pn.getPlaces()) {
@@ -52,7 +52,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 	}
 
 	@Override
-	public int getOneTransition(Transition t, int i) throws IOException {
+	protected int getOneTransition(Transition t, int i) throws IOException {
 		if (oneTransitionFormulas[transitionKeys.get(t)][i] == 0) {
 			Set<Integer> and = new HashSet<>();
 			Set<Integer> or = new HashSet<>();
@@ -82,9 +82,9 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 					if (tokenFlow.isEmpty()) {
 						and.add(getVarNr(p.getId() + "." + (i + 1) + "." + "notobjective", true));
 					} else {
-						// all unsafe flow chains before
+						// all flow chains reached before
 						and.add(writeImplication(getAllObjectiveFlowChain(p, t, i, tokenFlow), getVarNr(p.getId() + "." + (i + 1) + "." + "objective", true)));
-						// safe flow chain before
+						// one flow chain did not reach before
 						and.add(writeImplication(getOneNotObjectiveFlowChain(p, t, i, tokenFlow), getVarNr(p.getId() + "." + (i + 1) + "." + "notobjective", true)));
 					}
 				}
@@ -124,7 +124,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 		}
 	}
 
-	private void writeGoodPlaces() throws IOException {
+	protected void writeGoodPlaces() throws IOException {
 		String[] good = getGoodPlaces();
 		for (int i = 1; i <= pg.getN(); ++i) {
 			goodPlaces[i] = createUniqueID();
@@ -132,7 +132,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 		}
 	}
 	
-	public String[] getGoodPlaces() throws IOException {
+	protected String[] getGoodPlaces() throws IOException {
 		String[] goodPlaces = new String[pg.getN() + 1];
 		Set<Integer> and = new HashSet<>();
 		for (int i = 1; i <= pg.getN(); ++i) {
@@ -147,7 +147,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 		return goodPlaces;
 	}
 	
-	private void writeNotUnreachEnded() throws IOException {
+	protected void writeNotUnreachEnded() throws IOException {
 		String[] unreach = getNotUnreachEnded();
 		for (int i = 1; i < pg.getN(); ++i) {
 			notUnreachEnded[i] = createUniqueID();
@@ -155,7 +155,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 		}
 	}
 	
-	public String[] getNotUnreachEnded() throws IOException {
+	protected String[] getNotUnreachEnded() throws IOException {
 		String[] unreachEnded = new String[pg.getN() + 1];
 		Set<Integer> and = new HashSet<>();
 		Set<Integer> or = new HashSet<>();
@@ -181,7 +181,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 	}
 	
 	@Override
-	public String getLoopIJ() throws IOException {
+	protected String getLoopIJ() throws IOException {
 		Set<Integer> or = new HashSet<>();
 		Set<Integer> innerOr = new HashSet<>();
 		for (int i = 1; i < pg.getN(); ++i) {
@@ -204,7 +204,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 						and.add(writeImplication(p_j_empty, p_i_empty));
 					}
 				}
-				if (getCandidateTransitions().isEmpty()) {		// TODO redundancy weil goodSimultan statt goodPlaces wegen additional system obwohl eigentlich gleich
+				if (getCandidateTransitions().isEmpty()) {		// TODO redundancy weil goodSimultan statt goodPlaces wegen additional system places
 					innerOr.clear();
 					for (int k = i; k < j; ++k) {
 						innerOr.add(goodPlaces[k]);
@@ -238,7 +238,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 		}
 	}
 	
-	public String[] getGoodSimultan() throws IOException {
+	protected String[] getGoodSimultan() throws IOException {
 		String[] goodSimultan = new String[pg.getN() + 1];
 		Set<Integer> and = new HashSet<>();
 		Set<Integer> or = new HashSet<>();
@@ -264,7 +264,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 		return goodSimultan;
 	}
 				
-	private void writeWinning() throws IOException {
+	protected void writeWinning() throws IOException {
 		Set<Integer> and = new HashSet<>();
 		for (int i = 1; i < pg.getN(); ++i) {
 			and.clear();

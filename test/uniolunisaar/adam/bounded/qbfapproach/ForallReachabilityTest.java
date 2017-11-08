@@ -25,7 +25,46 @@ public class ForallReachabilityTest {
 	
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void test() throws Exception {
+		oneTest("toyexamples/twoDecisions1", 6, 0, false);
+		oneTest("toyexamples/twoDecisions1", 10, 0, false);
+		oneTest("toyexamples/chains", 6, 0, true);
+		oneTest("toyexamples/chains", 10, 0, true);
+		oneTest("toyexamples/chains0", 6, 0, false);
+		oneTest("toyexamples/chains0", 10, 0, false);
+		oneTest("toyexamples/chains1", 6, 0, false);
+		oneTest("toyexamples/chains1", 10, 0, false);
+		oneTest("toyexamples/infiniteFlowChains", 13, 0, true);
 		oneTest("toyexamples/infiniteFlowChains", 20, 0, true);
+		oneTest("toyexamples/newLateChain", 6, 0, false);
+		oneTest("toyexamples/newLateChain", 10, 0, false);
+		oneTest("toyexamples/newLateToken1", 6, 0, false);
+		oneTest("toyexamples/newLateToken1", 10, 0, false);
+		oneTest("toyexamples/newLateToken2", 5, 0, true);
+		oneTest("toyexamples/newLateToken2", 10, 0, true);
+		oneTest("toyexamples/oneTokenMultiChains0", 6, 0, false);
+		oneTest("toyexamples/oneTokenMultiChains0", 10, 0, false);
+		oneTest("toyexamples/oneTokenMultiChains1", 6, 0, false);
+		oneTest("toyexamples/oneTokenMultiChains1", 10, 0, false);
+		oneTest("toyexamples/oneTokenMultiChains2", 6, 0, false);
+		oneTest("toyexamples/oneTokenMultiChains2", 10, 0, false);
+		oneTest("toyexamples/oneTokenMultiChains3", 6, 0, true);
+		oneTest("toyexamples/oneTokenMultiChains3", 10, 0, true);
+		oneTest("toyexamples/oneTokenMultiChains4", 6, 0, false);
+		oneTest("toyexamples/oneTokenMultiChains4", 10, 0, false);
+		oneTest("toyexamples/oneTokenMultiChains5", 6, 0, false);
+		oneTest("toyexamples/oneTokenMultiChains5", 10, 0, false);
+		oneTest("toyexamples/oneTokenMultiChains6", 6, 0, false);
+		oneTest("toyexamples/oneTokenMultiChains6", 10, 0, false);
+		oneTest("toyexamples/oneTokenMultiChains7", 6, 0, true);
+		oneTest("toyexamples/oneTokenMultiChains7", 10, 0, true);
+		oneTest("toyexamples/oneTokenMultiChains8", 6, 0, false);		// ONLY because I don't allow deadlocks after reach
+		oneTest("toyexamples/oneTokenMultiChains8", 10, 0, false);		// ONLY because I don't allow deadlocks after reach
+		oneTest("toyexamples/overallBad0", 6, 0, false);
+		oneTest("toyexamples/overallBad0", 10, 0, false);
+		oneTest("toyexamples/type2", 4, 0, true);
+		oneTest("toyexamples/type2", 10, 0, true);
+		oneTest("toyexamples/winInit", 4, 0, true);
+		oneTest("toyexamples/winInit", 10, 0, true);
 		oneTest("jhh/myexampleWithSysNoStrat", 3, 0, false);
 		oneTest("jhh/myexampleWithSysNoStrat", 10, 0, false);
 		oneTest("jhh/myexampleWithSys", 3, 0, true);

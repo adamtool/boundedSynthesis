@@ -198,7 +198,8 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 		return number;
 	}
 	
-	public String getUnfair() throws IOException {
+	@Override
+	protected String getUnfair() throws IOException {
 		Set<Integer> outerOr = new HashSet<>();
 		Set<Integer> outerAnd = new HashSet<>();
 		Set<Integer> innerOr = new HashSet<>();
@@ -258,7 +259,7 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 	}
 	
 	@Override
-	public String getLoopIJ() throws IOException {
+	protected String getLoopIJ() throws IOException {
 		Set<Integer> or = new HashSet<>();
 		for (int i = 1; i < pg.getN(); ++i) {
 			for (int j = i + 1; j <= pg.getN(); ++j) {
