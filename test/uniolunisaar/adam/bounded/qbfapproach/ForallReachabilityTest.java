@@ -35,6 +35,8 @@ public class ForallReachabilityTest {
 		oneTest("toyexamples/chains1", 10, 0, false);
 		oneTest("toyexamples/infiniteFlowChains", 13, 0, true);
 		oneTest("toyexamples/infiniteFlowChains", 20, 0, true);
+		oneTest("toyexamples/infiniteFlowChains2", 13, 0, false);
+		oneTest("toyexamples/infiniteFlowChains2", 20, 0, false);
 		oneTest("toyexamples/newLateChain", 6, 0, false);
 		oneTest("toyexamples/newLateChain", 10, 0, false);
 		oneTest("toyexamples/newLateToken1", 6, 0, false);
@@ -57,7 +59,7 @@ public class ForallReachabilityTest {
 		oneTest("toyexamples/oneTokenMultiChains6", 10, 0, false);
 		oneTest("toyexamples/oneTokenMultiChains7", 6, 0, true);
 		oneTest("toyexamples/oneTokenMultiChains7", 10, 0, true);
-		oneTest("toyexamples/oneTokenMultiChains8", 6, 0, false);		// ONLY because I don't allow deadlocks after reach
+		oneTest("toyexamples/oneTokenMultiChains8", 6, 0, false);			// ONLY because I don't allow deadlocks after reach
 		oneTest("toyexamples/oneTokenMultiChains8", 10, 0, false);		// ONLY because I don't allow deadlocks after reach
 		oneTest("toyexamples/overallBad0", 6, 0, false);
 		oneTest("toyexamples/overallBad0", 10, 0, false);
@@ -88,6 +90,7 @@ public class ForallReachabilityTest {
 		oneTest("burglar/burglar2", 10, 0, false);
 		oneTest("burglar/burglar2", 10, 2, false);
 		oneTest("burglar/burglarDirectlyWon", 10, 0, true);
+		oneTest("toyexamples/lateUnsafeChain", 10, 0, false);
 	}
 	
 	private void oneTest(String str, int n, int b, boolean result) throws Exception {

@@ -13,7 +13,6 @@ import uniol.apt.adt.pn.Marking;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.io.parser.ParseException;
-import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.ds.exceptions.CouldNotFindSuitableWinningConditionException;
@@ -23,12 +22,16 @@ import uniolunisaar.adam.ds.winningconditions.Buchi;
 public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 
 	private int[] noFlowChainEnded;
+	private int[] goodSimultan;
+	private int[] buchiPlaces;
 	private int bl; // buchi loop
 	
 	public QBFForallBuchiSolver(QBFPetriGame game, Buchi winCon, QBFSolverOptions options) throws BoundedParameterMissingException, CouldNotFindSuitableWinningConditionException, ParseException{
 		super(game, winCon, options);
 		setTokenFlow();
 		noFlowChainEnded = new int[pg.getN() + 1];
+		goodSimultan = new int[pg.getN() + 1];
+		buchiPlaces = new int[pg.getN() + 1];
 	}
 	
 	@Override
@@ -122,6 +125,29 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 		}
 	}
 	
+	protected void writeBuchiPlaces() throws IOException {
+		String[] buchi = getBuchiPlaces();
+		for (int i = 1; i <= pg.getN(); ++i) {
+			buchiPlaces[i] = createUniqueID();
+			writer.write(buchiPlaces[i] + " = " + buchi[i]);
+		}
+	}
+	
+	protected String[] getBuchiPlaces() throws IOException {
+		String[] buchi = new String[pg.getN() + 1];
+		Set<Integer> and = new HashSet<>();
+		for (int i = 1; i <= pg.getN(); ++i) {
+			and.clear();
+			for (Place p : pn.getPlaces()) {
+				if (!p.getId().startsWith(QBFSolver.additionalSystemName)) {
+					and.add(-getVarNr(p.getId() + "." + i + "." + "notobjective", true));
+				}
+			}
+			buchi[i] = writeAnd(and);
+		}
+		return buchi;
+	}
+	
 	protected void writeNoFlowChainEnded() throws IOException {
 		String[] noflended = getNoFlowChainEnded();
 		for (int i = 1; i < pg.getN(); ++i) {
@@ -157,79 +183,86 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 	}
 
 	protected String getBuchiLoop() throws IOException {
-		Set<Integer> outerAnd = new HashSet<>();
-		Set<Integer> outerOr = new HashSet<>();
-		Set<Integer> innerAnd = new HashSet<>();
+		Set<Integer> or = new HashSet<>();
 		Set<Integer> innerOr = new HashSet<>();
-		Set<Integer> innerInnerAnd = new HashSet<>();
-		
-		for (Transition t : pn.getTransitions()) {
-			boolean addFlow = false;
-			for (Place p : t.getPreset()) {
+		for (int i = 1; i < pg.getN(); ++i) {
+			for (int j = i + 1; j <= pg.getN(); ++j) {
+				Set<Integer> and = new HashSet<>();
+				for (Place p : pn.getPlaces()) {
+					// additional system places cannot leave their places, they always loop
+					if (!p.getId().startsWith(additionalSystemName)) {
+						int p_i_safe = getVarNr(p.getId() + "." + i + "." + "objective", true);
+						int p_j_safe = getVarNr(p.getId() + "." + j + "." + "objective", true);
+						and.add(writeImplication(p_i_safe, p_j_safe));
+						and.add(writeImplication(p_j_safe, p_i_safe));
+						int p_i_unsafe = getVarNr(p.getId() + "." + i + "." + "notobjective", true);
+						int p_j_unsafe = getVarNr(p.getId() + "." + j + "." + "notobjective", true);
+						and.add(writeImplication(p_i_unsafe, p_j_unsafe));
+						and.add(writeImplication(p_j_unsafe, p_i_unsafe));
+						int p_i_empty = getVarNr(p.getId() + "." + i + "." + "empty", true);
+						int p_j_empty = getVarNr(p.getId() + "." + j + "." + "empty", true);
+						and.add(writeImplication(p_i_empty, p_j_empty));
+						and.add(writeImplication(p_j_empty, p_i_empty));
+					}
+				}
+				if (getCandidateTransitions().isEmpty()) {		// TODO redundancy weil goodSimultan statt goodPlaces wegen additional system places
+					innerOr.clear();
+					for (int k = i; k < j; ++k) {
+						innerOr.add(buchiPlaces[k]);
+					}
+					int id = createUniqueID();
+					writer.write(id + " = " + writeOr(innerOr));
+					and.add(id);
+				} else {
+					innerOr.clear();
+					for (int k = i + 1; k <= j; ++k) {
+						innerOr.add(goodSimultan[k]);
+					}
+					int id = createUniqueID();
+					writer.write(id + " = " + writeOr(innerOr));
+					and.add(id);
+				}
+				
+				int andNumber = createUniqueID();
+				writer.write(andNumber + " = " + writeAnd(and));
+				or.add(andNumber);
+			}	
+		}
+		return writeOr(or);
+	}
+	
+	protected void writeGoodSimultan() throws IOException {
+		String[] goodSimu = getGoodSimultan();
+		for (int i = 2; i <= pg.getN(); ++i) {
+			goodSimultan[i] = createUniqueID();
+			writer.write(goodSimultan[i] + " = " + goodSimu[i]);
+		}
+	}
+	
+	protected String[] getGoodSimultan() throws IOException {
+		String[] goodSimultan = new String[pg.getN() + 1];
+		Set<Integer> and = new HashSet<>();
+		Set<Integer> or = new HashSet<>();
+		for (int i = 2; i <= pg.getN(); ++i) {
+			and.clear();
+			for (Place p : pn.getPlaces()) {
 				if (!p.getId().startsWith(QBFSolver.additionalSystemName)) {
-					boolean cont = false;
-					for (Pair<Place, Place> pair : pg.getFl().get(t)) {
-						if (pair.getFirst().equals(p)) {
-							cont = true;
-							break;
+					or.clear();
+					or.add(getVarNr(p.getId() + "." + i + "." + "empty", true));
+					or.add(getVarNr(p.getId() + "." + i + "." + "objective", true));
+					for (Transition t : getCandidateTransitions()) {
+						if (t.getPostset().contains(p) && getIncomingTokenFlow(t, p).isEmpty()) {
+							or.add(getOneTransition(t, i - 1));
 						}
 					}
-					if (!cont) {
-						addFlow = true;
-						break;
-					}
+					int id = createUniqueID();
+					writer.write(id + " = " + writeOr(or));
+					and.add(id);
 				}
 			}
-			if (addFlow) {
-				for (int i = 1; i < pg.getN(); ++i) {
-					outerAnd.add(-getOneTransition(t, i));	// this transition removes a token
-				}
-			}
+			goodSimultan[i] = writeAnd(and);
 		}
-		
-		for (int i = 1; i < pg.getN(); ++i) {
-			innerAnd.clear();
-			for (Place p : pn.getPlaces()) {				
-				int p_i_safe = getVarNr(p.getId() + "." + i + "." + "objective", true);
-				int p_n_safe = getVarNr(p.getId() + "." + pg.getN() + "." + "objective", true);
-				innerAnd.add(writeImplication(p_i_safe, p_n_safe));
-				innerAnd.add(writeImplication(p_n_safe, p_i_safe));
-				
-				int p_i_unsafe = getVarNr(p.getId() + "." + i + "." + "notobjective", true);
-				int p_n_unsafe = getVarNr(p.getId() + "." + pg.getN() + "." + "notobjective", true);
-				innerAnd.add(writeImplication(p_i_unsafe, p_n_unsafe));
-				innerAnd.add(writeImplication(p_n_unsafe, p_i_unsafe));
-				
-				int p_i_empty = getVarNr(p.getId() + "." + i + "." + "empty", true);
-				int p_n_empty = getVarNr(p.getId() + "." + pg.getN() + "." + "empty", true);
-				innerAnd.add(writeImplication(p_i_empty, p_n_empty));
-				innerAnd.add(writeImplication(p_n_empty, p_i_empty));
-			}
-			
-			innerOr.clear();
-			for (int j = i; j < pg.getN(); ++j) {
-				innerInnerAnd.clear();
-				for (Place p : pn.getPlaces()) {
-					innerInnerAnd.add(-getVarNr(p.getId() + "." + j + "." + "notobjective", true));
-					innerInnerAnd.add(writeImplication(getVarNr(p.getId() + "." +  j + "." + "objective", true), getVarNr(p.getId() + "." +  (j + 1) + "." + "notobjective", true)));
-				}
-			}
-			int id = createUniqueID();
-			writer.write(id + " = " + writeAnd(innerInnerAnd));
-			innerOr.add(id);
-			
-			id = createUniqueID();
-			writer.write(id + " = " + writeOr(innerOr));
-			innerAnd.add(id);
-		}
-		int id = createUniqueID();
-		writer.write(id + " = " + writeAnd(innerAnd));
-		outerOr.add(id);
-		
-		id = createUniqueID();
-		writer.write(id + " = " + writeOr(outerOr));
-		outerAnd.add(id);
-		return writeAnd(outerAnd);
+		return goodSimultan;
 	}
 	
 	protected void writeWinning() throws IOException {
@@ -264,6 +297,11 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 		writeDeadlock();
 		writeFlow();
 		writeSequence();
+		writeBuchiPlaces();
+		if (!getCandidateTransitions().isEmpty()) {
+			writeGoodSimultan();
+		}
+		writeNoFlowChainEnded();
 		writeDeterministic();
 		writeLoop();
 		writeUnfair();
