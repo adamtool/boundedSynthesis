@@ -25,26 +25,38 @@ public class ForallBuchiTest {
 	
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void test() throws Exception {
-		oneTest("jhh/myexample1", 3, 0, false);
+		oneTest("jhh/myexample1", 4, 0, false);
 		oneTest("jhh/myexample1", 10, 0, false);
-		oneTest("jhh/myexample11", 3, 0, false);
+		oneTest("jhh/myexample11", 4, 0, false);
 		oneTest("jhh/myexample11", 10, 0, false);
-		oneTest("jhh/myexample12", 3, 0, false);
+		oneTest("jhh/myexample12", 4, 0, false);
 		oneTest("jhh/myexample12", 10, 0, false);
-		oneTest("jhh/myexample13", 3, 0, true);
+		oneTest("jhh/myexample13", 4, 0, true);
 		oneTest("jhh/myexample13", 10, 0, true);
-		oneTest("jhh/myexample2", 3, 0, false);
+		oneTest("jhh/myexample2", 4, 0, false);
 		oneTest("jhh/myexample2", 10, 0, false);
-		oneTest("jhh/myexample21", 3, 0, false);
+		oneTest("jhh/myexample21", 4, 0, false);
 		oneTest("jhh/myexample21", 10, 0, false);
-		oneTest("jhh/myexample22", 3, 0, true);
+		oneTest("jhh/myexample22", 4, 0, true);
 		oneTest("jhh/myexample22", 10, 0, true);
 		oneTest("toyexamples/infiniteChains", 7, 0, true);
 		oneTest("toyexamples/infiniteChains", 10, 0, true);
 		oneTest("toyexamples/infiniteChains1", 7, 0, false);
 		oneTest("toyexamples/infiniteChains1", 10, 0, false);
-		oneTest("toyexamples/oneTokenMultiChains0", 7, 0, false);
-		oneTest("toyexamples/oneTokenMultiChains0", 10, 0, false);
+		oneTest("toyexamples/oneTokenMultiChains0", 11, 0, false);
+		oneTest("toyexamples/oneTokenMultiChains0", 15, 0, false);
+		oneTest("toyexamples/oneTokenMultiChains1", 11, 0, true);
+		oneTest("toyexamples/oneTokenMultiChains1", 15, 0, true);
+		oneTest("toyexamples/oneTokenMultiChains2", 11, 0, true);		// TODO kommentar
+		oneTest("toyexamples/oneTokenMultiChains2", 15, 0, true);		// TODO kommentar
+		oneTest("toyexamples/oneTokenMultiChains3", 11, 0, false);
+		oneTest("toyexamples/oneTokenMultiChains3", 15, 0, false);
+		oneTest("toyexamples/oneTokenMultiChains4", 11, 0, false);
+		oneTest("toyexamples/oneTokenMultiChains4", 15, 0, false);
+		oneTest("toyexamples/oneTokenMultiChains5", 13, 0, true);		// infinitely many becoming true
+		oneTest("toyexamples/oneTokenMultiChains5", 15, 0, true);		// infinitely many becoming true
+		oneTest("toyexamples/oneTokenMultiChains6", 11, 0, false);
+		oneTest("toyexamples/oneTokenMultiChains6", 15, 0, false);
 	}
 	
 	private void oneTest(String str, int n, int b, boolean result) throws Exception {
