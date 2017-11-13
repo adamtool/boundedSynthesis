@@ -47,8 +47,8 @@ public class ForallBuchiTest {
 		oneTest("toyexamples/oneTokenMultiChains0", 15, 0, false);
 		oneTest("toyexamples/oneTokenMultiChains1", 11, 0, true);
 		oneTest("toyexamples/oneTokenMultiChains1", 15, 0, true);
-		oneTest("toyexamples/oneTokenMultiChains2", 11, 0, true);		// TODO kommentar
-		oneTest("toyexamples/oneTokenMultiChains2", 15, 0, true);		// TODO kommentar
+		oneTest("toyexamples/oneTokenMultiChains2", 11, 0, true);
+		oneTest("toyexamples/oneTokenMultiChains2", 15, 0, true);
 		oneTest("toyexamples/oneTokenMultiChains3", 11, 0, false);
 		oneTest("toyexamples/oneTokenMultiChains3", 15, 0, false);
 		oneTest("toyexamples/oneTokenMultiChains4", 11, 0, false);

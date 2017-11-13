@@ -14,6 +14,7 @@ import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
+import uniolunisaar.adam.bounded.qbfapproach.petrigame.QCIRconsistency;
 import uniolunisaar.adam.ds.exceptions.NotSupportedGameException;
 import uniolunisaar.adam.ds.winningconditions.Safety;
 
@@ -125,6 +126,12 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 		writer.write("1 = " + writeAnd(phi));
 		writer.close();
 		
+		if (QBFSolver.debug) {
+			FileUtils.copyFile(file, new File(pn.getName() + ".qcir"));
+		}
+		
+		assert(QCIRconsistency.checkConsistency(file));
+		
 		// Total number of gates is only calculated during encoding and added to the file afterwards
 		if (variablesCounter < 999999999) { // added 9 blanks as more than 999.999.999 variables wont be solvable
 			RandomAccessFile raf = new RandomAccessFile(file, "rw");
@@ -137,10 +144,6 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 				raf.writeByte(c);
 			}
 			raf.close();
-		}
-		
-		if (QBFSolver.debug) {
-			FileUtils.copyFile(file, new File(pn.getName() + ".qcir"));
 		}
 	}
 }

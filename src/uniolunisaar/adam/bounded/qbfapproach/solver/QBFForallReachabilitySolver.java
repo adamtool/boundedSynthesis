@@ -15,6 +15,7 @@ import uniol.apt.adt.pn.Transition;
 import uniol.apt.io.parser.ParseException;
 import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
+import uniolunisaar.adam.bounded.qbfapproach.petrigame.QCIRconsistency;
 import uniolunisaar.adam.ds.exceptions.CouldNotFindSuitableWinningConditionException;
 import uniolunisaar.adam.ds.util.AdamExtensions;
 import uniolunisaar.adam.ds.winningconditions.Reachability;
@@ -339,6 +340,12 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 		writer.write("1 = " + writeAnd(phi));
 		writer.close();
 
+		if (QBFSolver.debug) {
+			FileUtils.copyFile(file, new File(pn.getName() + ".qcir"));
+		}
+		
+		assert(QCIRconsistency.checkConsistency(file));
+		
 		// Total number of gates is only calculated during encoding and added to the file afterwards
 		if (variablesCounter < 999999999) { // added 9 blanks as more than 999.999.999 variables wont be solvable
 			RandomAccessFile raf = new RandomAccessFile(file, "rw");
@@ -351,10 +358,6 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 				raf.writeByte(c);
 			}
 			raf.close();
-		}
-
-		if (QBFSolver.debug) {
-			FileUtils.copyFile(file, new File(pn.getName() + ".qcir"));
 		}
 	}
 }
