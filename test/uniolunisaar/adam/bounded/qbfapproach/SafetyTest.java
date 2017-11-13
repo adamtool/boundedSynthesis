@@ -23,7 +23,7 @@ public class SafetyTest {
     }
 	
 	@Test(timeOut = 1800 * 1000) // 30 min
-	public void test() throws Exception {
+	public void testForallSafety() throws Exception {
 		//oneTest("tests/watchdog5", 15, 3, true);		// TODO search for bounds
 		//oneTest("container/container", 10, 2, true);	// TODO search for bounds
 		oneTest("jhh/myexample1", 10, 0, false);

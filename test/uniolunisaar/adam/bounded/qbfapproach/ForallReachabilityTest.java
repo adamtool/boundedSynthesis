@@ -24,7 +24,7 @@ public class ForallReachabilityTest {
     }
 	
 	@Test(timeOut = 1800 * 1000) // 30 min
-	public void test() throws Exception {
+	public void testForallReachability() throws Exception {
 		oneTest("toyexamples/twoDecisions1", 6, 0, false);
 		oneTest("toyexamples/twoDecisions1", 10, 0, false);
 		oneTest("toyexamples/chains", 6, 0, true);

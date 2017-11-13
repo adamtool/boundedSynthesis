@@ -24,7 +24,7 @@ public class ExistsSafetyTest {
     }
 	
 	@Test(timeOut = 1800 * 1000) // 30 min
-	public void test() throws Exception {
+	public void testExistsSafety() throws Exception {
 		oneTest("toyexamples/unfair1", 6, 0, true);
 		oneTest("toyexamples/unfair1", 10, 0, true);
 		oneTest("toyexamples/unfair2", 6, 0, true);

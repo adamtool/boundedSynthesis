@@ -127,7 +127,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 
 	protected void writeGoodPlaces() throws IOException {
 		String[] good = getGoodPlaces();
-		for (int i = 1; i <= pg.getN(); ++i) {
+		for (int i = 1; i < pg.getN(); ++i) {
 			goodPlaces[i] = createUniqueID();
 			writer.write(goodPlaces[i] + " = " + good[i]);
 		}
@@ -205,7 +205,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 						and.add(writeImplication(p_j_empty, p_i_empty));
 					}
 				}
-				if (getCandidateTransitions().isEmpty()) {		// TODO redundancy weil goodSimultan statt goodPlaces wegen additional system places
+				if (getTransitionCreatingTokenFlow().isEmpty()) {		// TODO redundancy weil goodSimultan statt goodPlaces wegen additional system places
 					innerOr.clear();
 					for (int k = i; k < j; ++k) {
 						innerOr.add(goodPlaces[k]);
@@ -250,7 +250,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 					or.clear();
 					or.add(getVarNr(p.getId() + "." + i + "." + "empty", true));
 					or.add(getVarNr(p.getId() + "." + i + "." + "objective", true));
-					for (Transition t : getCandidateTransitions()) {
+					for (Transition t : getTransitionCreatingTokenFlow()) {
 						if (t.getPostset().contains(p) && getIncomingTokenFlow(t, p).isEmpty()) {
 							or.add(getOneTransition(t, i - 1));
 						}
@@ -271,7 +271,9 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 			and.clear();
 			and.add(dlt[i]);
 			and.add(det[i]);
-			and.add(notUnreachEnded[i]);
+			if (	!getTransitionFinishingTokenFlow().isEmpty()) {
+				and.add(notUnreachEnded[i]);
+			}
 			and.add(writeImplication(term[i], goodPlaces[i]));
 			win[i] = createUniqueID();
 			writer.write(win[i] + " = " + writeAnd(and));
@@ -298,10 +300,12 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 		writeFlow();
 		writeSequence();
 		writeGoodPlaces();
-		if (!getCandidateTransitions().isEmpty()) {
+		if (!getTransitionCreatingTokenFlow().isEmpty()) {
 			writeGoodSimultan();
 		}
-		writeNotUnreachEnded();
+		if (!getTransitionFinishingTokenFlow().isEmpty()) {
+			writeNotUnreachEnded();
+		}
 		writeDeadlock();
 		writeTerminating();
 		writeDeadlocksterm();

@@ -12,6 +12,7 @@ import org.apache.commons.io.FileUtils;
 import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
+import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QCIRconsistency;
@@ -56,8 +57,17 @@ public class QBFBuchiSolver extends QBFSolver<Buchi> {
 						innerOr.add(getVarNr(buchi.getId() + "." + k, true));
 					}
 				}
-				int innerOrNumber = createUniqueID();
-				writer.write(innerOrNumber + " = " + writeOr(innerOr));
+				int innerOrNumber;
+				if (innerOr.isEmpty()) {
+					Pair<Boolean, Integer> pair = getVarNrWithResult("or()");
+					if (pair.getFirst()) {
+						writer.write(pair.getSecond() + " = or()" + QBFSolver.linebreak);
+					}
+					innerOrNumber = pair.getSecond();
+				} else {
+					innerOrNumber = createUniqueID();
+					writer.write(innerOrNumber + " = " + writeOr(innerOr));
+				}
 				and.add(innerOrNumber);
 
 				int andNumber = createUniqueID();

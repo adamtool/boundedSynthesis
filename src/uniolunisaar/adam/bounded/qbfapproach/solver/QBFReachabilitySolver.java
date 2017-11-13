@@ -87,7 +87,14 @@ public class QBFReachabilitySolver extends QBFSolver<Reachability> {
 		for (int i = 1; i <= pg.getN(); ++i) {
 			if (goodPlaces[i] != 0) {
 				or.add(goodPlaces[i]);
-			} 
+			} else {
+				// empty set of places to reach never lets system win
+				Pair<Boolean, Integer> result = getVarNrWithResult("or()");
+				if (result.getFirst()) {
+					writer.write(result.getSecond() + " = or()" + QBFSolver.linebreak);
+				}
+				or.add(result.getSecond());
+			}
 		}
 		int orID = createUniqueID();
 		writer.write(orID + " = " + writeOr(or));

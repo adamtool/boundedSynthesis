@@ -24,7 +24,7 @@ public class ForallBuchiTest {
     }
 	
 	@Test(timeOut = 1800 * 1000) // 30 min
-	public void test() throws Exception {
+	public void testForallBüchi() throws Exception {
 		oneTest("jhh/myexample1", 4, 0, false);
 		oneTest("jhh/myexample1", 10, 0, false);
 		oneTest("jhh/myexample11", 4, 0, false);

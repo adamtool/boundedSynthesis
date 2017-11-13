@@ -308,12 +308,27 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 		return returnValue;
 	}
 	
-	protected Set<Transition> getCandidateTransitions() {
+	protected Set<Transition> getTransitionCreatingTokenFlow() {
 		Set<Transition> result = new HashSet<>();
 		for (Transition t : pn.getTransitions()) {
 			for (Place p : t.getPostset()) {
-				if (getIncomingTokenFlow(t, p).isEmpty()) {
-					result.add(t);
+				if (!p.getId().startsWith(QBFSolver.additionalSystemName)) {
+					if (getIncomingTokenFlow(t, p).isEmpty()) {
+						result.add(t);
+					}
+				}
+			}
+		}
+		return result;
+	}
+	protected Set<Transition> getTransitionFinishingTokenFlow() {
+		Set<Transition> result = new HashSet<>();
+		for (Transition t : pn.getTransitions()) {
+			for (Place p : t.getPreset()) {
+				if (!p.getId().startsWith(QBFSolver.additionalSystemName)) {
+					if (getOutgoingTokenFlow(p, t).isEmpty()) {
+						result.add(t);
+					}
 				}
 			}
 		}

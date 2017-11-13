@@ -24,8 +24,8 @@ public class BuechiTest {
     }
 
     @Test(timeOut = 1800 * 1000) // 30 min
-    public void testBüchi() throws Exception {
-        test ("independentloops", true, 10, 0);
+    public void testExistsBüchi() throws Exception {
+        /*test ("independentloops", true, 10, 0);
 		test ("independentloops", true, 10, 2);
 		test ("independentloops2", true, 10, 0);
 		test ("independentloops2", true, 10, 2);
@@ -41,7 +41,7 @@ public class BuechiTest {
         test("goodBadLoop1", true, 10, 0);
         test("goodBadLoop2", true, 10, 0);
         test("oneGoodInfEnv", false, 10, 0);
-        test("oneGoodInfEnv", false, 10, 2);
+        test("oneGoodInfEnv", false, 10, 2);*/
         test("nondet", false, 10, 0);
         test("nondet", false, 10, 2);
         test("firstExamplePaperBuchi", false, 10, 2);

@@ -77,14 +77,15 @@ public class QCIRconsistency {
 						return false;
 					}
 				} else {
-					if (split[1].matches("and()")) {
+					if (split[1].startsWith("and()")) {
 						numberAndTrue++;
-					} else if (split[1].matches("or()")) {
+					} else if (split[1].startsWith("or()")) {
 						numberOrFalse++;
 					}
 				}
 			}
 		}
+		
 		if (!defined.equals(used)) {
 			for (int def : defined) {
 				if (!used.contains(def)) {

@@ -197,7 +197,7 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 
 	protected void writeBuchiPlaces() throws IOException {
 		String[] buchi = getBuchiPlaces();
-		for (int i = 1; i <= pg.getN(); ++i) {
+		for (int i = 1; i < pg.getN(); ++i) {
 			buchiPlaces[i] = createUniqueID();
 			writer.write(buchiPlaces[i] + " = " + buchi[i]);
 		}
@@ -275,7 +275,7 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 						and.add(writeImplication(p_j_empty, p_i_empty));
 					}
 				}
-				if (getCandidateTransitions().isEmpty()) { // TODO redundancy weil goodSimultan statt goodPlaces wegen additional system places
+				if (getTransitionCreatingTokenFlow().isEmpty()) { // TODO redundancy weil goodSimultan statt goodPlaces wegen additional system places
 					innerOr.clear();
 					for (int k = i; k < j; ++k) {
 						innerOr.add(buchiPlaces[k]);
@@ -320,7 +320,7 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 					or.clear();
 					or.add(getVarNr(p.getId() + "." + i + "." + "empty", true));
 					or.add(getVarNr(p.getId() + "." + i + "." + "objective", true));
-					for (Transition t : getCandidateTransitions()) {
+					for (Transition t : getTransitionCreatingTokenFlow()) {
 						if (t.getPostset().contains(p) && getIncomingTokenFlow(t, p).isEmpty()) {
 							or.add(getOneTransition(t, i - 1));
 						}
@@ -341,7 +341,9 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 			and.clear();
 			and.add(-dl[i]);
 			and.add(det[i]);
-			and.add(noFlowChainEnded[i]);
+			if (!getTransitionFinishingTokenFlow().isEmpty()) {
+				and.add(noFlowChainEnded[i]);
+			}
 			win[i] = createUniqueID();
 			writer.write(win[i] + " = " + writeAnd(and));
 
@@ -369,11 +371,15 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 		writeResetChoice();
 		writeFlow();
 		writeSequence();
-		writeBuchiPlaces();
-		if (!getCandidateTransitions().isEmpty()) {
+		if (getTransitionCreatingTokenFlow().isEmpty()) {
+			writeBuchiPlaces();
+		}
+		if (!getTransitionCreatingTokenFlow().isEmpty()) {
 			writeGoodSimultan();
 		}
-		writeNoFlowChainEnded();
+		if (!getTransitionFinishingTokenFlow().isEmpty()) {
+			writeNoFlowChainEnded();
+		}
 		writeDeterministic();
 		writeLoop();
 		writeUnfair();
