@@ -1,12 +1,15 @@
 package uniolunisaar.adam.bounded.qbfapproach;
 
 
+import static org.testng.Assert.assertTrue;
+
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import uniol.apt.adt.pn.PetriNet;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSafetySolver;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolver;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
 import uniolunisaar.adam.ds.winningconditions.Safety;
 import uniolunisaar.adam.logic.util.AdamTools;
@@ -26,11 +29,11 @@ public class SafetyTest {
 	public void testForallSafety() throws Exception {
 		//oneTest("tests/watchdog5", 15, 3, true);		// TODO search for bounds
 		//oneTest("container/container", 10, 2, true);	// TODO search for bounds
-		oneTest("jhh/myexample1", 10, 0, false);
+		/*oneTest("jhh/myexample1", 10, 0, false);
 		oneTest("jhh/myexample1", 10, 2, false);
 		oneTest("jhh/myexample2", 10, 0, true);
-		oneTest("jhh/myexample2", 10, 2, true);
-		oneTest("jhh/myexample3", 10, 0, false);
+		//oneTest("jhh/myexample2", 10, 2, true);
+		oneTest("jhh/myexample3", 10, 0, false);*/
 		oneTest("jhh/myexample3", 10, 2, true);
 		oneTest("jhh/myexample4", 10, 0, false);
 		oneTest("jhh/myexample4", 10, 2, false);
@@ -81,5 +84,9 @@ public class SafetyTest {
 			AdamTools.savePG2PDF("strategy", sol.getStrategy(), false);
 		}
 		Assert.assertEquals(sol.existsWinningStrategy(), result);
+		
+		if (sol.existsWinningStrategy()) {
+			assertTrue(QBFSolver.checkStrategy(sol.game.getNet(), sol.strategy.getNet()));
+		}
 	}
 }

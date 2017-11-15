@@ -1,9 +1,5 @@
 package uniolunisaar.adam.bounded.qbfapproach.unfolder;
 
-import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
-import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
-import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
-
 import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,6 +14,9 @@ import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.analysis.exception.UnboundedException;
 import uniol.apt.util.Pair;
+import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
+import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
+import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 
 /**
  * 

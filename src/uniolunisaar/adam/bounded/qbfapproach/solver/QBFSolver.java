@@ -27,6 +27,7 @@ import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingE
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.ForNonDeterministicUnfolder;
+import uniolunisaar.adam.bounded.qbfapproach.unfolder.Unfolder;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
@@ -34,6 +35,7 @@ import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.solver.Solver;
 import uniolunisaar.adam.ds.util.AdamExtensions;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
+import uniolunisaar.adam.logic.util.AdamTools;
 import uniolunisaar.adam.tools.AdamProperties;
 
 /**
@@ -101,6 +103,20 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 	protected int[] terminatingSubFormulas;
 	protected File file = null;
 
+	public static boolean checkStrategy (PetriNet origNet, PetriNet strat) {
+		// some preparation
+		for (Place p : origNet.getPlaces()) {
+			AdamExtensions.setOrigID(p, Unfolder.getTruncatedId(p.getId()));
+		}
+		for (Place p : strat.getPlaces()) {
+			AdamExtensions.setOrigID(p, Unfolder.getTruncatedId(p.getId()));
+		}
+		for (Transition t : strat.getTransitions()) {
+			t.setLabel(Unfolder.getTruncatedId(t.getId()));
+		}
+		return AdamTools.checkStrategy(origNet, strat);
+	}
+	
 	public QBFSolver(QBFPetriGame game, W winCon, QBFSolverOptions so) throws BoundedParameterMissingException {
 		super(game, winCon, so);
 

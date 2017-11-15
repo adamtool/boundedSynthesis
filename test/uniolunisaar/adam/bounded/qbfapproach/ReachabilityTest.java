@@ -1,5 +1,7 @@
 package uniolunisaar.adam.bounded.qbfapproach;
 
+import static org.testng.Assert.assertTrue;
+
 import java.io.File;
 
 import org.testng.Assert;
@@ -8,6 +10,7 @@ import org.testng.annotations.Test;
 
 import uniol.apt.adt.pn.PetriNet;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFReachabilitySolver;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolver;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
 import uniolunisaar.adam.ds.winningconditions.Reachability;
 import uniolunisaar.adam.logic.util.AdamTools;
@@ -84,5 +87,9 @@ public class ReachabilityTest {
 			AdamTools.savePG2PDF("strategy", sol.getStrategy(), false);
 		}
 		Assert.assertEquals(sol.existsWinningStrategy(), result);
+		
+		if (sol.existsWinningStrategy()) {
+			assertTrue(QBFSolver.checkStrategy(sol.game.getNet(), sol.strategy.getNet()));
+		}
 	}
 }
