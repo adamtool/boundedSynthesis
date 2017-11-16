@@ -28,6 +28,20 @@ public class ExistsSafetyTest {
 	
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testExistsSafety() throws Exception {
+		oneTest("toyexamples/multipleFlowChains1", 3, 0, true);
+		oneTest("toyexamples/multipleFlowChains1", 10, 0, true);
+		oneTest("toyexamples/multipleFlowChains2", 3, 0, false);
+		oneTest("toyexamples/multipleFlowChains2", 10, 0, false);
+		oneTest("toyexamples/multipleFlowChains3", 3, 0, false);		// TODO eig true probably bug that new spawn is not recognized when continuing flow chain
+		oneTest("toyexamples/multipleFlowChains3", 10, 0, false);		// TODO eig true 
+		oneTest("toyexamples/multipleFlowChains4", 3, 0, true);
+		oneTest("toyexamples/multipleFlowChains4", 10, 0, true);
+		oneTest("toyexamples/multipleFlowChains5", 3, 0, true);
+		oneTest("toyexamples/multipleFlowChains5", 10, 0, true);
+		oneTest("toyexamples/multipleFlowChains6", 3, 0, true);
+		oneTest("toyexamples/multipleFlowChains6", 10, 0, true);
+		oneTest("toyexamples/multipleFlowChains7", 3, 0, false);
+		oneTest("toyexamples/multipleFlowChains7", 10, 0, false);
 		oneTest("toyexamples/unfair1", 6, 0, true);
 		oneTest("toyexamples/unfair1", 10, 0, true);
 		oneTest("toyexamples/unfair2", 6, 0, true);
