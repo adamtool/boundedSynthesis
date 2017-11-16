@@ -107,6 +107,8 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 		return result;
 	}
 	
+	// TODO Müssen leeren Token Flow trotz anderer token flows beachten; null nutzen?
+	
 	protected int getAllObjectiveFlowChain(Place p, Transition t, int i, Set<Place> tokenFlow) throws IOException {
 		Pair<Boolean, Integer> result = getVarNrWithResult("allOBJECTIVEFlowChain" + p.getId() + "." + t.getId() + "." + i);
 		if (result.getFirst()) {
