@@ -107,11 +107,20 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 		return result;
 	}
 	
-	// TODO Müssen leeren Token Flow trotz anderer token flows beachten; null nutzen?
-	
 	protected int getAllObjectiveFlowChain(Place p, Transition t, int i, Set<Place> tokenFlow) throws IOException {
 		Pair<Boolean, Integer> result = getVarNrWithResult("allOBJECTIVEFlowChain" + p.getId() + "." + t.getId() + "." + i);
 		if (result.getFirst()) {
+			 List<TokenFlow> list = AdamExtensions.getTokenFlow(t);
+			 for (TokenFlow tfl : list) {
+				 if (tfl.getPostset().contains(p) && tfl.getPreset().isEmpty()) {
+					 Pair<Boolean, Integer> or = getVarNrWithResult("or()");
+					 if (or.getFirst()) {
+						 writer.write(or.getSecond() + " = or()" + QBFSolver.linebreak);
+					 }
+					 return or.getSecond();
+				 }
+			 }
+			
 			Set<Integer> and = new HashSet<>();
 			for (Place pre : tokenFlow) {
 				and.add(getVarNr(pre.getId() + "." + i + "." + "objective", true));
@@ -124,6 +133,17 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 	protected int getOneNotObjectiveFlowChain(Place p, Transition t, int i, Set<Place> tokenflow) throws IOException {
 		Pair<Boolean, Integer> result = getVarNrWithResult("oneNOTOBJECTIVEFlowChain" + p.getId() + "." + t.getId() + "." + i);
 		if (result.getFirst()) {
+			List<TokenFlow> list = AdamExtensions.getTokenFlow(t);
+			 for (TokenFlow tfl : list) {
+				 if (tfl.getPostset().contains(p) && tfl.getPreset().isEmpty()) {
+					 Pair<Boolean, Integer> and = getVarNrWithResult("and()");
+					 if (and.getFirst()) {
+						 writer.write(and.getSecond() + " = and()" + QBFSolver.linebreak);
+					 }
+					 return and.getSecond();
+				 }
+			 }
+			
 			Set<Integer> or = new HashSet<>();
 			for (Place pre : tokenflow) {
 				or.add(getVarNr(pre.getId() + "." + i + "." + "notobjective", true));

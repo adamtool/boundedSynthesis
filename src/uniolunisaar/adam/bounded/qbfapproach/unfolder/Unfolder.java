@@ -262,9 +262,12 @@ public abstract class Unfolder {
 
 	protected Transition copyTransition(Transition t) {
 		String id = getTruncatedId(t.getId());
-		Transition ret = pg.getNet().createTransition(id + "__" + getCopyCounter(id));
-		pg.getFl().put(ret, new HashSet<>());
-		return ret;
+		Transition newT = pg.getNet().createTransition(id + "__" + getCopyCounter(id));
+		pg.getFl().put(newT, new HashSet<>());
+		for (Pair<String, Object> pair : t.getExtensions()) {
+			newT.putExtension(pair.getFirst(), pair.getSecond());
+		}
+		return newT;
 	}
 	
 	// only used in deterministic unfolder, don't care about flow chains until now

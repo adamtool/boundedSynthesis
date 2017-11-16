@@ -32,8 +32,8 @@ public class ExistsSafetyTest {
 		oneTest("toyexamples/multipleFlowChains1", 10, 0, true);
 		oneTest("toyexamples/multipleFlowChains2", 3, 0, false);
 		oneTest("toyexamples/multipleFlowChains2", 10, 0, false);
-		oneTest("toyexamples/multipleFlowChains3", 3, 0, false);		// TODO eig true probably bug that new spawn is not recognized when continuing flow chain
-		oneTest("toyexamples/multipleFlowChains3", 10, 0, false);		// TODO eig true 
+		oneTest("toyexamples/multipleFlowChains3", 3, 0, true);
+		oneTest("toyexamples/multipleFlowChains3", 10, 0, true);
 		oneTest("toyexamples/multipleFlowChains4", 3, 0, true);
 		oneTest("toyexamples/multipleFlowChains4", 10, 0, true);
 		oneTest("toyexamples/multipleFlowChains5", 3, 0, true);
