@@ -1,22 +1,17 @@
 package uniolunisaar.adam.bounded.qbfapproach;
 
 
-import static org.testng.Assert.assertTrue;
-
-import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import uniol.apt.adt.pn.PetriNet;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSafetySolver;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolver;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
 import uniolunisaar.adam.ds.winningconditions.Safety;
-import uniolunisaar.adam.logic.util.AdamTools;
 import uniolunisaar.adam.tools.Tools;
 
 @Test
-public class SafetyTest {
+public class SafetyTest extends EmptyTest {
 	
 	@BeforeClass
     public void setProperties() {
@@ -29,11 +24,13 @@ public class SafetyTest {
 	public void testForallSafety() throws Exception {
 		//oneTest("tests/watchdog5", 15, 3, true);		// TODO search for bounds
 		//oneTest("container/container", 10, 2, true);	// TODO search for bounds
+		oneTest("notConcurrencyPreservingTests/toMakeCP", 20, 2, false);
+		oneTest("notConcurrencyPreservingTests/madeCP", 20, 2, true);
 		/*oneTest("jhh/myexample1", 10, 0, false);
 		oneTest("jhh/myexample1", 10, 2, false);
 		oneTest("jhh/myexample2", 10, 0, true);
-		//oneTest("jhh/myexample2", 10, 2, true);
-		oneTest("jhh/myexample3", 10, 0, false);*/
+		oneTest("jhh/myexample2", 10, 2, true);
+		oneTest("jhh/myexample3", 10, 0, false);
 		oneTest("jhh/myexample3", 10, 2, true);
 		oneTest("jhh/myexample4", 10, 0, false);
 		oneTest("jhh/myexample4", 10, 2, false);
@@ -65,7 +62,7 @@ public class SafetyTest {
 		oneTest("ndet/nondet_s3_noStrat", 15, 2, false);
 		oneTest("ndet/nondet_unnecessarily_noStrat", 15, 3, false);
 		oneTest("ndet/nondet_withBad", 12, 2, false);
-		oneTest("testingNets/envSkipsSys", 15, 3, false);
+		oneTest("testingNets/envSkipsSys", 15, 3, false);*/
 		/*oneTest("nm/sendingprotocol", 6, 2, true);
 		oneTest("nm/sendingprotocol", 5, 2, false);
 		oneTest("nm/sendingprotocolTwo", 12, 2, true);
@@ -76,17 +73,6 @@ public class SafetyTest {
 		final String path = System.getProperty("examplesfolder") + "/safety/" + str + ".apt";
         PetriNet pn = Tools.getPetriNet(path);
 		QBFSafetySolver sol = new QBFSafetySolver(pn, new Safety(), new QBFSolverOptions(n, b));
-		sol.existsWinningStrategy();	// calculate first, then output games, and then check for correctness
-		// TODO put this to an appropriate place in code
-		AdamTools.savePG2PDF("originalGame", sol.game.getNet(), false);
-		AdamTools.savePG2PDF("unfolding", sol.unfolding.getNet(), false);
-		if (sol.existsWinningStrategy()) {
-			AdamTools.savePG2PDF("strategy", sol.getStrategy(), false);
-		}
-		Assert.assertEquals(sol.existsWinningStrategy(), result);
-		
-		if (sol.existsWinningStrategy()) {
-			assertTrue(QBFSolver.checkStrategy(sol.game.getNet(), sol.strategy.getNet()));
-		}
+		nextTest(sol, n, b, result);
 	}
 }

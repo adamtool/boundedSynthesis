@@ -1,23 +1,19 @@
 package uniolunisaar.adam.bounded.qbfapproach;
 
 
-import static org.testng.Assert.assertTrue;
-
-import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import uniol.apt.adt.pn.PetriNet;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFExistsSafetySolver;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolver;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QBFFlowChainSolver;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
 import uniolunisaar.adam.ds.winningconditions.Safety;
-import uniolunisaar.adam.logic.util.AdamTools;
 import uniolunisaar.adam.tools.Tools;
 
 @Test
-public class ExistsSafetyTest {
+public class ExistsSafetyTest extends EmptyTest {
 
 	@BeforeClass
     public void setProperties() {
@@ -102,26 +98,16 @@ public class ExistsSafetyTest {
 		oneTest("infflowchains/infflowchains1", 20, 0, true);
 		oneTest("infflowchains/infflowchains2", 20, 0, false);
 		oneTest("infflowchains/infflowchains3", 20, 0, true);
+		oneTest("toyexamples/infiniteBadWithEscape", 6, 0, true);
+		oneTest("toyexamples/infiniteBadWithEscape", 10, 0, true);
+		oneTest("toyexamples/infiniteBadWithEscape2", 7, 0, true);
+		oneTest("toyexamples/infiniteBadWithEscape2", 10, 0, true);
 	}
 	
 	private void oneTest(String str, int n, int b, boolean result) throws Exception {
         final String path = System.getProperty("examplesfolder") + "/existssafety/" + str + ".apt";
         PetriNet pn = Tools.getPetriNet(path);
-        nextTest(pn, n, b, result);
-	}
-	
-	private void nextTest (PetriNet pn, int n, int b, boolean result) throws Exception {
-		QBFExistsSafetySolver sol = new QBFExistsSafetySolver(new QBFPetriGame(pn), new Safety(), new QBFSolverOptions(n, b));
-        sol.existsWinningStrategy();	// calculate first, then output games, and then check for correctness
-		AdamTools.savePG2PDF("originalGame", sol.game.getNet(), false);
-		AdamTools.savePG2PDF("unfolding", sol.unfolding.getNet(), false);
-		if (sol.existsWinningStrategy()) {
-			AdamTools.savePG2PDF("strategy", sol.getStrategy(), false);
-		}
-		Assert.assertEquals(sol.existsWinningStrategy(), result);
-		
-		if (sol.existsWinningStrategy()) {
-			assertTrue(QBFSolver.checkStrategy(sol.game.getNet(), sol.strategy.getNet()));
-		}
+		QBFFlowChainSolver<?> sol = new QBFExistsSafetySolver(new QBFPetriGame(pn), new Safety(), new QBFSolverOptions(n, b));
+        nextTest(sol, n, b, result);
 	}
 }

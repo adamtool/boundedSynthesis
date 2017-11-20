@@ -1,23 +1,19 @@
 package uniolunisaar.adam.bounded.qbfapproach;
 
 
-import static org.testng.Assert.assertTrue;
-
-import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import uniol.apt.adt.pn.PetriNet;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QBFFlowChainSolver;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFForallBuchiSolver;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolver;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
 import uniolunisaar.adam.ds.winningconditions.Buchi;
-import uniolunisaar.adam.logic.util.AdamTools;
 import uniolunisaar.adam.tools.Tools;
 
 @Test
-public class ForallBuchiTest {
+public class ForallBuchiTest extends EmptyTest {
 
 	@BeforeClass
     public void setProperties() {
@@ -65,17 +61,7 @@ public class ForallBuchiTest {
 	private void oneTest(String str, int n, int b, boolean result) throws Exception {
 		final String path = System.getProperty("examplesfolder") + "/forallbuechi/" + str + ".apt";
 		PetriNet pn = Tools.getPetriNet(path);
-        QBFForallBuchiSolver sol = new QBFForallBuchiSolver(new QBFPetriGame(pn), new Buchi(), new QBFSolverOptions(n, b));
-        sol.existsWinningStrategy();	// calculate first, then output games, and then check for correctness
-		AdamTools.savePG2PDF("originalGame", sol.game.getNet(), false);
-		AdamTools.savePG2PDF("unfolding", sol.unfolding.getNet(), false);
-		if (sol.existsWinningStrategy()) {
-			AdamTools.savePG2PDF("strategy", sol.getStrategy(), false);
-		}
-		Assert.assertEquals(sol.existsWinningStrategy(), result);
-		
-		if (sol.existsWinningStrategy()) {
-			assertTrue(QBFSolver.checkStrategy(sol.game.getNet(), sol.strategy.getNet()));
-		}
+		QBFFlowChainSolver<?> sol = new QBFForallBuchiSolver(new QBFPetriGame(pn), new Buchi(), new QBFSolverOptions(n, b));
+        nextTest(sol, n, b, result);
 	}
 }
