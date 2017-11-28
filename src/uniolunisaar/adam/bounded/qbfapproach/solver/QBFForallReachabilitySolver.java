@@ -341,6 +341,12 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 		writer.write(seqImpliesWin[pg.getN()] + " = " + "or(-" + seq[pg.getN()] + "," + winandLoop + "," + u + ")" + QBFSolver.linebreak);
 		phi.add(seqImpliesWin[pg.getN()]);
 
+		// use valid()
+		//int number = createUniqueID();
+		//writer.write(number + " = " + writeAnd(phi));
+		//writer.write("1 = or(-" + valid() + "," + number + ")" + QBFSolver.linebreak);
+
+		// dont use valid()
 		writer.write("1 = " + writeAnd(phi));
 		writer.close();
 

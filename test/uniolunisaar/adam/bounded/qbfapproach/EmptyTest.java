@@ -16,10 +16,11 @@ public abstract class EmptyTest {
 		if (sol.existsWinningStrategy()) {
 			AdamTools.savePG2PDF("strategy", sol.getStrategy(), false);
 		}
+		
 		Assert.assertEquals(sol.existsWinningStrategy(), result);
 		
 		if (sol.existsWinningStrategy()) {
-			assertTrue(QBFSolver.checkStrategy(sol.game.getNet(), sol.strategy.getNet()));
+			assertTrue(QBFSolver.checkStrategy(sol.game.getNet(), sol.strategy.getNet()));	// check validity of strategy if existent
 		}
 	}
 }

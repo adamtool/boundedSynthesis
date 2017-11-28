@@ -62,13 +62,13 @@ public class ForallReachabilityTest extends EmptyTest {
 		oneTest("toyexamples/oneTokenMultiChains8", 10, 0, false);		// ONLY because I don't allow deadlocks after reach
 		oneTest("toyexamples/overallBad0", 6, 0, false);
 		oneTest("toyexamples/overallBad0", 10, 0, false);
-		oneTest("toyexamples/type2", 4, 0, true);
+		oneTest("toyexamples/type2", 6, 0, true);
 		oneTest("toyexamples/type2", 10, 0, true);
 		oneTest("toyexamples/winInit", 4, 0, true);
 		oneTest("toyexamples/winInit", 10, 0, true);
 		oneTest("jhh/myexampleWithSysNoStrat", 3, 0, false);
 		oneTest("jhh/myexampleWithSysNoStrat", 10, 0, false);
-		oneTest("jhh/myexampleWithSys", 3, 0, true);
+		oneTest("jhh/myexampleWithSys", 4, 0, true);
 		oneTest("jhh/myexampleWithSys", 10, 0, true);
 		oneTest("jhh/myexample2WithEnvNoStrat", 3, 0, false);
 		oneTest("jhh/myexample2WithEnvNoStrat", 10, 0, false);

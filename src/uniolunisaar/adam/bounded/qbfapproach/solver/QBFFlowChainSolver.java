@@ -51,8 +51,8 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 	protected void addForall() throws IOException {
 		Set<Integer> forall = new HashSet<>();
 		int id;
-		for (Place p : pg.getNet().getPlaces()) {
-			for (int i = 1; i <= pg.getN(); ++i) {
+		for (int i = 1; i <= pg.getN(); ++i) {
+			for (Place p : pg.getNet().getPlaces()) {
 				id = createVariable(p.getId() + "." + i + "." + true);
 				forall.add(id);
 				id = createVariable(p.getId() + "." + i + "." + false);
@@ -66,19 +66,22 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 	
 	private void makeThreeValuedLogic() throws IOException {
 		int top, bot, id;
-		for (Place p : pg.getNet().getPlaces()) {
-			for (int i = 1; i <= pg.getN(); ++i) {
+		for (int i = 1; i <= pg.getN(); ++i) {
+			for (Place p : pg.getNet().getPlaces()) {
 				top = getVarNr(p.getId() + "." + i + "." + true, true);
 				bot = getVarNr(p.getId() + "." + i + "." + false, true);
 				
 				id = createVariable(p.getId() + "." + i + "." + "objective");
 				writer.write(id + " = and("       + top + "," + "-" + bot + ")" + QBFSolver.linebreak);
+				//System.out.println(p.getId() + "." + i + "." + "objective" + " -> " + "and(" + top + "," + "-" + bot + ")");
 				
 				id = createVariable(p.getId() + "." + i + "." + "notobjective");
 				writer.write(id + " = and(" + "-" + top + ","       + bot + ")" + QBFSolver.linebreak);
+				//System.out.println(p.getId() + "." + i + "." + "notobjective" + " -> " + "and(" + -top + "," + bot + ")");
 				
 				id = createVariable(p.getId() + "." + i + "." + "empty");
 				writer.write(id + " = and(" + "-" + top + "," + "-" + bot + ")" + QBFSolver.linebreak);
+				//System.out.println(p.getId() + "." + i + "." + "empty" + " -> " + "and(" + -top + "," + -bot + ")");
 			}
 		}
 	}
@@ -228,7 +231,7 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 		Set<Integer> innerAnd = new HashSet<>();
 		
 		for (int i = 1; i < pg.getN() - 1; ++i) {
-			for (int j = i + 1; j <= pg.getN(); ++j) {
+			for (int j = i + 2; j <= pg.getN(); ++j) {
 				outerAnd.clear();
 				for (Place p : pn.getPlaces()) {
 					if (!p.getId().startsWith(additionalSystemName)) {
@@ -251,6 +254,7 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 				innerOr.clear();
 				for (Transition t : pn.getTransitions()) {
 					innerAnd.clear();
+					// search for transition enabled the whole time but never fired
 					for (int k = i; k < j; ++k){
 						for (Place p : t.getPreset()) {
 							int id = createUniqueID();

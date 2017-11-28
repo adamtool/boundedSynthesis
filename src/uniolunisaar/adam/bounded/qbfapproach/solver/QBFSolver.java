@@ -75,7 +75,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 	public static String additionalSystemUniqueDivider = "_0_"; // Controller
 	public static String solver = "quabs"; // Controller
 	public static boolean deterministicStrat = true; // Controller
-	public static boolean debug = false;
+	public static boolean debug = true;
 
 	// Caches
 	private Map<Transition, Set<Place>> restCache = new HashMap<>(); // proven to be slightly useful in terms of performance
@@ -659,7 +659,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 					for (Transition t : p.getPostset()) {
 						int number = createVariable(p.getId() + ".." + t.getId());
 						exists.add(number);
-						// System.out.println(number + " = " + p.getId() + ".." + t.getId());
+						//System.out.println(number + " = " + p.getId() + ".." + t.getId());
 						exists_transitions.put(number, p.getId() + ".." + t.getId());
 					}
 				} else {
@@ -670,7 +670,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 							truncatedIDs.add(truncatedID);
 							int number = createVariable(p.getId() + ".." + truncatedID);
 							exists.add(number);
-							// System.out.println(number + " = " + p.getId() + ".." + truncatedID);
+							//System.out.println(number + " = " + p.getId() + ".." + truncatedID);
 							exists_transitions.put(number, p.getId() + ".." + truncatedID);
 						}
 					}
@@ -884,7 +884,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 
 			if (os.startsWith("Mac")) {
 				// pb = new ProcessBuilder("./" + solver + "_mac", "--partial-assignment", file.getAbsolutePath());
-				pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + solver + "_mac", "--partial-assignment", file.getAbsolutePath());
+				pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + solver + "_mac", "--partial-assignment"/*, "--preprocessing", "0"*/, file.getAbsolutePath());
 			} else if (os.startsWith("Linux")) {
 				// pb = new ProcessBuilder("./" + solver + "_unix", "--partial-assignment", file.getAbsolutePath());
 				pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + solver + "_unix", "--partial-assignment", file.getAbsolutePath());

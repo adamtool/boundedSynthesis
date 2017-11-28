@@ -167,6 +167,7 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 			and.clear();
 			for (Place p : pn.getPlaces()) {
 				and.add(writeImplication(getVarNr(p.getId() + "." + i + "." + "empty", true), getVarNr(p.getId() + "." + (i + 1) + "." + "empty", true)));
+				
 				and.add(writeImplication(getVarNr(p.getId() + "." + i + "." + "objective", true), getVarNr(p.getId() + "." + (i + 1) + "." + "notobjective", true)));
 			}
 			reset[i] = writeAnd(and);
@@ -206,7 +207,7 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 	protected String[] getBuchiPlaces() throws IOException {
 		String[] buchi = new String[pg.getN() + 1];
 		Set<Integer> and = new HashSet<>();
-		for (int i = 1; i <= pg.getN(); ++i) {
+		for (int i = 1; i < pg.getN(); ++i) {
 			and.clear();
 			for (Place p : pn.getPlaces()) {
 				if (!p.getId().startsWith(QBFSolver.additionalSystemName)) {
@@ -255,9 +256,10 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 	protected String getBuchiLoop() throws IOException {
 		Set<Integer> or = new HashSet<>();
 		Set<Integer> innerOr = new HashSet<>();
+		Set<Integer> and = new HashSet<>();
 		for (int i = 1; i < pg.getN(); ++i) {
 			for (int j = i + 1; j <= pg.getN(); ++j) {
-				Set<Integer> and = new HashSet<>();
+				and.clear();
 				for (Place p : pn.getPlaces()) {
 					// additional system places cannot leave their places, they always loop
 					if (!p.getId().startsWith(additionalSystemName)) {
@@ -409,6 +411,12 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 		writer.write(seqImpliesWin[pg.getN()] + " = " + "or(-" + seq[pg.getN()] + "," + wnandLoop + "," + u + ")" + QBFSolver.linebreak);
 		phi.add(seqImpliesWin[pg.getN()]);
 
+		// use valid()
+		//int number = createUniqueID();
+		//writer.write(number + " = " + writeAnd(phi));
+		//writer.write("1 = or(-" + valid() + "," + number + ")" + QBFSolver.linebreak);
+
+		// dont use valid()
 		writer.write("1 = " + writeAnd(phi));
 		writer.close();
 		
