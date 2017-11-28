@@ -157,13 +157,16 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 		Set<Integer> or = new HashSet<>();
 		for (Transition t : getTransitionFinishingTokenFlow()) {
 			for (Place p : t.getPreset()) {
-				for (int i = 1; i < pg.getN() - 1; ++i) {
-					and.clear();
-					and.add(getVarNr(p.getId() + "." + i + "." + "notobjective", true));
-					and.add(getOneTransition(t, i));
-					int id = createUniqueID();
-					writer.write(id + " = " + writeAnd(and));
-					or.add(id);
+				if (getOutgoingTokenFlow(p, t).isEmpty()) {
+					System.out.println(t.getId() + " " + p.getId());
+					for (int i = 1; i < pg.getN() - 1; ++i) {
+						and.clear();
+						and.add(getVarNr(p.getId() + "." + i + "." + "notobjective", true));
+						and.add(getOneTransition(t, i));
+						int id = createUniqueID();
+						writer.write(id + " = " + writeAnd(and));
+						or.add(id);
+					}
 				}
 			}
 		}
@@ -174,7 +177,7 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 		Set<Integer> or = new HashSet<>();
 		for (Place post : t.getPostset()) {
 			Set<Place> tokenFlow = getIncomingTokenFlow(t, post);
-			if (!(tokenFlow.isEmpty())) {
+			if (!tokenFlow.isEmpty()) {
 				if (!getWinningCondition().getBadPlaces().contains(post)) {
 					or.add(getOneNotObjectiveFlowChain(post, t, i, tokenFlow));
 				} else {
@@ -260,7 +263,11 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 				}
 				if (!getTransitionCreatingTokenFlow().isEmpty()) {
 					for (int k = i; k < j; ++k) {
-						and.add(simultan[k]);
+						if (sFlCE != 0) {		// if there is the possibility of a safe flow chain ending then this can suffice for winning the game regardless of the behavior simultan
+							and.add(writeImplication(-sFlCE, simultan[k]));
+						} else {
+							and.add(simultan[k]);
+						}
 					}
 				}
 				int andNumber = createUniqueID();

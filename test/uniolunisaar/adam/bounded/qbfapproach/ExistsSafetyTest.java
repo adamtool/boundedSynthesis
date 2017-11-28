@@ -24,8 +24,6 @@ public class ExistsSafetyTest extends EmptyTest {
 	
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testExistsSafety() throws Exception {
-		//oneTest("infflowchains/infflowchains6", 20, 0, false);		// TODO should be false
-		//oneTest("infflowchains/infflowchains4", 20, 0, true);		// TODO should be true
 		oneTest("toyexamples/multipleFlowChains1", 3, 0, true);
 		oneTest("toyexamples/multipleFlowChains1", 10, 0, true);
 		oneTest("toyexamples/multipleFlowChains2", 3, 0, false);
@@ -40,7 +38,6 @@ public class ExistsSafetyTest extends EmptyTest {
 		oneTest("toyexamples/multipleFlowChains6", 10, 0, true);
 		oneTest("toyexamples/multipleFlowChains7", 3, 0, false);
 		oneTest("toyexamples/multipleFlowChains7", 10, 0, false);
-		oneTest("infflowchains/infflowchains_env_0", 10, 0, false);
 		oneTest("toyexamples/unfair1", 6, 0, true);
 		oneTest("toyexamples/unfair1", 10, 0, true);
 		oneTest("toyexamples/unfair2", 6, 0, true);
@@ -97,16 +94,24 @@ public class ExistsSafetyTest extends EmptyTest {
 		oneTest("escape/escape21", 3, 0, false);
 		oneTest("escape/escape21", 6, 0, true);
 		oneTest("escape/escape21", 10, 0, true);
-		//oneTest("infflowchains/infflowchains", 20, 0, false);
-		oneTest("infflowchains/infflowchains1", 20, 0, true);
-		oneTest("infflowchains/infflowchains2", 20, 0, false);
-		oneTest("infflowchains/infflowchains3", 20, 0, true);
-		// TODO was ist mit 4?
-		oneTest("infflowchains/infflowchains5", 20, 0, true);
 		oneTest("toyexamples/infiniteBadWithEscape", 6, 0, true);
 		oneTest("toyexamples/infiniteBadWithEscape", 10, 0, true);
 		oneTest("toyexamples/infiniteBadWithEscape2", 7, 0, true);
 		oneTest("toyexamples/infiniteBadWithEscape2", 10, 0, true);
+		oneTest("infflowchains/infflowchains_env_0", 10, 0, false);
+		oneTest("infflowchains/infflowchains", 20, 0, false);
+		oneTest("infflowchains/infflowchains1", 20, 0, true);
+		oneTest("infflowchains/infflowchains2", 20, 0, false);
+		oneTest("infflowchains/infflowchains2b", 20, 0, true);
+		oneTest("infflowchains/infflowchains3", 20, 0, true);
+		oneTest("infflowchains/infflowchains4", 10, 0, true);
+		oneTest("infflowchains/infflowchains5", 20, 0, true);
+		//oneTest("infflowchains/infflowchains6", 20, 0, false);		// TODO should be false; simultan is not at the same position...
+		oneTest("infflowchains/infflowchainsOneGoodOneBad_1", 20, 0, false);
+		oneTest("infflowchains/infflowchainsOneGoodOneBad", 20, 0, true);
+		//oneTest("newchains/newchainForget_1", 20, 0, false);			// TODO should be false
+		oneTest("newchains/newchainForget", 20, 0, true);
+		oneTest("newchains/newchainSplitAndMerge", 20, 0, true);
 	}
 	
 	private void oneTest(String str, int n, int b, boolean result) throws Exception {
