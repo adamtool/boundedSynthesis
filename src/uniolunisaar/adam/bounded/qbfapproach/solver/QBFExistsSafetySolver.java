@@ -181,7 +181,7 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 				if (!getWinningCondition().getBadPlaces().contains(post)) {
 					or.add(getOneNotObjectiveFlowChain(post, t, i, tokenFlow));
 				} else {
-					or.add(-getVarNr(post.getId() + "." + (i + 1) + "." + "objective", true));
+					or.add(-getVarNr(post.getId() + "." + (i + 1) + "." + "objective", true));		// TODO wie soll das gehen, wenn schlechter Platz erreicht wird, wird das bad?
 				}
 			}
 		}
@@ -253,9 +253,14 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 					innerOr.add(sFlCE);
 				}
 
-				for (int k = j; k <= j; ++k) { // UNFAIR (scheinbar) ZWINGT dass transition immer VOR schleife gefeuert wird schleifen;;; nur mit n testen?
-					innerOr.add(bad[k]);
+				Set<Integer> innerAnd = new HashSet<>();
+				for (int k = i; k <= j; ++k) { // UNFAIR (scheinbar) ZWINGT dass transition immer VOR schleife gefeuert wird schleifen;;; nur mit n testen?
+					innerAnd.add(bad[k]);
 				}
+				int idd = createUniqueID();
+				writer.write(idd + " = " + writeAnd(innerAnd));
+				innerOr.add(idd);
+				
 				if (innerOr.size() > 0) {
 					int id = createUniqueID();
 					writer.write(id + " = " + writeOr(innerOr));

@@ -106,10 +106,12 @@ public class ExistsSafetyTest extends EmptyTest {
 		oneTest("infflowchains/infflowchains3", 20, 0, true);
 		oneTest("infflowchains/infflowchains4", 10, 0, true);
 		oneTest("infflowchains/infflowchains5", 20, 0, true);
-		//oneTest("infflowchains/infflowchains6", 20, 0, false);		// TODO should be false; simultan is not at the same position...
+		oneTest("infflowchains/infiniteFiniteFlowChains", 20, 0, false);
+		oneTest("infflowchains/infiniteFiniteFlowChains2", 20, 0, true);
+		//oneTest("infflowchains/infflowchains6", 20, 0, false);			// TODO should be false; simultan is not at the same position...
 		oneTest("infflowchains/infflowchainsOneGoodOneBad_1", 20, 0, false);
 		oneTest("infflowchains/infflowchainsOneGoodOneBad", 20, 0, true);
-		//oneTest("newchains/newchainForget_1", 20, 0, false);			// TODO should be false
+		oneTest("newchains/newchainForget_1", 20, 0, false);
 		oneTest("newchains/newchainForget", 20, 0, true);
 		oneTest("newchains/newchainSplitAndMerge", 20, 0, true);
 	}
