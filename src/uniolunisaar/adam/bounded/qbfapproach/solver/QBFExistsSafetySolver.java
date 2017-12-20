@@ -158,7 +158,6 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 		for (Transition t : getTransitionFinishingTokenFlow()) {
 			for (Place p : t.getPreset()) {
 				if (getOutgoingTokenFlow(p, t).isEmpty()) {
-					System.out.println(t.getId() + " " + p.getId());
 					for (int i = 1; i < pg.getN() - 1; ++i) {
 						and.clear();
 						and.add(getVarNr(p.getId() + "." + i + "." + "notobjective", true));
@@ -181,7 +180,7 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 				if (!getWinningCondition().getBadPlaces().contains(post)) {
 					or.add(getOneNotObjectiveFlowChain(post, t, i, tokenFlow));
 				} else {
-					or.add(-getVarNr(post.getId() + "." + (i + 1) + "." + "objective", true));		// TODO wie soll das gehen, wenn schlechter Platz erreicht wird, wird das bad?
+					or.add(-getVarNr(post.getId() + "." + (i + 1) + "." + "objective", true)); // TODO wie soll das gehen, wenn schlechter Platz erreicht wird, wird das bad?
 				}
 			}
 		}
@@ -216,7 +215,7 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 					writer.write(pair.getSecond() + " = and()" + QBFSolver.linebreak);
 				}
 				simultan[i] = pair.getSecond();
-				
+
 			} else {
 				simultan[i] = createUniqueID();
 				writer.write(simultan[i] + " = " + result[i]);
@@ -254,13 +253,13 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 				}
 
 				Set<Integer> innerAnd = new HashSet<>();
-				for (int k = i; k <= j; ++k) { // UNFAIR (scheinbar) ZWINGT dass transition immer VOR schleife gefeuert wird schleifen;;; nur mit n testen?
-					innerAnd.add(bad[k]);
+				for (int k = i; k <= j; ++k) {
+					innerAnd.add(bad[k]); // TODO chains dieser Länge berechnen? und irgendwie aufzählen? NEW should solve this
 				}
 				int idd = createUniqueID();
 				writer.write(idd + " = " + writeAnd(innerAnd));
 				innerOr.add(idd);
-				
+
 				if (innerOr.size() > 0) {
 					int id = createUniqueID();
 					writer.write(id + " = " + writeOr(innerOr));
@@ -268,7 +267,7 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 				}
 				if (!getTransitionCreatingTokenFlow().isEmpty()) {
 					for (int k = i; k < j; ++k) {
-						if (sFlCE != 0) {		// if there is the possibility of a safe flow chain ending then this can suffice for winning the game regardless of the behavior simultan
+						if (sFlCE != 0) { // if there is the possibility of a safe flow chain ending then this can suffice for winning the game regardless of the behavior simultan
 							and.add(writeImplication(-sFlCE, simultan[k]));
 						} else {
 							and.add(simultan[k]);
@@ -367,31 +366,44 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 		// use valid()
 		int number = createUniqueID();
 		writer.write(number + " = " + writeAnd(phi));
-		writer.write("1 = or(-" + valid() + "," + number + ")" + QBFSolver.linebreak);
+		int valid = valid();
+		writer.write(createUniqueID() + " = or(-" + valid + "," + number + ")" + QBFSolver.linebreak);
 
 		// dont use valid()
-		// writer.write("1 = " + writeAnd(phi));
+		// writer.write(createUniqueID() + " = " + writeAnd(phi));
 
 		writer.close();
+
+		// Total number of gates is only calculated during encoding and added to the file afterwards
+
+		RandomAccessFile raf = new RandomAccessFile(file, "rw");
+		for (int i = 0; i < 10; ++i) { // read "#QCIR-G14 "
+			raf.readByte();
+		}
+		String counter_str = Integer.toString(variablesCounter - 1); // has NEXT usable counter in it
+		char[] counter_char = counter_str.toCharArray();
+		for (char c : counter_char) {
+			raf.writeByte(c);
+		}
+
+		raf.readLine(); // Read remaining first line
+		raf.readLine(); // Read exists line
+		raf.readLine(); // Read forall line
+		for (int i = 0; i < 7; ++i) { // read "output(" and thus overwrite "1)"
+			raf.readByte();
+		}
+		counter_str += ")";
+		counter_char = counter_str.toCharArray();
+		for (char c : counter_char) {
+			raf.writeByte(c);
+		}
+
+		raf.close();
 
 		if (QBFSolver.debug) {
 			FileUtils.copyFile(file, new File(pn.getName() + ".qcir"));
 		}
 
 		assert (QCIRconsistency.checkConsistency(file));
-
-		// Total number of gates is only calculated during encoding and added to the file afterwards
-		if (variablesCounter < 999999999) { // added 9 blanks as more than 999.999.999 variables wont be solvable
-			RandomAccessFile raf = new RandomAccessFile(file, "rw");
-			for (int i = 0; i < 10; ++i) { // read "#QCIR-G14 "
-				raf.readByte();
-			}
-			String counter_str = Integer.toString(variablesCounter - 1); // has NEXT usable counter in it
-			char[] counter_char = counter_str.toCharArray();
-			for (char c : counter_char) {
-				raf.writeByte(c);
-			}
-			raf.close();
-		}
 	}
 }

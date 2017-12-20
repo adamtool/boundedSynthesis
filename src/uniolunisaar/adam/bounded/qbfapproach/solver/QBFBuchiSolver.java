@@ -99,7 +99,7 @@ public class QBFBuchiSolver extends QBFSolver<Buchi> {
 
 		initializeVariablesForWriteQCIR();
 
-		writer.write("#QCIR-G14          " + QBFSolver.linebreak); // spaces left to add variable count in the end
+		writer.write("#QCIR-G14" + QBFSolver.replaceAfterWardsSpaces + QBFSolver.linebreak); // spaces left to add variable count in the end
 		addExists();
 		addForall();
 
@@ -136,27 +136,39 @@ public class QBFBuchiSolver extends QBFSolver<Buchi> {
 		writer.write(seqImpliesWin[pg.getN()] + " = " + "or(-" + seq[pg.getN()] + "," + wnandLoop + "," + u + ")" + QBFSolver.linebreak);
 		phi.add(seqImpliesWin[pg.getN()]);
 
-		writer.write("1 = " + writeAnd(phi));
+		writer.write(createUniqueID() + " = " + writeAnd(phi));
 		writer.close();
-		
+
+		// Total number of gates is only calculated during encoding and added to the file afterwards
+
+		RandomAccessFile raf = new RandomAccessFile(file, "rw");
+		for (int i = 0; i < 10; ++i) { // read "#QCIR-G14 "
+			raf.readByte();
+		}
+		String counter_str = Integer.toString(variablesCounter - 1); // has NEXT usable counter in it
+		char[] counter_char = counter_str.toCharArray();
+		for (char c : counter_char) {
+			raf.writeByte(c);
+		}
+
+		raf.readLine(); // Read remaining first line
+		raf.readLine(); // Read exists line
+		raf.readLine(); // Read forall line
+		for (int i = 0; i < 7; ++i) { // read "output(" and thus overwrite "1)"
+			raf.readByte();
+		}
+		counter_str += ")";
+		counter_char = counter_str.toCharArray();
+		for (char c : counter_char) {
+			raf.writeByte(c);
+		}
+
+		raf.close();
+
 		if (QBFSolver.debug) {
 			FileUtils.copyFile(file, new File(pn.getName() + ".qcir"));
 		}
-		
-		assert(QCIRconsistency.checkConsistency(file));
 
-		// Total number of gates is only calculated during encoding and added to the file afterwards
-		if (variablesCounter < 999999999) { // added 9 blanks as more than 999.999.999 variables wont be solvable
-			RandomAccessFile raf = new RandomAccessFile(file, "rw");
-			for (int i = 0; i < 10; ++i) { // read "#QCIR-G14 "
-				raf.readByte();
-			}
-			String counter_str = Integer.toString(variablesCounter - 1); // has NEXT usabel counter in it
-			char[] counter_char = counter_str.toCharArray();
-			for (char c : counter_char) {
-				raf.writeByte(c);
-			}
-			raf.close();
-		}
+		assert (QCIRconsistency.checkConsistency(file));
 	}
 }

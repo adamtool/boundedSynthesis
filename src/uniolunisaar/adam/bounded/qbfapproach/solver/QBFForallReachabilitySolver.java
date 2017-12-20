@@ -73,7 +73,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 					and.add(strat);
 				}
 			}
-			
+
 			for (Place p : t.getPostset()) {
 				// good place reached
 				if (AdamExtensions.isReach(p)) {
@@ -90,7 +90,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 					}
 				}
 			}
-			
+
 			Set<Place> places = new HashSet<>(pn.getPlaces());
 			places.removeAll(t.getPreset());
 			places.removeAll(t.getPostset());
@@ -109,7 +109,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 				and.add(writeImplication(p_i_empty, p_i1_empty));
 				and.add(writeImplication(p_i1_empty, p_i_empty));
 			}
-			
+
 			for (Place p : t.getPreset()) {
 				if (!t.getPostset().contains(p)) {
 					and.add(getVarNr(p.getId() + "." + (i + 1) + "." + "empty", true));
@@ -119,8 +119,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 			writer.write(id + " = " + writeAnd(and));
 			oneTransitionFormulas[transitionKeys.get(t)][i] = id;
 			return id;
-		}
-		else {
+		} else {
 			return oneTransitionFormulas[transitionKeys.get(t)][i];
 		}
 	}
@@ -132,7 +131,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 			writer.write(goodPlaces[i] + " = " + good[i]);
 		}
 	}
-	
+
 	protected String[] getGoodPlaces() throws IOException {
 		String[] goodPlaces = new String[pg.getN() + 1];
 		Set<Integer> and = new HashSet<>();
@@ -147,7 +146,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 		}
 		return goodPlaces;
 	}
-	
+
 	protected void writeNotUnreachEnded() throws IOException {
 		String[] unreach = getNotUnreachEnded();
 		for (int i = 1; i < pg.getN(); ++i) {
@@ -155,7 +154,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 			writer.write(notUnreachEnded[i] + " = " + unreach[i]);
 		}
 	}
-	
+
 	protected String[] getNotUnreachEnded() throws IOException {
 		String[] unreachEnded = new String[pg.getN() + 1];
 		Set<Integer> and = new HashSet<>();
@@ -180,7 +179,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 		}
 		return unreachEnded;
 	}
-	
+
 	@Override
 	protected String getLoopIJ() throws IOException {
 		Set<Integer> or = new HashSet<>();
@@ -205,7 +204,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 						and.add(writeImplication(p_j_empty, p_i_empty));
 					}
 				}
-				if (getTransitionCreatingTokenFlow().isEmpty()) {		// TODO redundancy weil goodSimultan statt goodPlaces wegen additional system places
+				if (getTransitionCreatingTokenFlow().isEmpty()) { // TODO redundancy weil goodSimultan statt goodPlaces wegen additional system places
 					innerOr.clear();
 					for (int k = i; k < j; ++k) {
 						innerOr.add(goodPlaces[k]);
@@ -222,15 +221,15 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 					writer.write(id + " = " + writeOr(innerOr));
 					and.add(id);
 				}
-				
+
 				int andNumber = createUniqueID();
 				writer.write(andNumber + " = " + writeAnd(and));
 				or.add(andNumber);
-			}	
+			}
 		}
 		return writeOr(or);
 	}
-	
+
 	protected void writeGoodSimultan() throws IOException {
 		String[] goodSimu = getGoodSimultan();
 		for (int i = 2; i <= pg.getN(); ++i) {
@@ -238,7 +237,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 			writer.write(goodSimultan[i] + " = " + goodSimu[i]);
 		}
 	}
-	
+
 	protected String[] getGoodSimultan() throws IOException {
 		String[] goodSimultan = new String[pg.getN() + 1];
 		Set<Integer> and = new HashSet<>();
@@ -264,14 +263,14 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 		}
 		return goodSimultan;
 	}
-				
+
 	protected void writeWinning() throws IOException {
 		Set<Integer> and = new HashSet<>();
 		for (int i = 1; i < pg.getN(); ++i) {
 			and.clear();
 			and.add(dlt[i]);
 			and.add(det[i]);
-			if (	!getTransitionFinishingTokenFlow().isEmpty()) {
+			if (!getTransitionFinishingTokenFlow().isEmpty()) {
 				and.add(notUnreachEnded[i]);
 			}
 			and.add(writeImplication(term[i], goodPlaces[i]));
@@ -289,7 +288,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 	@Override
 	protected void writeQCIR() throws IOException {
 		Map<Place, Set<Transition>> systemHasToDecideForAtLeastOne = unfoldPG();
-		
+
 		initializeVariablesForWriteQCIR();
 
 		writer.write("#QCIR-G14          " + QBFSolver.linebreak); // spaces left to add variable count in the end
@@ -342,32 +341,46 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 		phi.add(seqImpliesWin[pg.getN()]);
 
 		// use valid()
-		//int number = createUniqueID();
-		//writer.write(number + " = " + writeAnd(phi));
-		//writer.write("1 = or(-" + valid() + "," + number + ")" + QBFSolver.linebreak);
+		// int number = createUniqueID();
+		// writer.write(number + " = " + writeAnd(phi));
+		// int valid = valid();
+		// writer.write(createUniqueID() + " = or(-" + valid + "," + number + ")" + QBFSolver.linebreak);
 
 		// dont use valid()
-		writer.write("1 = " + writeAnd(phi));
+		writer.write(createUniqueID() + " = " + writeAnd(phi));
+
 		writer.close();
+
+		// Total number of gates is only calculated during encoding and added to the file afterwards
+
+		RandomAccessFile raf = new RandomAccessFile(file, "rw");
+		for (int i = 0; i < 10; ++i) { // read "#QCIR-G14 "
+			raf.readByte();
+		}
+		String counter_str = Integer.toString(variablesCounter - 1); // has NEXT usable counter in it
+		char[] counter_char = counter_str.toCharArray();
+		for (char c : counter_char) {
+			raf.writeByte(c);
+		}
+
+		raf.readLine(); // Read remaining first line
+		raf.readLine(); // Read exists line
+		raf.readLine(); // Read forall line
+		for (int i = 0; i < 7; ++i) { // read "output(" and thus overwrite "1)"
+			raf.readByte();
+		}
+		counter_str += ")";
+		counter_char = counter_str.toCharArray();
+		for (char c : counter_char) {
+			raf.writeByte(c);
+		}
+
+		raf.close();
 
 		if (QBFSolver.debug) {
 			FileUtils.copyFile(file, new File(pn.getName() + ".qcir"));
 		}
-		
-		assert(QCIRconsistency.checkConsistency(file));
-		
-		// Total number of gates is only calculated during encoding and added to the file afterwards
-		if (variablesCounter < 999999999) { // added 9 blanks as more than 999.999.999 variables wont be solvable
-			RandomAccessFile raf = new RandomAccessFile(file, "rw");
-			for (int i = 0; i < 10; ++i) { // read "#QCIR-G14 "
-				raf.readByte();
-			}
-			String counter_str = Integer.toString(variablesCounter - 1); // has NEXT usabel counter in it
-			char[] counter_char = counter_str.toCharArray();
-			for (char c : counter_char) {
-				raf.writeByte(c);
-			}
-			raf.close();
-		}
+
+		assert (QCIRconsistency.checkConsistency(file));
 	}
 }

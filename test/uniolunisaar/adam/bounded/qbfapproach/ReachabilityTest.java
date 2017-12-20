@@ -27,7 +27,7 @@ public class ReachabilityTest {
     }
 	
 	@Test(timeOut = 1800 * 1000) // 30 min
-	public void testForallReachability() throws Exception {
+	public void testExistsReachability() throws Exception {
 		// testing unfair loop, i.e., environment decision against reaching the good place
 		test ("unfair", "unfair", false, 10, 0);
 		test ("unfair", "unfair2", false, 10, 0);

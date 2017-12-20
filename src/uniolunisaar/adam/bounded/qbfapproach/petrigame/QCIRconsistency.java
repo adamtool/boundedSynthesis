@@ -7,9 +7,8 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-
 public class QCIRconsistency {
-	
+
 	public static boolean checkConsistency(File qcir) throws IOException {
 		Set<Integer> used = new HashSet<>();
 		Set<Integer> defined = new HashSet<>();
@@ -18,23 +17,23 @@ public class QCIRconsistency {
 		BufferedReader br = new BufferedReader(new FileReader(qcir));
 		String everything = "";
 		try {
-		    StringBuilder sb = new StringBuilder();
-		    String line = br.readLine();
+			StringBuilder sb = new StringBuilder();
+			String line = br.readLine();
 
-		    while (line != null) {
-		        sb.append(line);
-		        sb.append(System.lineSeparator());
-		        line = br.readLine();
-		    }
-		    everything = sb.toString();
+			while (line != null) {
+				sb.append(line);
+				sb.append(System.lineSeparator());
+				line = br.readLine();
+			}
+			everything = sb.toString();
 		} finally {
-		    br.close();
+			br.close();
 		}
-		
+
 		for (String line : everything.split(System.lineSeparator())) {
-			if (!line.startsWith("#") && !line.startsWith("exists()") && !line.startsWith("forall()") && !line.startsWith("output(")) {	// ignore 1 from output(1) 
+			if (!line.startsWith("#") && !line.startsWith("exists()") && !line.startsWith("forall()") && !line.startsWith("output()")) {
 				String[] split;
-				if (!line.startsWith("exists(") && !line.startsWith("forall(")) {
+				if (!line.startsWith("exists(") && !line.startsWith("forall(") && !line.startsWith("output(")) {
 					split = line.split(" = ");
 					if (Math.abs(Integer.parseInt(split[0])) != 1) {
 						defined.add(Math.abs(Integer.parseInt(split[0])));
@@ -48,30 +47,35 @@ public class QCIRconsistency {
 					if (split2[0].startsWith("and(") || split2[0].startsWith("or(")) {
 						split2[0] = split2[0].replace("and(", "");
 						split2[0] = split2[0].replace("or(", "");
-						
-						split2[0] = split2[0].replace("" + ")", "");			// Note that the "" +  is necessary to not work on chars
+
+						split2[0] = split2[0].replace("" + ")", ""); // Note that the "" + is necessary to not work on chars
 						used.add(Math.abs(Integer.parseInt(split2[0])));
-					
-						
+
 						for (int i = 1; i < split2.length - 1; ++i) {
 							used.add(Math.abs(Integer.parseInt(split2[i])));
 						}
-						
-						split2[split2.length - 1] = split2[split2.length - 1].replace("" + ")", "");			// Note that the "" +  is necessary to not work on chars
+
+						split2[split2.length - 1] = split2[split2.length - 1].replace("" + ")", ""); // Note that the "" + is necessary to not work on chars
 						used.add(Math.abs(Integer.parseInt(split2[split2.length - 1])));
 					} else if (split2[0].startsWith("exists(") || split2[0].startsWith("forall(")) {
 						split2[0] = split2[0].replace("exists(", "");
 						split2[0] = split2[0].replace("forall(", "");
-						
-						split2[0] = split2[0].replace("" + ")", "");			// Note that the "" +  is necessary to not work on chars
+
+						split2[0] = split2[0].replace("" + ")", ""); // Note that the "" + is necessary to not work on chars
 						defined.add(Math.abs(Integer.parseInt(split2[0])));
-					
+
 						for (int i = 1; i < split2.length - 1; ++i) {
 							defined.add(Math.abs(Integer.parseInt(split2[i])));
 						}
-						
-						split2[split2.length - 1] = split2[split2.length - 1].replace("" + ")", "");			// Note that the "" +  is necessary to not work on chars
+
+						split2[split2.length - 1] = split2[split2.length - 1].replace("" + ")", ""); // Note that the "" + is necessary to not work on chars
 						defined.add(Math.abs(Integer.parseInt(split2[split2.length - 1])));
+					} else if (split2[0].startsWith("output(")) {
+						split2[0] = split2[0].replace("output(", "");
+
+						split2[0] = split2[0].replace("" + ")", ""); // Note that the "" + is necessary to not work on chars
+						split2[0] = split2[0].replace(" ", ""); // Specific to output extension for nice order of variables (i.e., no "exposed" 1)
+						used.add(Math.abs(Integer.parseInt(split2[0])));
 					} else {
 						System.out.println("SOME PARSING WENT WRONG " + line);
 						return false;
@@ -85,7 +89,7 @@ public class QCIRconsistency {
 				}
 			}
 		}
-		
+
 		if (!defined.equals(used)) {
 			for (int def : defined) {
 				if (!used.contains(def)) {

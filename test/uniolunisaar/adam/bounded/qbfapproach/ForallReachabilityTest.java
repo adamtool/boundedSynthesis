@@ -18,7 +18,7 @@ public class ForallReachabilityTest extends EmptyTest {
 	@BeforeClass
     public void setProperties() {
         if (System.getProperty("examplesfolder") == null) {
-        	System.setProperty("examplesfolder", "examples");
+        		System.setProperty("examplesfolder", "examples");
         }
     }
 	

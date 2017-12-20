@@ -1,6 +1,5 @@
 package uniolunisaar.adam.bounded.qbfapproach;
 
-
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -16,12 +15,12 @@ import uniolunisaar.adam.tools.Tools;
 public class ExistsSafetyTest extends EmptyTest {
 
 	@BeforeClass
-    public void setProperties() {
-        if (System.getProperty("examplesfolder") == null) {
-        	System.setProperty("examplesfolder", "examples");
-        }
-    }
-	
+	public void setProperties() {
+		if (System.getProperty("examplesfolder") == null) {
+			System.setProperty("examplesfolder", "examples");
+		}
+	}
+
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testExistsSafety() throws Exception {
 		oneTest("toyexamples/multipleFlowChains1", 3, 0, true);
@@ -54,7 +53,9 @@ public class ExistsSafetyTest extends EmptyTest {
 		oneTest("toyexamples/unfair7", 10, 0, false);
 		oneTest("toyexamples/unfair8", 8, 0, true);
 		oneTest("toyexamples/unfair8", 10, 0, true);
+		oneTest("toyexamples/unfair9", 10, 0, false);
 		oneTest("toyexamples/unfair9", 12, 0, true);
+		oneTest("toyexamples/unfair10", 10, 0, false);
 		oneTest("toyexamples/unfair10", 12, 0, true);
 		oneTest("toyexamples/oneTransitionEnv1", 3, 0, false);
 		oneTest("toyexamples/oneTransitionEnv1", 10, 0, false);
@@ -108,18 +109,18 @@ public class ExistsSafetyTest extends EmptyTest {
 		oneTest("infflowchains/infflowchains5", 20, 0, true);
 		oneTest("infflowchains/infiniteFiniteFlowChains", 20, 0, false);
 		oneTest("infflowchains/infiniteFiniteFlowChains2", 20, 0, true);
-		//oneTest("infflowchains/infflowchains6", 20, 0, false);			// TODO should be false; simultan is not at the same position...
+		//oneTest("infflowchains/infflowchains6", 20, 0, false); // TODO should be false; NEW should solve this
 		oneTest("infflowchains/infflowchainsOneGoodOneBad_1", 20, 0, false);
 		oneTest("infflowchains/infflowchainsOneGoodOneBad", 20, 0, true);
 		oneTest("newchains/newchainForget_1", 20, 0, false);
 		oneTest("newchains/newchainForget", 20, 0, true);
 		oneTest("newchains/newchainSplitAndMerge", 20, 0, true);
 	}
-	
+
 	private void oneTest(String str, int n, int b, boolean result) throws Exception {
-        final String path = System.getProperty("examplesfolder") + "/existssafety/" + str + ".apt";
-        PetriNet pn = Tools.getPetriNet(path);
+		final String path = System.getProperty("examplesfolder") + "/existssafety/" + str + ".apt";
+		PetriNet pn = Tools.getPetriNet(path);
 		QBFFlowChainSolver<?> sol = new QBFExistsSafetySolver(new QBFPetriGame(pn), new Safety(), new QBFSolverOptions(n, b));
-        nextTest(sol, n, b, result);
+		nextTest(sol, n, b, result);
 	}
 }

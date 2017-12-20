@@ -74,6 +74,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 	public static String additionalSystemName = "AS___"; // Controller
 	public static String additionalSystemUniqueDivider = "_0_"; // Controller
 	public static String solver = "quabs"; // Controller
+	public static String replaceAfterWardsSpaces = "          "; // Controller
 	public static boolean deterministicStrat = true; // Controller
 	public static boolean debug = true;
 
@@ -91,7 +92,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 
 	// Solving
 	protected BufferedWriter writer;
-	protected int variablesCounter = 2; // 1 reserved for phi
+	protected int variablesCounter = 1;
 	protected Map<String, Integer> numbersForVariables = new HashMap<>(); // map for storing keys and the corresponding value
 
 	protected int[][] oneTransitionFormulas;
@@ -103,7 +104,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 	protected int[] terminatingSubFormulas;
 	protected File file = null;
 
-	public static boolean checkStrategy (PetriNet origNet, PetriNet strat) {
+	public static boolean checkStrategy(PetriNet origNet, PetriNet strat) {
 		// some preparation
 		for (Place p : origNet.getPlaces()) {
 			AdamExtensions.setOrigID(p, Unfolder.getTruncatedId(p.getId()));
@@ -116,7 +117,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 		}
 		return AdamTools.checkStrategy(origNet, strat);
 	}
-	
+
 	public QBFSolver(QBFPetriGame game, W winCon, QBFSolverOptions so) throws BoundedParameterMissingException {
 		super(game, winCon, so);
 
@@ -659,7 +660,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 					for (Transition t : p.getPostset()) {
 						int number = createVariable(p.getId() + ".." + t.getId());
 						exists.add(number);
-						//System.out.println(number + " = " + p.getId() + ".." + t.getId());
+						// System.out.println(number + " = " + p.getId() + ".." + t.getId());
 						exists_transitions.put(number, p.getId() + ".." + t.getId());
 					}
 				} else {
@@ -670,7 +671,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 							truncatedIDs.add(truncatedID);
 							int number = createVariable(p.getId() + ".." + truncatedID);
 							exists.add(number);
-							//System.out.println(number + " = " + p.getId() + ".." + truncatedID);
+							// System.out.println(number + " = " + p.getId() + ".." + truncatedID);
 							exists_transitions.put(number, p.getId() + ".." + truncatedID);
 						}
 					}
@@ -690,7 +691,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 			}
 		}
 		writer.write(writeForall(forall));
-		writer.write("output(1)" + QBFSolver.linebreak); // 1 = \phi
+		writer.write("output(1)" + QBFSolver.replaceAfterWardsSpaces + QBFSolver.linebreak);
 	}
 
 	// Additional information from nondeterministic unfolding is utilized:
@@ -884,7 +885,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 
 			if (os.startsWith("Mac")) {
 				// pb = new ProcessBuilder("./" + solver + "_mac", "--partial-assignment", file.getAbsolutePath());
-				pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + solver + "_mac", "--partial-assignment"/*, "--preprocessing", "0"*/, file.getAbsolutePath());
+				pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + solver + "_mac", "--partial-assignment"/* , "--preprocessing", "0" */, file.getAbsolutePath());
 			} else if (os.startsWith("Linux")) {
 				// pb = new ProcessBuilder("./" + solver + "_unix", "--partial-assignment", file.getAbsolutePath());
 				pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + solver + "_unix", "--partial-assignment", file.getAbsolutePath());
