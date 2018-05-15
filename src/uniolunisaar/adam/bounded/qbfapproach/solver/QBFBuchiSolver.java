@@ -88,6 +88,9 @@ public class QBFBuchiSolver extends QBFSolver<Buchi> {
 			if (det[i] != 0) {
 				and.add(det[i]);
 			}
+			if (i == pg.getN()) {
+				and.add(bl);	// slightly optimized in the sense that winning and loop are put together for n
+			}
 			win[i] = createUniqueID();
 			writer.write(win[i] + " = " + writeAnd(and));
 		}
@@ -120,21 +123,15 @@ public class QBFBuchiSolver extends QBFSolver<Buchi> {
 			phi.add(index_for_non_det_unfolding_info);
 		}
 
-		for (int i = 1; i <= pg.getN() - 1; ++i) { // slightly optimized in the sense that winning and loop are put together for i = n
+		for (int i = 1; i <= pg.getN(); ++i) {
 			seqImpliesWin[i] = createUniqueID();
-			writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + QBFSolver.linebreak);
+			if (i < pg.getN()) {
+				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + QBFSolver.linebreak);
+			} else {
+				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + "," + u + ")" + QBFSolver.linebreak);		// adding unfair
+			}
 			phi.add(seqImpliesWin[i]);
 		}
-
-		int wnandLoop = createUniqueID();
-		Set<Integer> wnandLoopSet = new HashSet<>();
-		wnandLoopSet.add(bl);
-		wnandLoopSet.add(win[pg.getN()]);
-		writer.write(wnandLoop + " = " + writeAnd(wnandLoopSet));
-
-		seqImpliesWin[pg.getN()] = createUniqueID();
-		writer.write(seqImpliesWin[pg.getN()] + " = " + "or(-" + seq[pg.getN()] + "," + wnandLoop + "," + u + ")" + QBFSolver.linebreak);
-		phi.add(seqImpliesWin[pg.getN()]);
 
 		writer.write(createUniqueID() + " = " + writeAnd(phi));
 		writer.close();

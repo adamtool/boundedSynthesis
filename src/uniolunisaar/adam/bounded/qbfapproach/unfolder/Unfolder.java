@@ -27,8 +27,8 @@ import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 public abstract class Unfolder {
 
 	// PetriGame which will be unfolded
-	protected QBFPetriGame pg;
-	protected PetriNet pn;
+	public QBFPetriGame pg;
+	public PetriNet pn;
 
 	// how much unfolding of places was done and how much can still be done
 	protected Map<String, Integer> current = new HashMap<>();
@@ -263,6 +263,7 @@ public abstract class Unfolder {
 	protected Transition copyTransition(Transition t) {
 		String id = getTruncatedId(t.getId());
 		Transition newT = pg.getNet().createTransition(id + "__" + getCopyCounter(id));
+		newT.setLabel(id);
 		pg.getFl().put(newT, new HashSet<>());
 		for (Pair<String, Object> pair : t.getExtensions()) {
 			newT.putExtension(pair.getFirst(), pair.getSecond());

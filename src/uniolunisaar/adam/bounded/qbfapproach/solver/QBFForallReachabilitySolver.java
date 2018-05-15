@@ -281,6 +281,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 		and.clear();
 		and.add(dlt[pg.getN()]);
 		and.add(det[pg.getN()]);
+		and.add(l);
 		win[pg.getN()] = createUniqueID();
 		writer.write(win[pg.getN()] + " = " + writeAnd(and));
 	}
@@ -309,8 +310,8 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 		writeTerminating();
 		writeDeadlocksterm();
 		writeDeterministic();
-		writeWinning();
 		writeLoop();
+		writeWinning();
 		writeUnfair();
 
 		Set<Integer> phi = new HashSet<>();
@@ -323,22 +324,15 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 			phi.add(index_for_non_det_unfolding_info);
 		}
 
-		for (int i = 1; i <= pg.getN() - 1; ++i) { // slightly optimized in the sense that winning and loop are put together for n
+		for (int i = 1; i <= pg.getN(); ++i) {
 			seqImpliesWin[i] = createUniqueID();
-			writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + QBFSolver.linebreak);
+			if (i < pg.getN()) {
+				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + QBFSolver.linebreak);
+			} else {
+				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + "," + u + ")" + QBFSolver.linebreak);		// adding unfair
+			}
 			phi.add(seqImpliesWin[i]);
 		}
-
-		int winandLoop = createUniqueID();
-		Set<Integer> winandLoopSet = new HashSet<>();
-		winandLoopSet.add(l);
-		winandLoopSet.add(win[pg.getN()]);
-		writer.write(winandLoop + " = " + writeAnd(winandLoopSet));
-
-		// TODO loop direkt bei getWinning hinzufügen
-		seqImpliesWin[pg.getN()] = createUniqueID();
-		writer.write(seqImpliesWin[pg.getN()] + " = " + "or(-" + seq[pg.getN()] + "," + winandLoop + "," + u + ")" + QBFSolver.linebreak);
-		phi.add(seqImpliesWin[pg.getN()]);
 
 		// use valid()
 		// int number = createUniqueID();

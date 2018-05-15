@@ -71,6 +71,9 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 			if (det[i] != 0) {
 				and.add(det[i]);
 			}
+			if (i == pg.getN()) { // slightly optimized in the sense that winning and loop are put together for n
+				and.add(l);
+			}
 			win[i] = createUniqueID();
 			writer.write(win[i] + " = " + writeAnd(and));
 		}
@@ -80,6 +83,13 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 	protected void writeQCIR() throws IOException {
 		Map<Place, Set<Transition>> systemHasToDecideForAtLeastOne = unfoldPG();
 
+		Set<Place> oldBad = new HashSet<>(getWinningCondition().getBadPlaces());
+        getWinningCondition().buffer(pg);
+        for (Place old : oldBad) {
+        	getWinningCondition().getBadPlaces().remove(old);
+        }
+        
+		
 		initializeVariablesForWriteQCIR();
 
 		writer.write("#QCIR-G14" + QBFSolver.replaceAfterWardsSpaces + QBFSolver.linebreak); // spaces left to add variable count in the end
@@ -107,21 +117,11 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 			phi.add(index_for_non_det_unfolding_info);
 		}
 
-		for (int i = 1; i <= pg.getN() - 1; ++i) { // slightly optimized in the sense that winning and loop are put together for n
+		for (int i = 1; i <= pg.getN(); ++i) {
 			seqImpliesWin[i] = createUniqueID();
 			writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + QBFSolver.linebreak);
 			phi.add(seqImpliesWin[i]);
 		}
-
-		int wnandLoop = createUniqueID();
-		Set<Integer> wnandLoopSet = new HashSet<>();
-		wnandLoopSet.add(l);
-		wnandLoopSet.add(win[pg.getN()]);
-		writer.write(wnandLoop + " = " + writeAnd(wnandLoopSet));
-
-		seqImpliesWin[pg.getN()] = createUniqueID();
-		writer.write(seqImpliesWin[pg.getN()] + " = " + "or(-" + seq[pg.getN()] + "," + wnandLoop + ")" + QBFSolver.linebreak);
-		phi.add(seqImpliesWin[pg.getN()]);
 
 		writer.write(createUniqueID() + " = " + writeAnd(phi));
 		writer.close();

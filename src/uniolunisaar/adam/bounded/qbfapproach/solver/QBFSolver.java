@@ -27,10 +27,12 @@ import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingE
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.ForNonDeterministicUnfolder;
+import uniolunisaar.adam.bounded.qbfapproach.unfolder.McMillianUnfolder;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.Unfolder;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
+import uniolunisaar.adam.ds.exceptions.NotSupportedGameException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.solver.Solver;
 import uniolunisaar.adam.ds.util.AdamExtensions;
@@ -76,7 +78,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 	public static String solver = "quabs"; // Controller
 	public static String replaceAfterWardsSpaces = "          "; // Controller
 	public static boolean deterministicStrat = true; // Controller
-	public static boolean debug = true;
+	public static boolean debug = false;
 
 	// Caches
 	private Map<Transition, Set<Place>> restCache = new HashMap<>(); // proven to be slightly useful in terms of performance
@@ -846,13 +848,24 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 		game = new PetriGame(pg);
 
 		ForNonDeterministicUnfolder unfolder = new ForNonDeterministicUnfolder(pg, null); // null forces unfolder to use b as bound for every place
+		/*McMillianUnfolder unfolder = null;
 		try {
-			unfolder.prepareUnfolding();
-		} catch (UnboundedException | FileNotFoundException | NetNotSafeException | NoSuitableDistributionFoundException e1) {
-			System.out.println("Error: The bounded unfolding of the game failed.");
-		}
-		// Adding the newly unfolded places to the set of bad places
-		getWinningCondition().buffer(pg);
+			unfolder = new McMillianUnfolder(pg, null);
+		} catch (NotSupportedGameException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}*/
+        try {
+            unfolder.prepareUnfolding();
+        } catch (UnboundedException | FileNotFoundException | NetNotSafeException | NoSuitableDistributionFoundException e1) {
+            System.out.println("Error: The bounded unfolding of the game failed.");
+            e1.printStackTrace();
+        }
+        
+        //this.pg = unfolder.pg;
+        //this.pn = unfolder.pn;
+        
+        getWinningCondition().buffer(pg);
 
 		unfolding = new PetriGame(pg);
 
@@ -887,8 +900,8 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 				// pb = new ProcessBuilder("./" + solver + "_mac", "--partial-assignment", file.getAbsolutePath());
 				pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + solver + "_mac", "--partial-assignment"/* , "--preprocessing", "0" */, file.getAbsolutePath());
 			} else if (os.startsWith("Linux")) {
-				// pb = new ProcessBuilder("./" + solver + "_unix", "--partial-assignment", file.getAbsolutePath());
-				pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + solver + "_unix", "--partial-assignment", file.getAbsolutePath());
+				pb = new ProcessBuilder("./" + solver + "_unix", "--partial-assignment", file.getAbsolutePath());
+				//pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + solver + "_unix", "--partial-assignment", file.getAbsolutePath());
 			} else {
 				System.out.println("You are using " + os + ".");
 				System.out.println("Your operation system is not supported.");

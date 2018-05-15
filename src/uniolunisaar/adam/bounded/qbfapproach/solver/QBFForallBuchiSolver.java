@@ -128,7 +128,7 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 			return oneTransitionFormulas[transitionKeys.get(t)][i];
 		}
 	}
-	
+
 	protected void writeResetChoice() throws IOException {
 		String[] resetArr = getResetChoice();
 		for (int i = 1; i < pg.getN(); ++i) {
@@ -136,7 +136,7 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 			writer.write(resetChoice[i] + " = " + resetArr[i]);
 		}
 	}
-	
+
 	protected String[] getResetChoice() throws IOException {
 		String[] reset = new String[pg.getN() + 1];
 		Set<Integer> and = new HashSet<>();
@@ -167,7 +167,7 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 			and.clear();
 			for (Place p : pn.getPlaces()) {
 				and.add(writeImplication(getVarNr(p.getId() + "." + i + "." + "empty", true), getVarNr(p.getId() + "." + (i + 1) + "." + "empty", true)));
-				
+
 				and.add(writeImplication(getVarNr(p.getId() + "." + i + "." + "objective", true), getVarNr(p.getId() + "." + (i + 1) + "." + "notobjective", true)));
 			}
 			reset[i] = writeAnd(and);
@@ -187,10 +187,10 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 			}
 			int normalFlow = createUniqueID();
 			writer.write(normalFlow + " = " + writeOr(or));
-			
+
 			and.add(writeImplication(-resetChoice[i], normalFlow));
 			and.add(writeImplication(resetChoice[i], reset[i]));
-			
+
 			flow[i] = writeAnd(and);
 		}
 		return flow;
@@ -353,6 +353,7 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 		and.clear();
 		and.add(-dl[pg.getN()]);
 		and.add(det[pg.getN()]);
+		and.add(bl);
 		win[pg.getN()] = createUniqueID();
 		writer.write(win[pg.getN()] + " = " + writeAnd(and));
 	}
@@ -395,63 +396,57 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 			phi.add(index_for_non_det_unfolding_info);
 		}
 
-		for (int i = 1; i <= pg.getN() - 1; ++i) { // slightly optimized in the sense that winning and loop are put together for i = n
+		for (int i = 1; i <= pg.getN(); ++i) {
 			seqImpliesWin[i] = createUniqueID();
-			writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + QBFSolver.linebreak);
+			if (i < pg.getN()) {
+				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + QBFSolver.linebreak);
+			} else {
+				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + "," + u + ")" + QBFSolver.linebreak); // adding unfair
+			}
 			phi.add(seqImpliesWin[i]);
 		}
 
-		int wnandLoop = createUniqueID();
-		Set<Integer> wnandLoopSet = new HashSet<>();
-		wnandLoopSet.add(bl);
-		wnandLoopSet.add(win[pg.getN()]);
-		writer.write(wnandLoop + " = " + writeAnd(wnandLoopSet));
-
-		seqImpliesWin[pg.getN()] = createUniqueID();
-		writer.write(seqImpliesWin[pg.getN()] + " = " + "or(-" + seq[pg.getN()] + "," + wnandLoop + "," + u + ")" + QBFSolver.linebreak);
-		phi.add(seqImpliesWin[pg.getN()]);
-
 		// use valid()
-				// int number = createUniqueID();
-				// writer.write(number + " = " + writeAnd(phi));
-				// int valid = valid();
-				// writer.write(createUniqueID() + " = or(-" + valid + "," + number + ")" + QBFSolver.linebreak);
+		// int number = createUniqueID();
+		// writer.write(number + " = " + writeAnd(phi));
+		// int valid = valid();
+		// writer.write(createUniqueID() + " = or(-" + valid + "," + number + ")" + QBFSolver.linebreak);
 
-				// dont use valid()
-				writer.write(createUniqueID() + " = " + writeAnd(phi));
+		// dont use valid()
+		writer.write(createUniqueID() + " = " + writeAnd(phi));
 
-				writer.close();
+		writer.close();
 
-				// Total number of gates is only calculated during encoding and added to the file afterwards
+		// Total number of gates is only calculated during encoding and added to the file afterwards
 
-				RandomAccessFile raf = new RandomAccessFile(file, "rw");
-				for (int i = 0; i < 10; ++i) { // read "#QCIR-G14 "
-					raf.readByte();
-				}
-				String counter_str = Integer.toString(variablesCounter - 1); // has NEXT usable counter in it
-				char[] counter_char = counter_str.toCharArray();
-				for (char c : counter_char) {
-					raf.writeByte(c);
-				}
+		RandomAccessFile raf = new RandomAccessFile(file, "rw");
+		for (int i = 0; i < 10; ++i) { // read "#QCIR-G14 "
+			raf.readByte();
+		}
+		String counter_str = Integer.toString(variablesCounter - 1); // has NEXT usable counter in it
+		char[] counter_char = counter_str.toCharArray();
+		for (char c : counter_char) {
+			raf.writeByte(c);
+		}
 
-				raf.readLine(); // Read remaining first line
-				raf.readLine(); // Read exists line
-				raf.readLine(); // Read forall line
-				for (int i = 0; i < 7; ++i) { // read "output(" and thus overwrite "1)"
-					raf.readByte();
-				}
-				counter_str += ")";
-				counter_char = counter_str.toCharArray();
-				for (char c : counter_char) {
-					raf.writeByte(c);
-				}
+		raf.readLine(); // Read remaining first line
+		raf.readLine(); // Read exists line
+		raf.readLine(); // Read forall line
+		for (int i = 0; i < 7; ++i) { // read "output(" and thus overwrite "1)"
+			raf.readByte();
+		}
+		counter_str += ")";
+		counter_char = counter_str.toCharArray();
+		for (char c : counter_char) {
+			raf.writeByte(c);
+		}
 
-				raf.close();
+		raf.close();
 
-				if (QBFSolver.debug) {
-					FileUtils.copyFile(file, new File(pn.getName() + ".qcir"));
-				}
+		if (QBFSolver.debug) {
+			FileUtils.copyFile(file, new File(pn.getName() + ".qcir"));
+		}
 
-				assert (QCIRconsistency.checkConsistency(file));
+		assert (QCIRconsistency.checkConsistency(file));
 	}
 }
