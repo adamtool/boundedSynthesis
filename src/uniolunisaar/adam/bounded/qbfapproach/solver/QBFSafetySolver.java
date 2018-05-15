@@ -83,11 +83,12 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 	protected void writeQCIR() throws IOException {
 		Map<Place, Set<Transition>> systemHasToDecideForAtLeastOne = unfoldPG();
 
-		Set<Place> oldBad = new HashSet<>(getWinningCondition().getBadPlaces());
+		// TODO only for McMillian
+		/*Set<Place> oldBad = new HashSet<>(getWinningCondition().getBadPlaces());
         getWinningCondition().buffer(pg);
         for (Place old : oldBad) {
         	getWinningCondition().getBadPlaces().remove(old);
-        }
+        }*/
         
 		
 		initializeVariablesForWriteQCIR();
