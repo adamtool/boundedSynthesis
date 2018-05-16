@@ -79,6 +79,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 	public static String replaceAfterWardsSpaces = "          "; // Controller
 	public static boolean deterministicStrat = true; // Controller
 	public static boolean debug = false;
+	public static boolean edacc = false;
 
 	// Caches
 	private Map<Transition, Set<Place>> restCache = new HashMap<>(); // proven to be slightly useful in terms of performance
@@ -900,8 +901,13 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 				// pb = new ProcessBuilder("./" + solver + "_mac", "--partial-assignment", file.getAbsolutePath());
 				pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + solver + "_mac", "--partial-assignment"/* , "--preprocessing", "0" */, file.getAbsolutePath());
 			} else if (os.startsWith("Linux")) {
-				pb = new ProcessBuilder("./" + solver + "_unix", "--partial-assignment", file.getAbsolutePath());
-				//pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + solver + "_unix", "--partial-assignment", file.getAbsolutePath());
+				if (QBFSolver.edacc) {
+                	// for use with EDACC
+					pb = new ProcessBuilder("./" + solver + "_unix", "--partial-assignment", file.getAbsolutePath());
+				} else {
+                	// for use with WEBSITE
+					pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + solver + "_unix", "--partial-assignment", file.getAbsolutePath());
+				}
 			} else {
 				System.out.println("You are using " + os + ".");
 				System.out.println("Your operation system is not supported.");
