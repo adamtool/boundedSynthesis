@@ -14,18 +14,16 @@ import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolver;
 
 /**
- * This class removes transitions and following places according to the decisions of the (winning) strategy. 
- * Unreachable places in the original Petri game can be removed. 
+ * This class removes transitions and following places according to the decisions of the WINNING strategy and the simulation length. 
+ * Unreachable places from the original Petri game can be removed. 
  * Additional places of the NonDeterministicUnfolder can be removed. 
- * TODO performance evaluation BEFORE solving pending, implementation seems as good as possible
- * performance boost would indicate bad tests
  * 
  * @author Jesko Hecking-Harbusch
  */
-
 public class PGSimplifier {
 
 	public static void simplifyPG(QBFPetriGame pg, boolean removeAdditionalPlaces, boolean removeUnreachablePlaces) {
+		// Initialization
 		PetriNet pn = pg.getNet();
 		int n = pg.getN();
 
@@ -35,34 +33,40 @@ public class PGSimplifier {
 		Set<Marking> closed = new HashSet<>();
 		Set<Transition> firedTransitions = new HashSet<>();
 		Set<Place> reachedPlaces = new HashSet<>();
+		
 		if (removeUnreachablePlaces) {
-			addMarking(pg, reachedPlaces, pn.getInitialMarking());
+			addReachedPlaces(pg, pn.getInitialMarking(), reachedPlaces);
 		}
 
-		Pair<Marking, Integer> p;
-		while ((p = queue.poll()) != null) {
-			Marking m = p.getFirst();
-			int i = p.getSecond();
-			closed.add(m);
-			for (Transition t : pn.getTransitions()) {
-				if (t.isFireable(m)) {
-					Marking next = t.fire(m);
-					firedTransitions.add(t);
-					if (!closed.contains(next)) {
+		// Search loop
+		Pair<Marking, Integer> pair;
+		while ((pair = queue.poll()) != null) {
+			Marking marking = pair.getFirst();
+			int i = pair.getSecond();
+			closed.add(marking);
+			for (Transition transition : pn.getTransitions()) {
+				if (transition.isFireable(marking)) {
+					Marking nextMarking = transition.fire(marking);
+					firedTransitions.add(transition);
+					if (!closed.contains(nextMarking)) {
 						if (removeUnreachablePlaces) {
-							addMarking(pg, reachedPlaces, next);
+							addReachedPlaces(pg, nextMarking, reachedPlaces);
 						}
-						if (i + 1 < n) {
-							queue.add(new Pair<>(next, i + 1));
+						if (i + 1 <= n) {
+							queue.add(new Pair<>(nextMarking, i + 1));
 						}
 					}
 				}
 			}
 		}
+		
+		// Removal
 		Set<Transition> transitions = new HashSet<>(pn.getTransitions());
-		for (Transition t : transitions)
-			if (!firedTransitions.contains(t))
-				pg.removeTransitionRecursively(t);
+		for (Transition transition : transitions) {
+			if (!firedTransitions.contains(transition)) {
+				pg.removeTransitionRecursively(transition);
+			}
+		}
 		if (removeAdditionalPlaces) {
 			removeAS(pg);
 		}
@@ -75,26 +79,37 @@ public class PGSimplifier {
 		}
 	}
 
+	/**
+	 * Additional system places from unfolder are removed including their flow.
+	 * @param pg
+	 */
 	private static void removeAS(QBFPetriGame pg) {
 		PetriNet pn = pg.getNet();
 		Set<Place> places = new HashSet<>(pn.getPlaces());
-		for (Place p : places) {
-			if (p.getId().startsWith(QBFSolver.additionalSystemName)) {
-				Set<Transition> transitions = new HashSet<>(p.getPreset());
-				for (Transition pre : transitions) {
-					pn.removeFlow(p, pre);
-					pn.removeFlow(pre, p);
+		for (Place place : places) {
+			if (place.getId().startsWith(QBFSolver.additionalSystemName)) {
+				Set<Transition> transitions = new HashSet<>(place.getPreset());
+				for (Transition transition : transitions) {
+					pn.removeFlow(place, transition);
+					pn.removeFlow(transition, place);
 				}
-				pn.removePlace(p);
+				pn.removePlace(place);
 			}
 		}
 	}
-
-	private static void addMarking(QBFPetriGame pg, Set<Place> places, Marking marking) {
+	
+	/**
+	 * For a given Petri game (because class is static) and option that unreachable places are removed, 
+	 * places with token from marking are added to the set of reached places.
+	 * @param pg
+	 * @param marking
+	 * @param reachedPlaces
+	 */
+	private static void addReachedPlaces(QBFPetriGame pg, Marking marking, Set<Place> reachedPlaces) {
 		for (Place place : pg.getNet().getPlaces()) {
 			Token token = marking.getToken(place);
 			if (token.getValue() > 0) {
-				places.add(place);
+				reachedPlaces.add(place);
 			}
 		}
 	}

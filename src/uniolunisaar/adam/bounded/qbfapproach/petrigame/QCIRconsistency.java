@@ -7,30 +7,37 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * This checks the written qcir file for correct structure and no redundancy.
+ * Unused but defined variables are identified.
+ * Undefined but used variables are already identified by the QBF solver.
+ * 
+ * @author Jesko Hecking-Harbusch
+ */
 public class QCIRconsistency {
 
-	public static boolean checkConsistency(File qcir) throws IOException {
+	public static boolean checkConsistency(File qcirFile) throws IOException {
 		Set<Integer> used = new HashSet<>();
 		Set<Integer> defined = new HashSet<>();
 		int numberAndTrue = 0;
 		int numberOrFalse = 0;
-		BufferedReader br = new BufferedReader(new FileReader(qcir));
-		String everything = "";
+		BufferedReader reader = new BufferedReader(new FileReader(qcirFile));
+		String qcirString = "";
 		try {
-			StringBuilder sb = new StringBuilder();
-			String line = br.readLine();
+			StringBuilder builder = new StringBuilder();
+			String line = reader.readLine();
 
 			while (line != null) {
-				sb.append(line);
-				sb.append(System.lineSeparator());
-				line = br.readLine();
+				builder.append(line);
+				builder.append(System.lineSeparator());
+				line = reader.readLine();
 			}
-			everything = sb.toString();
+			qcirString = builder.toString();
 		} finally {
-			br.close();
+			reader.close();
 		}
 
-		for (String line : everything.split(System.lineSeparator())) {
+		for (String line : qcirString.split(System.lineSeparator())) {
 			if (!line.startsWith("#") && !line.startsWith("exists()") && !line.startsWith("forall()") && !line.startsWith("output()")) {
 				String[] split;
 				if (!line.startsWith("exists(") && !line.startsWith("forall(") && !line.startsWith("output(")) {
@@ -77,7 +84,7 @@ public class QCIRconsistency {
 						split2[0] = split2[0].replace(" ", ""); // Specific to output extension for nice order of variables (i.e., no "exposed" 1)
 						used.add(Math.abs(Integer.parseInt(split2[0])));
 					} else {
-						System.out.println("SOME PARSING WENT WRONG " + line);
+						System.out.println("Parsing error at line: " + line);
 						return false;
 					}
 				} else {

@@ -24,7 +24,7 @@ public class QBFPetriGame extends PetriGame {
 
 	private int n; // length of the simulation, i.e., for n there are n - 1 transitions simulated
 	private int b; // number of unfoldings per place in the bounded unfolding
-	private Map<Transition, Set<Pair<Place, Place>>> fl = new HashMap<>();
+	private Map<Transition, Set<Pair<Place, Place>>> fl = new HashMap<>(); // tokenflow
 
 	public QBFPetriGame(PetriNet pn) throws NotSupportedGameException {
 		super(pn);
@@ -33,16 +33,15 @@ public class QBFPetriGame extends PetriGame {
 		}
 	}
 	
-	// Before removing a place or transition, always check that it has not already been removed.
+	// Before removing a transition, always check that it has not already been removed, because a single missing place suffices.
 	public void removeTransitionRecursively(Transition t) {
 		if (getNet().getTransitions().contains(t)) {
-			Set<Place> next = new HashSet<>(t.getPostset());
-			Marking in = getNet().getInitialMarking();
+			Set<Place> followingPlaces = new HashSet<>(t.getPostset());
 			getNet().removeTransition(t);
-			for (Place p : next) {
-				// remove place p if all transition leading to it are removed or all incoming transitions are also outgoing from p
-				// don't remove place if part of initial marking
-				if (getNet().getPlaces().contains(p) && in.getToken(p).getValue() == 0 && (p.getPreset().isEmpty() || p.getPostset().containsAll(p.getPreset()))) {
+			Marking inintialMarking = getNet().getInitialMarking();
+			for (Place p : followingPlaces) {
+				// remove place p if all transition leading to it are removed or all incoming transitions are also outgoing from p but don't remove place if part of initial marking
+				if (getNet().getPlaces().contains(p) && inintialMarking.getToken(p).getValue() == 0 && (p.getPreset().isEmpty() || p.getPostset().containsAll(p.getPreset()))) {
 					removePlaceRecursively(p);
 				}
 			}
@@ -50,9 +49,9 @@ public class QBFPetriGame extends PetriGame {
 	}
 
 	public void removePlaceRecursively(Place p) {
-		Set<Transition> next = new HashSet<>(p.getPostset());
+		Set<Transition> followingTransitions = new HashSet<>(p.getPostset());
 		getNet().removePlace(p);
-		for (Transition t : next) {
+		for (Transition t : followingTransitions) {
 			// remove transition t as soon as one place in pre(t) is removed
 			removeTransitionRecursively(t);
 		}
