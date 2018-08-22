@@ -21,9 +21,10 @@ import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
-import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
+import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFSolvingObject;
 import uniolunisaar.adam.ds.solver.Solver;
-import uniolunisaar.adam.ds.util.AdamExtensions;
+import uniolunisaar.adam.ds.petrigame.AdamExtensions;
+import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 
 /**
@@ -36,7 +37,7 @@ import uniolunisaar.adam.ds.winningconditions.WinningCondition;
  * @param <W>
  */
 
-public abstract class QBFConSolver<W extends WinningCondition> extends Solver<QBFPetriGame, W, QBFConSolverOptions> {
+public abstract class QBFConSolver<W extends WinningCondition> extends Solver<QBFSolvingObject<W>, QBFConSolverOptions> {
 	// TODO maybe optional arguments
 	public static String linebreak = "\n\n"; // Controller
 	public static String additionalSystemName = "AS___"; // Controller
@@ -47,7 +48,7 @@ public abstract class QBFConSolver<W extends WinningCondition> extends Solver<QB
 	private Map<Transition, Set<Place>> restCache = new HashMap<>();	
 	private Map<Transition, Set<Place>> preMinusPostCache = new HashMap<>();
 
-	protected QBFPetriGame pg;
+	protected QBFSolvingObject pg;
 	protected PetriNet pn;
 	protected BufferedWriter writer;
 	protected int variablesCounter = 2; // 1 reserved for phi
@@ -66,19 +67,19 @@ public abstract class QBFConSolver<W extends WinningCondition> extends Solver<QB
 	protected List<Set<Place>> prelist;
 	protected List<Set<Transition>> setlist;
 
-	protected QBFConSolver(QBFPetriGame game, W winCon, QBFConSolverOptions so) throws BoundedParameterMissingException {
-		super(game, winCon, so);
-		pg = game;
+	protected QBFConSolver(PetriGame game, W winCon, QBFConSolverOptions so) throws BoundedParameterMissingException {
+		super(new QBFSolvingObject<>(game, winCon), so);
+		pg = getSolvingObject();
 		 int n = so.getN();
 	        int b = so.getB();
 	        if (n == -1) {
-	            if (AdamExtensions.hasBoundedParameterN(game.getNet())) {
-	                n = AdamExtensions.getBoundedParameterN(game.getNet());
+	            if (AdamExtensions.hasBoundedParameterN(game)) {
+	                n = AdamExtensions.getBoundedParameterN(game);
 	            }
 	        }
 	        if (b == -1) {
-	            if (AdamExtensions.hasBoundedParameterB(game.getNet())) {
-	                b = AdamExtensions.getBoundedParameterB(game.getNet());
+	            if (AdamExtensions.hasBoundedParameterB(game)) {
+	                b = AdamExtensions.getBoundedParameterB(game);
 	            }
 	        }
 	        if (n == -1 || b == -1) {
@@ -86,7 +87,7 @@ public abstract class QBFConSolver<W extends WinningCondition> extends Solver<QB
 	        }
 	        pg.setN(n);
 	        pg.setB(b);
-		pn = pg.getNet();
+		pn = pg.getGame();
 		transitions = new Transition[pn.getTransitions().size()];
 		int counter = 0;
 		numTransitions = pn.getTransitions().size();
@@ -120,7 +121,7 @@ public abstract class QBFConSolver<W extends WinningCondition> extends Solver<QB
 	}
 
 	public String getInitial() {
-		Marking initialMarking = pg.getNet().getInitialMarking();
+		Marking initialMarking = pg.getGame().getInitialMarking();
 		Set<Integer> initial = new HashSet<>();
 		for (Place p : pn.getPlaces()) {
 			if (initialMarking.getToken(p).getValue() == 1) {
@@ -446,7 +447,7 @@ public abstract class QBFConSolver<W extends WinningCondition> extends Solver<QB
 		// Slight performance gain by using these caches
 		Set<Place> rest = restCache.get(t);
 		if (rest == null) {
-			rest = new HashSet<>(pg.getNet().getPlaces());
+			rest = new HashSet<>(pg.getGame().getPlaces());
 			rest.removeAll(t.getPreset());
 			rest.removeAll(t.getPostset());
 			restCache.put(t, rest);
@@ -477,7 +478,7 @@ public abstract class QBFConSolver<W extends WinningCondition> extends Solver<QB
 		String[] terminating = new String[pg.getN() + 1];
 		Set<Integer> and = new HashSet<>();
 		for (int i = 1; i <= pg.getN(); ++i) {
-			if (pg.getNet().getTransitions().size() >= 1) {
+			if (pg.getGame().getTransitions().size() >= 1) {
 				and.clear();
 				for (int j = 0; j < pn.getTransitions().size(); ++j) {
 					and.add(terminatingSubFormulas[pn.getTransitions().size() * (i - 1) + j]);
@@ -523,7 +524,7 @@ public abstract class QBFConSolver<W extends WinningCondition> extends Solver<QB
 			// Additional system places are not forced to behave
 			// deterministically, this is the faster variant (especially the
 			// larger the PG becomes)
-			if (!pg.getEnvPlaces().contains(sys) && !sys.getId().startsWith(QBFConSolver.additionalSystemName)) {
+			if (!pg.getGame().getEnvPlaces().contains(sys) && !sys.getId().startsWith(QBFConSolver.additionalSystemName)) {
 				if (sys.getPostset().size() > 1) {
 					sys_transitions = sys.getPostset().toArray(new Transition[0]);
 					for (int j = 0; j < sys_transitions.length; ++j) {
@@ -599,7 +600,7 @@ public abstract class QBFConSolver<W extends WinningCondition> extends Solver<QB
 	}
 
 	public int addSysStrategy(Place p, Transition t) {
-		if (!pg.getEnvPlaces().contains(p)) {
+		if (!pg.getGame().getEnvPlaces().contains(p)) {
 			if (p.getId().startsWith(QBFConSolver.additionalSystemName)) {
 				return getVarNr(p.getId() + ".." + t.getId(), true);
 			} else {

@@ -9,13 +9,11 @@ import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 
-import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
-import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QCIRconsistency;
-import uniolunisaar.adam.ds.exceptions.NotSupportedGameException;
+import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Safety;
 
 /**
@@ -30,13 +28,13 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 	// variable to store keys of calculated components for later use (special to this winning condition)
 	private int[] bad;
 
-	public QBFSafetySolver(PetriNet net, Safety win, QBFSolverOptions so) throws NotSupportedGameException, BoundedParameterMissingException {
-		super(new QBFPetriGame(net), win, so);
+	public QBFSafetySolver(PetriGame game, Safety win, QBFSolverOptions so) throws BoundedParameterMissingException {
+		super(game, win, so);
 		bad = new int[pg.getN() + 1];
 	}
 
 	protected void writeNoBadPlaces() throws IOException {
-		if (!getWinningCondition().getBadPlaces().isEmpty()) {
+		if (!getSolvingObject().getWinCon().getBadPlaces().isEmpty()) {
 			String[] nobadplaces = getNoBadPlaces();
 			for (int i = 1; i <= pg.getN(); ++i) {
 				bad[i] = createUniqueID();
@@ -50,7 +48,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 		Set<Integer> and = new HashSet<>();
 		for (int i = 1; i <= pg.getN(); ++i) {
 			and.clear();
-			for (Place p : getWinningCondition().getBadPlaces()) {
+			for (Place p : getSolvingObject().getWinCon().getBadPlaces()) {
 				and.add(-getVarNr(p.getId() + "." + i, true));
 			}
 			nobadplaces[i] = writeAnd(and);

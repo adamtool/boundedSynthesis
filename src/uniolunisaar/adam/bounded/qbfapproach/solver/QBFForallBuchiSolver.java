@@ -14,10 +14,10 @@ import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.io.parser.ParseException;
 import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
-import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QCIRconsistency;
 import uniolunisaar.adam.ds.exceptions.CouldNotFindSuitableWinningConditionException;
-import uniolunisaar.adam.ds.util.AdamExtensions;
+import uniolunisaar.adam.ds.petrigame.AdamExtensions;
+import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Buchi;
 
 public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
@@ -29,7 +29,7 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 	private int[] resetChoice;
 	private int bl; // buchi loop
 
-	public QBFForallBuchiSolver(QBFPetriGame game, Buchi winCon, QBFSolverOptions options) throws BoundedParameterMissingException, CouldNotFindSuitableWinningConditionException, ParseException {
+	public QBFForallBuchiSolver(PetriGame game, Buchi winCon, QBFSolverOptions options) throws BoundedParameterMissingException, CouldNotFindSuitableWinningConditionException, ParseException {
 		super(game, winCon, options);
 		setTokenFlow();
 		noFlowChainEnded = new int[pg.getN() + 1];
@@ -41,7 +41,7 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 
 	@Override
 	protected String getInitial() {
-		Marking initialMarking = pg.getNet().getInitialMarking();
+		Marking initialMarking = pg.getGame().getInitialMarking();
 		Set<Integer> initial = new HashSet<>();
 		for (Place p : pn.getPlaces()) {
 			if (initialMarking.getToken(p).getValue() == 1) {

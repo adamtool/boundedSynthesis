@@ -9,14 +9,13 @@ import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 
-import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
-import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QCIRconsistency;
 import uniolunisaar.adam.ds.exceptions.NotSupportedGameException;
+import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Buchi;
 
 /**
@@ -30,8 +29,8 @@ public class QBFBuchiSolver extends QBFSolver<Buchi> {
 	// variable to store keys of calculated components for later use (special to this winning condition)
 	private int bl; // buchi loop
 
-	public QBFBuchiSolver(PetriNet net, Buchi win, QBFSolverOptions so) throws NotSupportedGameException, BoundedParameterMissingException {
-		super(new QBFPetriGame(net), win, so);
+	public QBFBuchiSolver(PetriGame game, Buchi win, QBFSolverOptions so) throws NotSupportedGameException, BoundedParameterMissingException {
+		super(game, win, so);
 	}
 
 	protected void writeLoop() throws IOException {
@@ -53,7 +52,7 @@ public class QBFBuchiSolver extends QBFSolver<Buchi> {
 				}
 				Set<Integer> innerOr = new HashSet<>();
 				for (int k = i; k <= j; ++k) {
-					for (Place buchi : getWinningCondition().getBuchiPlaces()) {
+					for (Place buchi : getSolvingObject().getWinCon().getBuchiPlaces()) {
 						innerOr.add(getVarNr(buchi.getId() + "." + k, true));
 					}
 				}

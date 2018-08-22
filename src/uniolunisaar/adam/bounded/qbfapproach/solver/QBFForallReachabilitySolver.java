@@ -14,10 +14,10 @@ import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.io.parser.ParseException;
 import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
-import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QCIRconsistency;
 import uniolunisaar.adam.ds.exceptions.CouldNotFindSuitableWinningConditionException;
-import uniolunisaar.adam.ds.util.AdamExtensions;
+import uniolunisaar.adam.ds.petrigame.AdamExtensions;
+import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Reachability;
 
 public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability> {
@@ -26,7 +26,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 	private int[] notUnreachEnded;
 	private int[] goodSimultan;
 
-	public QBFForallReachabilitySolver(QBFPetriGame game, Reachability winCon, QBFSolverOptions options) throws BoundedParameterMissingException, CouldNotFindSuitableWinningConditionException, ParseException {
+	public QBFForallReachabilitySolver(PetriGame game, Reachability winCon, QBFSolverOptions options) throws BoundedParameterMissingException, CouldNotFindSuitableWinningConditionException, ParseException {
 		super(game, winCon, options);
 		goodPlaces = new int[pg.getN() + 1];
 		notUnreachEnded = new int[pg.getN() + 1];
@@ -36,7 +36,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 
 	@Override
 	protected String getInitial() {
-		Marking initialMarking = pg.getNet().getInitialMarking();
+		Marking initialMarking = pg.getGame().getInitialMarking();
 		Set<Integer> initial = new HashSet<>();
 		for (Place p : pn.getPlaces()) {
 			if (initialMarking.getToken(p).getValue() == 1) {

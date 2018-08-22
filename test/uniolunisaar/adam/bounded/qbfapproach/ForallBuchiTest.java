@@ -4,13 +4,10 @@ package uniolunisaar.adam.bounded.qbfapproach;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import uniol.apt.adt.pn.PetriNet;
-import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QBFFlowChainSolver;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QBFForallBuchiSolver;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolver;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverFactory;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
-import uniolunisaar.adam.ds.winningconditions.Buchi;
-import uniolunisaar.adam.tools.Tools;
+import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 
 @Test
 public class ForallBuchiTest extends EmptyTest {
@@ -66,8 +63,9 @@ public class ForallBuchiTest extends EmptyTest {
 	
 	private void oneTest(String str, int n, int b, boolean result) throws Exception {
 		final String path = System.getProperty("examplesfolder") + "/forallbuechi/" + str + ".apt";
-		PetriNet pn = Tools.getPetriNet(path);
-		QBFFlowChainSolver<?> sol = new QBFForallBuchiSolver(new QBFPetriGame(pn), new Buchi(), new QBFSolverOptions(n, b));
+//		PetriNet pn = Tools.getPetriNet(path);
+//		QBFFlowChainSolver<?> sol = new QBFForallBuchiSolver(new QBFSolvingObject(pn), new Buchi(), new QBFSolverOptions(n, b));
+		QBFSolver<? extends WinningCondition> sol = QBFSolverFactory.getInstance().getSolver(path, new QBFSolverOptions(n, b)); //todo MG: warum nicht so?
         nextTest(sol, n, b, result);
 	}
 }

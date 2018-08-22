@@ -1,11 +1,12 @@
 package uniolunisaar.adam.bounded.qbfconcurrent.solver;
 
-import uniol.apt.adt.pn.PetriNet;
-import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 import uniolunisaar.adam.ds.exceptions.NotSupportedGameException;
 import uniolunisaar.adam.ds.exceptions.ParameterMissingException;
+import uniolunisaar.adam.ds.petrigame.PetriGame;
+import uniolunisaar.adam.ds.winningconditions.Buchi;
+import uniolunisaar.adam.ds.winningconditions.Reachability;
 import uniolunisaar.adam.logic.solver.SolverFactory;
 import uniolunisaar.adam.ds.winningconditions.Safety;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
@@ -32,35 +33,35 @@ public class QBFConSolverFactory extends SolverFactory<QBFConSolverOptions, QBFC
 
 	}
 
-	@Override
-	protected QBFConSolver<? extends WinningCondition> getESafetySolver(PetriNet net, boolean skipTests, QBFConSolverOptions options) throws NotSupportedGameException, NetNotSafeException, NoSuitableDistributionFoundException, BoundedParameterMissingException {
-		throw new RuntimeException("Method not yet implemented");
-	}
+    @Override
+    protected QBFConSolver<? extends WinningCondition> getESafetySolver(PetriGame game, Safety winCon, boolean skipTests, QBFConSolverOptions options) throws NotSupportedGameException, NetNotSafeException, NoSuitableDistributionFoundException, ParameterMissingException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 
-	@Override
-	protected QBFConSolver<? extends WinningCondition> getASafetySolver(PetriNet net, boolean skipTests, QBFConSolverOptions options) throws NotSupportedGameException, NetNotSafeException, NoSuitableDistributionFoundException, BoundedParameterMissingException {
-		return new QBFConSafetySolver(net, new Safety(true), options);
-	}
+    @Override
+    protected QBFConSolver<? extends WinningCondition> getASafetySolver(PetriGame game, Safety winCon, boolean skipTests, QBFConSolverOptions options) throws NotSupportedGameException, NetNotSafeException, NoSuitableDistributionFoundException, ParameterMissingException {
+        return new QBFConSafetySolver(game, winCon, options);
+    }
 
-	@Override
-	protected QBFConSolver<? extends WinningCondition> getEReachabilitySolver(PetriNet net, boolean skipTests, QBFConSolverOptions options) throws NotSupportedGameException, NetNotSafeException, NoSuitableDistributionFoundException, BoundedParameterMissingException {
-		throw new RuntimeException("Method not yet implemented");
-	}
+    @Override
+    protected QBFConSolver<? extends WinningCondition> getEReachabilitySolver(PetriGame game, Reachability winCon, boolean skipTests, QBFConSolverOptions options) throws NotSupportedGameException, NetNotSafeException, NoSuitableDistributionFoundException, ParameterMissingException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 
-	@Override
-	protected QBFConSolver<? extends WinningCondition> getAReachabilitySolver(PetriNet net, boolean skipTests, QBFConSolverOptions options) throws NotSupportedGameException, NetNotSafeException, NoSuitableDistributionFoundException, BoundedParameterMissingException {
-		throw new RuntimeException("Method not yet implemented");
-	}
+    @Override
+    protected QBFConSolver<? extends WinningCondition> getAReachabilitySolver(PetriGame game, Reachability winCon, boolean skipTests, QBFConSolverOptions options) throws NotSupportedGameException, NetNotSafeException, NoSuitableDistributionFoundException, ParameterMissingException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 
-	@Override
-	protected QBFConSolver<? extends WinningCondition> getEBuchiSolver(PetriNet net, boolean skipTests, QBFConSolverOptions options) throws NotSupportedGameException, NetNotSafeException, NoSuitableDistributionFoundException, BoundedParameterMissingException {
-		throw new RuntimeException("Method not yet implemented");
-	}
+    @Override
+    protected QBFConSolver<? extends WinningCondition> getEBuchiSolver(PetriGame game, Buchi winCon, boolean skipTests, QBFConSolverOptions options) throws NotSupportedGameException, NetNotSafeException, NoSuitableDistributionFoundException, ParameterMissingException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 
-	@Override
-	protected QBFConSolver<? extends WinningCondition> getABuchiSolver(PetriNet net, boolean skipTests, QBFConSolverOptions options) throws NotSupportedGameException, NetNotSafeException, NoSuitableDistributionFoundException, BoundedParameterMissingException {
-		throw new RuntimeException("Method not yet implemented");
-	}
+    @Override
+    protected QBFConSolver<? extends WinningCondition> getABuchiSolver(PetriGame game, Buchi winCon, boolean skipTests, QBFConSolverOptions options) throws NotSupportedGameException, NetNotSafeException, NoSuitableDistributionFoundException, ParameterMissingException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 
 	
 

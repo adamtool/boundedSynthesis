@@ -7,7 +7,7 @@ import uniolunisaar.adam.generators.RobotCell;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import uniol.apt.adt.pn.PetriNet;
+import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Safety;
 
 /*
@@ -42,7 +42,7 @@ public class RobotCellTest {
 	// det bis 10/9/8/7/6/5: 861.268sec
 
 	private void oneTest(int ps1, int ps2, int n, int b) throws Exception {
-		PetriNet pn = RobotCell.generate(ps1, ps2, true);
+		PetriGame pn = RobotCell.generate(ps1, ps2, true);
 		QBFSafetySolver sol = new QBFSafetySolver(pn, new Safety(),new QBFSolverOptions(n, b));
 		Assert.assertTrue(sol.existsWinningStrategy());
 	}

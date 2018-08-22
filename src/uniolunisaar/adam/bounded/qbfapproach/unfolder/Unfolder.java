@@ -14,7 +14,7 @@ import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.analysis.exception.UnboundedException;
 import uniol.apt.util.Pair;
-import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
+import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFSolvingObject;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 
@@ -27,7 +27,7 @@ import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 public abstract class Unfolder {
 
 	// PetriGame which will be unfolded
-	public QBFPetriGame pg;
+	public QBFSolvingObject pg;
 	public PetriNet pn;
 
 	// how much unfolding of places was done and how much can still be done
@@ -42,9 +42,9 @@ public abstract class Unfolder {
 	
 	protected Set<String> closed = new HashSet<>();
 	
-	public Unfolder(QBFPetriGame petriGame, Map<String, Integer> max) {
+	public Unfolder(QBFSolvingObject petriGame, Map<String, Integer> max) {
 		this.pg = petriGame;
-		this.pn = pg.getNet();
+		this.pn = pg.getGame();
 		this.limit = max;
 	}
 
@@ -92,7 +92,7 @@ public abstract class Unfolder {
 					Marking next = t.fire(m);
 					if (!closed.contains(next)) {
 						// local SYS transition (i.e. pre- and postset <= 1) cannot produce history, but they CAN TRANSPORT history
-						if (t.getPreset().size() > 1 || pg.getEnvTransitions().contains(t) || transportHistory(t, orderOfUnfolding)) {
+						if (t.getPreset().size() > 1 || pg.getGame().getEnvTransitions().contains(t) || transportHistory(t, orderOfUnfolding)) {
 							for (Place place : t.getPostset()) {
 								// only unfold places with outgoing transitions
 								if (place.getPostset().size() > 0) {
@@ -212,7 +212,7 @@ public abstract class Unfolder {
 	private boolean checkTransitionPair(Transition t1, Transition t2) {
 		// both transition originate from same system place and another env place is part, respectively
 		for (Place p1 : t1.getPreset()) {
-			if (!pg.getEnvPlaces().contains(p1)) {
+			if (!pg.getGame().getEnvPlaces().contains(p1)) {
 				// system
 				boolean sysMatch = false;
 				for (Place p2 : t2.getPreset()) {
@@ -262,7 +262,7 @@ public abstract class Unfolder {
 
 	protected Transition copyTransition(Transition t) {
 		String id = getTruncatedId(t.getId());
-		Transition newT = pg.getNet().createTransition(id + "__" + getCopyCounter(id));
+		Transition newT = pg.getGame().createTransition(id + "__" + getCopyCounter(id));
 		newT.setLabel(id);
 		pg.getFl().put(newT, new HashSet<>());
 		for (Pair<String, Object> pair : t.getExtensions()) {
@@ -274,7 +274,7 @@ public abstract class Unfolder {
 	// only used in deterministic unfolder, don't care about flow chains until now
 	protected Place copyPlace(Place p) {
 		String id = getTruncatedId(p.getId());
-		Place ret = pg.getNet().createPlace(id + "__" + current.get(id));
+		Place ret = pg.getGame().createPlace(id + "__" + current.get(id));
 		current.put(id, current.get(id) + 1);
 		copyEnv(ret, p);
 		for (Transition trans : p.getPostset()) {
@@ -301,8 +301,8 @@ public abstract class Unfolder {
 		for (Pair<String, Object> pair : p.getExtensions()) {
 			newP.putExtension(pair.getFirst(), pair.getSecond());
 		}
-		if (pg.getEnvPlaces().contains(p)) {
-			pg.getEnvPlaces().add(newP);
+		if (pg.getGame().getEnvPlaces().contains(p)) {
+			pg.getGame().getEnvPlaces().add(newP);
 		}
 		// winning conditions are added after unfolding TODO unfolding uses reachbad?
 	}
@@ -339,7 +339,7 @@ public abstract class Unfolder {
 	protected boolean isEnvTransition(Transition t) {
 		boolean result = true;
 		for (Place p : t.getPreset()) {
-			if (!pg.getEnvPlaces().contains(p))
+			if (!pg.getGame().getEnvPlaces().contains(p))
 				return false;
 		}
 		return result;

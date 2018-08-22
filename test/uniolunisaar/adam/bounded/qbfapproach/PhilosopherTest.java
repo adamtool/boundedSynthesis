@@ -7,7 +7,7 @@ import uniolunisaar.adam.generators.Philosopher;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import uniol.apt.adt.pn.PetriNet;
+import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Safety;
 
 @Test
@@ -18,7 +18,7 @@ public class PhilosopherTest {
 
 		// no unfold: 2->4, 3->5, 4->6, 5->7 in 12,5s with 5->8 in Timeout
 
-		PetriNet pn = Philosopher.generateGuided(2, true, true);
+		PetriGame pn = Philosopher.generateGuided(2, true, true);
 		QBFSafetySolver sol = new QBFSafetySolver(pn, new Safety(), new QBFSolverOptions(4, 0));
 		Assert.assertTrue(sol.existsWinningStrategy());
 

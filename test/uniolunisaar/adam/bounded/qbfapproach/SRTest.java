@@ -7,7 +7,7 @@ import uniolunisaar.adam.generators.SelfOrganizingRobots;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import uniol.apt.adt.pn.PetriNet;
+import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Safety;
 import uniolunisaar.adam.logic.util.AdamTools;
 
@@ -22,12 +22,12 @@ public class SRTest {
 	}
 
 	private void oneTest(int robot1, int robot2, int n, int b) throws Exception {
-		PetriNet pn = SelfOrganizingRobots.generate(robot1, robot2, true, true);
+		PetriGame pn = SelfOrganizingRobots.generate(robot1, robot2, true, true);
 		QBFSafetySolver sol = new QBFSafetySolver(pn, new Safety(), new QBFSolverOptions(n, b));
 		sol.existsWinningStrategy(); // calculate first, then output games, and then check for correctness
 		// TODO put this to an appropriate place in code
-		AdamTools.savePG2PDF("originalGame", sol.game.getNet(), false);
-		AdamTools.savePG2PDF("unfolding", sol.unfolding.getNet(), false);
+		AdamTools.savePG2PDF("originalGame", sol.game, false);
+		AdamTools.savePG2PDF("unfolding", sol.unfolding, false);
 		if (sol.existsWinningStrategy()) {
 			AdamTools.savePG2PDF("strategy", sol.getStrategy(), false);
 		}

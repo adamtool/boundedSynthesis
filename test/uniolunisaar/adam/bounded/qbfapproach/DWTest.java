@@ -7,7 +7,7 @@ import uniolunisaar.adam.generators.Clerks;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import uniol.apt.adt.pn.PetriNet;
+import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Safety;
 import uniolunisaar.adam.logic.util.AdamTools;
 
@@ -29,13 +29,13 @@ public class DWTest { // Document Workflow / DW
     }
 
     private void oneTestTrue(int problemSize, int n, int b) throws Exception {
-        PetriNet pn = Clerks.generateNonCP(problemSize, true, true);
+        PetriGame pn = Clerks.generateNonCP(problemSize, true, true);
         QBFSafetySolver sol = new QBFSafetySolver(pn, new Safety(), new QBFSolverOptions(n, b));
         Assert.assertTrue(sol.existsWinningStrategy());
     }
 
     private void oneTestFalse(int problemSize, int n, int b) throws Exception {
-        PetriNet pn = Clerks.generateNonCP(problemSize, true, true);
+        PetriGame pn = Clerks.generateNonCP(problemSize, true, true);
         AdamTools.savePG2PDF("before", pn, true);
         QBFSafetySolver sol = new QBFSafetySolver(pn, new Safety(), new QBFSolverOptions(n, b));
         boolean bool = sol.existsWinningStrategy();

@@ -8,13 +8,11 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import uniol.apt.adt.pn.PetriNet;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QBFBuchiSolver;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolver;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverFactory;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
-import uniolunisaar.adam.ds.winningconditions.Buchi;
+import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 import uniolunisaar.adam.logic.util.AdamTools;
-import uniolunisaar.adam.tools.Tools;
 
 @Test
 public class BuechiTest {
@@ -54,18 +52,19 @@ public class BuechiTest {
 
     private void test(String name, boolean result, int n, int b) throws Exception {
         final String path = System.getProperty("examplesfolder") + File.separator + "buechi" + File.separator + "toyExamples" + File.separator + name + ".apt";
-        PetriNet pn = Tools.getPetriNet(path);
-        QBFBuchiSolver sol = new QBFBuchiSolver(pn, new Buchi(), new QBFSolverOptions(n, b));
+//        PetriNet pn = Tools.getPetriNet(path);
+//        QBFBuchiSolver sol = new QBFBuchiSolver(pn, new Buchi(), new QBFSolverOptions(n, b));
+		QBFSolver<? extends WinningCondition> sol = QBFSolverFactory.getInstance().getSolver(path, new QBFSolverOptions(n, b)); //todo MG: warum nicht so?
         sol.existsWinningStrategy();
-        AdamTools.savePG2PDF("originalGame", sol.game.getNet(), false);
-        AdamTools.savePG2PDF("unfolding", sol.unfolding.getNet(), false);
+        AdamTools.savePG2PDF("originalGame", sol.game, false);
+        AdamTools.savePG2PDF("unfolding", sol.unfolding, false);
         if (sol.existsWinningStrategy()) {
             AdamTools.savePG2PDF("strategy", sol.getStrategy(), false);
         }
         Assert.assertEquals(sol.existsWinningStrategy(), result);
         
         if (sol.existsWinningStrategy()) {
-			assertTrue(QBFSolver.checkStrategy(sol.game.getNet(), sol.strategy.getNet()));
+			assertTrue(QBFSolver.checkStrategy(sol.game, sol.strategy));
 		}
     }
 }

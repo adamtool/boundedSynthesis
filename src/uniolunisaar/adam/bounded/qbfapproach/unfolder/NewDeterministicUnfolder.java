@@ -10,14 +10,14 @@ import java.util.Set;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.analysis.exception.UnboundedException;
-import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
+import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFSolvingObject;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolver;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 
 public class NewDeterministicUnfolder extends Unfolder {
 
-	public NewDeterministicUnfolder(QBFPetriGame petriGame, Map<String, Integer> max) {
+	public NewDeterministicUnfolder(QBFSolvingObject petriGame, Map<String, Integer> max) {
 		super(petriGame, max);
 	}
 
@@ -89,7 +89,7 @@ public class NewDeterministicUnfolder extends Unfolder {
 				}
 				if (copies.size() > 0) {
 					// create additional system place and place token
-					Place newSysPlace = pg.getNet().createPlace(QBFSolver.additionalSystemName + pre.getId() + QBFSolver.additionalSystemUniqueDivider + p.getId());
+					Place newSysPlace = pg.getGame().createPlace(QBFSolver.additionalSystemName + pre.getId() + QBFSolver.additionalSystemUniqueDivider + p.getId());
 					newSysPlace.setInitialToken(1);
 					systemHasToDecideForAtLeastOne.put(newSysPlace, copies);
 					// add arrows between tokens and transitions

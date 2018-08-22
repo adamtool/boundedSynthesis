@@ -13,16 +13,16 @@ import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.analysis.exception.UnboundedException;
 import uniol.apt.util.Pair;
-import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
+import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFSolvingObject;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 import uniolunisaar.adam.ds.exceptions.NotSupportedGameException;
-import uniolunisaar.adam.ds.exceptions.UnboundedPGException;
+import uniolunisaar.adam.ds.petrigame.PetriGame;
 
 public class McMillianUnfolder extends Unfolder {
 
 	// unfolded result Petri game and Petri net
-	public QBFPetriGame unfolding;
+	public QBFSolvingObject unfolding;
 	public PetriNet unfoldingNet;
 
 	// Pair<Place, Transition>
@@ -34,19 +34,19 @@ public class McMillianUnfolder extends Unfolder {
 
 	int counter = 0;
 
-	public McMillianUnfolder(QBFPetriGame petriGame, Map<String, Integer> max) throws NotSupportedGameException {
+	public McMillianUnfolder(QBFSolvingObject petriGame, Map<String, Integer> max) throws NotSupportedGameException {
 		super(petriGame, max);
 
 		unfoldingNet = new PetriNet(pn.getName() + "_unfolding");
-		unfolding = new QBFPetriGame(unfoldingNet);
+		unfolding = new QBFSolvingObject(new PetriGame(unfoldingNet), petriGame.getWinCon()); // todo MG: funzt so?
 
 		Marking initial = pn.getInitialMarking();
 		for (Place p : pn.getPlaces()) {
 			if (initial.getToken(p).getValue() == 1) {
 				Place newP = unfoldingNet.createPlace(p.getId() + "_P_EMPTY");
 				newP.setInitialToken(1);
-				if (pg.getEnvPlaces().contains(p)) {
-					unfolding.getEnvPlaces().add(newP);
+				if (pg.getGame().getEnvPlaces().contains(p)) {
+					unfolding.getGame().getEnvPlaces().add(newP);
 				}
 				for (Pair<String, Object> pair : p.getExtensions()) {
 					newP.putExtension(pair.getFirst(), pair.getSecond());
@@ -90,8 +90,8 @@ public class McMillianUnfolder extends Unfolder {
 			}
 			for (Place post : extension.getFirst().getPostset()) {
 				Place newPost = unfoldingNet.createPlace(post.getId() + "_P_" + newT.getId());
-				if (pg.getEnvPlaces().contains(post)) {
-					unfolding.getEnvPlaces().add(newPost);
+				if (pg.getGame().getEnvPlaces().contains(post)) {
+					unfolding.getGame().getEnvPlaces().add(newPost);
 				}
 				for (Pair<String, Object> pair : post.getExtensions()) {
 					newPost.putExtension(pair.getFirst(), pair.getSecond());

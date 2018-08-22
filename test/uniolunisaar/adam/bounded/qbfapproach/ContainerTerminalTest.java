@@ -7,7 +7,6 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.io.parser.ParseException;
 import uniol.apt.module.exception.ModuleException;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolver;
@@ -21,6 +20,7 @@ import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 import uniolunisaar.adam.ds.exceptions.ParameterMissingException;
 import uniolunisaar.adam.ds.exceptions.SolverDontFitPetriGameException;
 import uniolunisaar.adam.ds.exceptions.NotSupportedGameException;
+import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 import uniolunisaar.adam.generators.ContainerTerminal;
 import uniolunisaar.adam.logic.util.AdamTools;
@@ -61,7 +61,7 @@ public class ContainerTerminalTest {
         File f = new File(path);
         f.mkdir();
         System.out.println("Generate container terminal...");
-        PetriNet pn = ContainerTerminal.createSafetyVersion(containerPlaces, true);
+        PetriGame pn = ContainerTerminal.createSafetyVersion(containerPlaces, true);
         AdamTools.savePG2PDF(path + name, pn, false);
         QBFSolver<? extends WinningCondition> solv = QBFSolverFactory.getInstance().getSolver(pn, false, new QBFSolverOptions(15, 3));
         if (hasStrategy) {

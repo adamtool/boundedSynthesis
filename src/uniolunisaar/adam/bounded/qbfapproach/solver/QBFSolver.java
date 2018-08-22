@@ -25,17 +25,15 @@ import uniol.apt.analysis.exception.UnboundedException;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
-import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
+import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFSolvingObject;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.ForNonDeterministicUnfolder;
-import uniolunisaar.adam.bounded.qbfapproach.unfolder.McMillianUnfolder;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.Unfolder;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
-import uniolunisaar.adam.ds.exceptions.NotSupportedGameException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.solver.Solver;
-import uniolunisaar.adam.ds.util.AdamExtensions;
+import uniolunisaar.adam.ds.petrigame.AdamExtensions;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 import uniolunisaar.adam.logic.util.AdamTools;
 import uniolunisaar.adam.tools.AdamProperties;
@@ -46,7 +44,7 @@ import uniolunisaar.adam.tools.AdamProperties;
  *
  * @param <W>
  */
-public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPetriGame, W, QBFSolverOptions> {
+public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSolvingObject<W>, QBFSolverOptions> {
 
 	// variable to store keys of calculated components for later use (shared among all solvers)
 	protected int in;
@@ -86,8 +84,9 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 	private Map<Transition, Set<Place>> preMinusPostCache = new HashMap<>();
 
 	// working copy of the game
-	public QBFPetriGame pg;
-	protected PetriNet pn;
+	public QBFSolvingObject pg;
+//	protected PetriNet pn; // todo MG: changed this
+	protected PetriGame pn; 
 
 	public PetriGame game;
 	public PetriGame unfolding;
@@ -121,20 +120,20 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 		return AdamTools.checkStrategy(origNet, strat);
 	}
 
-	public QBFSolver(QBFPetriGame game, W winCon, QBFSolverOptions so) throws BoundedParameterMissingException {
-		super(game, winCon, so);
+	public QBFSolver(PetriGame game, W winCon, QBFSolverOptions so) throws BoundedParameterMissingException {
+		super(new QBFSolvingObject<>(game, winCon), so);
 
-		pg = game;
+		pg = getSolvingObject();
 		int n = so.getN();
 		int b = so.getB();
 		if (n == -1) {
-			if (AdamExtensions.hasBoundedParameterN(game.getNet())) {
-				n = AdamExtensions.getBoundedParameterN(game.getNet());
+			if (AdamExtensions.hasBoundedParameterN(game)) {
+				n = AdamExtensions.getBoundedParameterN(game);
 			}
 		}
 		if (b == -1) {
-			if (AdamExtensions.hasBoundedParameterB(game.getNet())) {
-				b = AdamExtensions.getBoundedParameterB(game.getNet());
+			if (AdamExtensions.hasBoundedParameterB(game)) {
+				b = AdamExtensions.getBoundedParameterB(game);
 			}
 		}
 		if (n == -1 || b == -1) {
@@ -142,7 +141,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 		}
 		pg.setN(n);
 		pg.setB(b);
-		pn = pg.getNet();
+		pn = game;
 
 		fl = new int[pg.getN() + 1];
 		det = new int[pg.getN() + 1];
@@ -184,7 +183,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 	}
 
 	protected String getInitial() { // TODO adapt when extension initial exists
-		Marking initialMarking = pg.getNet().getInitialMarking();
+		Marking initialMarking = pg.getGame().getInitialMarking();
 		Set<Integer> initial = new HashSet<>();
 		for (Place p : pn.getPlaces()) {
 			if (initialMarking.getToken(p).getValue() == 1) {
@@ -255,7 +254,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 		String[] terminating = new String[pg.getN() + 1];
 		Set<Integer> and = new HashSet<>();
 		for (int i = 1; i <= pg.getN(); ++i) {
-			if (pg.getNet().getTransitions().size() >= 1) {
+			if (pg.getGame().getTransitions().size() >= 1) {
 				and.clear();
 				for (int j = 0; j < pn.getTransitions().size(); ++j) {
 					and.add(terminatingSubFormulas[pn.getTransitions().size() * (i - 1) + j]);
@@ -338,7 +337,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 			// Slight performance gain by using these caches
 			Set<Place> rest = restCache.get(t);
 			if (rest == null) {
-				rest = new HashSet<>(pg.getNet().getPlaces());
+				rest = new HashSet<>(pg.getGame().getPlaces());
 				rest.removeAll(t.getPreset());
 				rest.removeAll(t.getPostset());
 				restCache.put(t, rest);
@@ -657,7 +656,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 
 	protected void addExists() throws IOException {
 		Set<Integer> exists = new HashSet<>();
-		for (Place p : pg.getNet().getPlaces()) {
+		for (Place p : pg.getGame().getPlaces()) {
 			if (!AdamExtensions.isEnvironment(p)) {
 				if (p.getId().startsWith(QBFSolver.additionalSystemName)) {
 					for (Transition t : p.getPostset()) {
@@ -686,7 +685,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 
 	protected void addForall() throws IOException {
 		Set<Integer> forall = new HashSet<>();
-		for (Place p : pg.getNet().getPlaces()) {
+		for (Place p : pg.getGame().getPlaces()) {
 			for (int i = 1; i <= pg.getN(); ++i) {
 				int number = createVariable(p.getId() + "." + i);
 				forall.add(number);
@@ -846,7 +845,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 	}
 
 	protected Map<Place, Set<Transition>> unfoldPG() {
-		game = new PetriGame(pg);
+		game = new PetriGame(pg.getGame());
 
 		ForNonDeterministicUnfolder unfolder = new ForNonDeterministicUnfolder(pg, null); // null forces unfolder to use b as bound for every place
 		/*McMillianUnfolder unfolder = null;
@@ -866,9 +865,9 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
         //this.pg = unfolder.pg;
         //this.pn = unfolder.pn;
         
-        getWinningCondition().buffer(pg);
+        getWinningCondition().buffer(pg.getGame());
 
-		unfolding = new PetriGame(pg);
+		unfolding = new PetriGame(pg.getGame());
 
 		return unfolder.systemHasToDecideForAtLeastOne;
 	}
@@ -955,7 +954,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 	}
 
 	@Override
-	protected PetriNet calculateStrategy() throws NoStrategyExistentException {
+	protected PetriGame calculateStrategy() throws NoStrategyExistentException {
 		if (existsWinningStrategy()) {
 			for (String outputCAQE_line : outputQBFsolver.split("\n")) {
 				if (outputCAQE_line.startsWith("V")) {
@@ -975,7 +974,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 									if (place.startsWith(QBFSolver.additionalSystemName)) {
 										// additional system place exactly removes transitions
 										// Transition might already be removed by recursion
-										Set<Transition> transitions = new HashSet<>(pg.getNet().getTransitions());
+										Set<Transition> transitions = new HashSet<>(pg.getGame().getTransitions());
 										for (Transition t : transitions) {
 											if (t.getId().equals(transition)) {
 												// System.out.println("starting " + t);
@@ -984,7 +983,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 										}
 									} else {
 										// original system place removes ALL transitions
-										Set<Place> places = new HashSet<>(pg.getNet().getPlaces());
+										Set<Place> places = new HashSet<>(pg.getGame().getPlaces());
 										for (Place p : places) {
 											if (p.getId().equals(place)) {
 												Set<Transition> transitions = new HashSet<>(p.getPostset());
@@ -1002,8 +1001,8 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 								// 0 is the last member
 								// System.out.println("Finished reading strategy.");
 								PGSimplifier.simplifyPG(pg, true, false);
-								strategy = new PetriGame(pg);
-								return pg.getNet();
+								strategy = new PetriGame(pg.getGame());
+								return pg.getGame();
 							}
 						}
 					}
@@ -1011,8 +1010,8 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFPe
 			}
 			// There were no decision points for the system, thus the previous loop did not leave the method
 			PGSimplifier.simplifyPG(pg, true, false);
-			strategy = new PetriGame(pg);
-			return pg.getNet();
+			strategy = new PetriGame(pg.getGame());
+			return pg.getGame();
 		}
 		throw new NoStrategyExistentException();
 	}

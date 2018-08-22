@@ -9,14 +9,12 @@ import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 
-import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
-import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QCIRconsistency;
-import uniolunisaar.adam.ds.exceptions.NotSupportedGameException;
+import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Reachability;
 
 public class QBFReachabilitySolver extends QBFSolver<Reachability> {
@@ -24,13 +22,13 @@ public class QBFReachabilitySolver extends QBFSolver<Reachability> {
 	// variable to store keys of calculated components for later use (special to this winning condition)
 	private int[] goodPlaces;
 
-	public QBFReachabilitySolver(PetriNet net, Reachability win, QBFSolverOptions so) throws NotSupportedGameException, BoundedParameterMissingException {
-		super(new QBFPetriGame(net), win, so);
+	public QBFReachabilitySolver(PetriGame game, Reachability win, QBFSolverOptions so) throws BoundedParameterMissingException {
+		super(game, win, so);
 		goodPlaces = new int[pg.getN() + 1];
 	}
 
 	private void writeGoodPlaces() throws IOException {
-		if (!getWinningCondition().getPlaces2Reach().isEmpty()) {
+		if (!getSolvingObject().getWinCon().getPlaces2Reach().isEmpty()) {
 			String[] good = getGoodPlaces();
 			for (int i = 1; i <= pg.getN(); ++i) {
 				goodPlaces[i] = createUniqueID();
@@ -44,7 +42,7 @@ public class QBFReachabilitySolver extends QBFSolver<Reachability> {
 		Set<Integer> or = new HashSet<>();
 		for (int i = 1; i <= pg.getN(); ++i) {
 			or.clear();
-			for (Place p : getWinningCondition().getPlaces2Reach()) {
+			for (Place p : getSolvingObject().getWinCon().getPlaces2Reach()) {
 				or.add(getVarNr(p.getId() + "." + i, true));
 			}
 			goodPlaces[i] = writeOr(or);

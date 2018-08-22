@@ -15,10 +15,10 @@ import uniol.apt.adt.pn.Transition;
 import uniol.apt.io.parser.ParseException;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
-import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QCIRconsistency;
 import uniolunisaar.adam.ds.exceptions.CouldNotFindSuitableWinningConditionException;
-import uniolunisaar.adam.ds.util.AdamExtensions;
+import uniolunisaar.adam.ds.petrigame.AdamExtensions;
+import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Safety;
 
 public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
@@ -27,7 +27,7 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 	private int[] simultan;
 	private int sFlCE;
 
-	public QBFExistsSafetySolver(QBFPetriGame game, Safety winCon, QBFSolverOptions options) throws BoundedParameterMissingException, CouldNotFindSuitableWinningConditionException, ParseException {
+	public QBFExistsSafetySolver(PetriGame game, Safety winCon, QBFSolverOptions options) throws BoundedParameterMissingException, CouldNotFindSuitableWinningConditionException, ParseException {
 		super(game, winCon, options);
 		bad = new int[pg.getN() + 1];
 		simultan = new int[pg.getN() + 1];
@@ -36,7 +36,7 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 
 	@Override
 	protected String getInitial() {
-		Marking initialMarking = pg.getNet().getInitialMarking();
+		Marking initialMarking = pg.getGame().getInitialMarking();
 		Set<Integer> initial = new HashSet<>();
 		for (Place p : pn.getPlaces()) {
 			if (initialMarking.getToken(p).getValue() == 1) {
@@ -177,7 +177,7 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 		for (Place post : t.getPostset()) {
 			Set<Place> tokenFlow = getIncomingTokenFlow(t, post);
 			if (!tokenFlow.isEmpty()) {
-				if (!getWinningCondition().getBadPlaces().contains(post)) {
+				if (!getSolvingObject().getWinCon().getBadPlaces().contains(post)) {
 					or.add(getOneNotObjectiveFlowChain(post, t, i, tokenFlow));
 				} else {
 					or.add(-getVarNr(post.getId() + "." + (i + 1) + "." + "objective", true)); // TODO wie soll das gehen, wenn schlechter Platz erreicht wird, wird das bad?

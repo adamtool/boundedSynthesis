@@ -23,15 +23,14 @@ import uniol.apt.adt.pn.Transition;
 import uniol.apt.analysis.exception.UnboundedException;
 import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
-import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
+import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFSolvingObject;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolver;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.ForNonDeterministicUnfolder;
-import uniolunisaar.adam.bounded.qbfapproach.unfolder.McMillianUnfolder;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 import uniolunisaar.adam.ds.exceptions.NotSupportedGameException;
-import uniolunisaar.adam.ds.exceptions.UnboundedPGException;
+import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Safety;
 import uniolunisaar.adam.tools.AdamProperties;
 
@@ -62,8 +61,8 @@ public class QBFConSafetySolver extends QBFConSolver<Safety> {
     private String outputCAQE = "";
     
     
-	public QBFConSafetySolver(PetriNet net, Safety safe, QBFConSolverOptions so) throws NotSupportedGameException, BoundedParameterMissingException {
-        super(new QBFPetriGame(net), safe, so);
+	public QBFConSafetySolver(PetriGame game, Safety safe, QBFConSolverOptions so) throws NotSupportedGameException, BoundedParameterMissingException {
+        super(game, safe, so);
         fl = new int[pg.getN() + 1];
         bad = new int[pg.getN() + 1];
         term = new int[pg.getN() + 1];
@@ -113,9 +112,9 @@ public class QBFConSafetySolver extends QBFConSolver<Safety> {
     }
 
     private void writeNoBadMarking() throws IOException {
-        if (!getWinningCondition().getBadPlaces().isEmpty()) {
+        if (!getSolvingObject().getWinCon().getBadPlaces().isEmpty()) {
             String[] nobadmarking = getNobadmarking();
-            if (!getWinningCondition().getBadPlaces().isEmpty()) {
+            if (!getSolvingObject().getWinCon().getBadPlaces().isEmpty()) {
                 for (int i = 1; i <= pg.getN(); ++i) {
                     bad[i] = createUniqueID();
                     writer.write(bad[i] + " = " + nobadmarking[i]);
@@ -129,7 +128,7 @@ public class QBFConSafetySolver extends QBFConSolver<Safety> {
         Set<Integer> and = new HashSet<>();
         for (int i = 1; i <= pg.getN(); ++i) {
             and.clear();
-            for (Place p : getWinningCondition().getBadPlaces()) {
+            for (Place p : getSolvingObject().getWinCon().getBadPlaces()) {
                 and.add(-getVarNr(p.getId() + "." + i, true));
             }
             nobadmarking[i] = writeAnd(and);
@@ -193,8 +192,8 @@ public class QBFConSafetySolver extends QBFConSolver<Safety> {
 
     public void addExists() throws IOException {
         Set<Integer> exists = new HashSet<>();
-        for (Place p : pg.getNet().getPlaces()) {
-            if (!pg.getEnvPlaces().contains(p)) {
+        for (Place p : pg.getGame().getPlaces()) {
+            if (!pg.getGame().getEnvPlaces().contains(p)) {
                 if (p.getId().startsWith(QBFConSolver.additionalSystemName)) {
                     for (Transition t : p.getPostset()) {
                         int number = createVariable(p.getId() + ".." + t.getId());
@@ -222,7 +221,7 @@ public class QBFConSafetySolver extends QBFConSolver<Safety> {
 
     protected void addForall() throws IOException {
         Set<Integer> forall = new HashSet<>();
-        for (Place p : pg.getNet().getPlaces()) {
+        for (Place p : pg.getGame().getPlaces()) {
             for (int i = 1; i <= pg.getN(); ++i) {
                 int number = createVariable(p.getId() + "." + i);
                 //System.out.println(p.getId() + "." + i + " : number: " + number);
@@ -277,7 +276,7 @@ public class QBFConSafetySolver extends QBFConSolver<Safety> {
             e1.printStackTrace();
         }
         
-        getWinningCondition().buffer(pg);
+        getWinningCondition().buffer(pg.getGame());
         
         /*this.pg = unfolder.pg;
         this.pn = unfolder.pn;
@@ -365,7 +364,7 @@ public class QBFConSafetySolver extends QBFConSolver<Safety> {
             }
 
             // generating qcir benchmarks
-            FileUtils.copyFile(file, new File(pg.getNet().getName() + ".qcir"));
+            FileUtils.copyFile(file, new File(pg.getGame().getName() + ".qcir"));
 
             ProcessBuilder pb = null;
             // Run solver on problem
@@ -428,7 +427,7 @@ public class QBFConSafetySolver extends QBFConSolver<Safety> {
     }
 
     @Override
-    protected PetriNet calculateStrategy() throws NoStrategyExistentException {
+    protected PetriGame calculateStrategy() throws NoStrategyExistentException {
         if (existsWinningStrategy()) {
             for (String outputCAQE_line : outputCAQE.split("\n")) {
                 if (outputCAQE_line.startsWith("V")) {
@@ -448,7 +447,7 @@ public class QBFConSafetySolver extends QBFConSolver<Safety> {
                                     if (place.startsWith(QBFConSolver.additionalSystemName)) {
                                         // additional system place exactly removes transitions
                                         // Transition might already be removed by recursion
-                                        Set<Transition> transitions = new HashSet<>(pg.getNet().getTransitions());
+                                        Set<Transition> transitions = new HashSet<>(pg.getGame().getTransitions());
                                         for (Transition t : transitions) {
                                             if (t.getId().equals(transition)) {
                                                 // System.out.println("starting " + t);
@@ -457,7 +456,7 @@ public class QBFConSafetySolver extends QBFConSolver<Safety> {
                                         }
                                     } else {
                                         // original system place removes ALL transitions
-                                        Set<Place> places = new HashSet<>(pg.getNet().getPlaces());
+                                        Set<Place> places = new HashSet<>(pg.getGame().getPlaces());
                                         for (Place p : places) {
                                             if (p.getId().equals(place)) {
                                                 Set<Transition> transitions = new HashSet<>(p.getPostset());
@@ -475,7 +474,7 @@ public class QBFConSafetySolver extends QBFConSolver<Safety> {
                                 // 0 is the last member
                                 // System.out.println("Finished reading strategy.");
                                 PGSimplifier.simplifyPG(pg, true, false);
-                                return pg.getNet();
+                                return pg.getGame();
                             }
                         }
                     }

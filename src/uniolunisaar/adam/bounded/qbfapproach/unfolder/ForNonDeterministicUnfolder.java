@@ -8,7 +8,7 @@ import java.util.Set;
 
 import uniol.apt.adt.pn.Place;
 import uniol.apt.analysis.exception.UnboundedException;
-import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
+import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFSolvingObject;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 
@@ -16,7 +16,7 @@ public class ForNonDeterministicUnfolder extends NonDeterministicUnfolder {
 	
 	Set<String> closed = new HashSet<>();
 
-	public ForNonDeterministicUnfolder(QBFPetriGame QBFPetriGame, Map<String, Integer> max) {
+	public ForNonDeterministicUnfolder(QBFSolvingObject QBFPetriGame, Map<String, Integer> max) {
 		super(QBFPetriGame, max);
 	}
 

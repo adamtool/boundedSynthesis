@@ -6,7 +6,7 @@ import java.util.Set;
 
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
-import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
+import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFSolvingObject;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 
@@ -19,7 +19,7 @@ import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 
 public class OldDeterministicUnfolder extends Unfolder {
 
-	public OldDeterministicUnfolder(QBFPetriGame QBFPetriGame, Map<String, Integer> max) {
+	public OldDeterministicUnfolder(QBFSolvingObject QBFPetriGame, Map<String, Integer> max) {
 		super(QBFPetriGame, max);
 	}
 
@@ -34,7 +34,7 @@ public class OldDeterministicUnfolder extends Unfolder {
 
 	private Place findNextPlaceToUnfold() {
 		// first try environment places
-		for (Place env : pg.getEnvPlaces()) {
+		for (Place env : pg.getGame().getEnvPlaces()) {
 			if (unfoldConditionSatisfied(env))
 				return env;
 		}
@@ -61,8 +61,8 @@ public class OldDeterministicUnfolder extends Unfolder {
 		for (Transition t : selfLoops) {
 			if (bound-- > 0) {
 				Place newP = copyPlace(unfold);
-				pg.getNet().removeFlow(t, unfold);
-				pg.getNet().createFlow(t, newP);
+				pg.getGame().removeFlow(t, unfold);
+				pg.getGame().createFlow(t, newP);
 				increaseCurrentValue(unfold);
 			}
 		}
@@ -70,8 +70,8 @@ public class OldDeterministicUnfolder extends Unfolder {
 		for (Transition t : otherTransitions) {
 			if (bound-- > 0) {
 				Place newP = copyPlace(unfold);
-				pg.getNet().removeFlow(t, unfold);
-				pg.getNet().createFlow(t, newP);
+				pg.getGame().removeFlow(t, unfold);
+				pg.getGame().createFlow(t, newP);
 				increaseCurrentValue(unfold);
 			}
 		}
@@ -84,9 +84,9 @@ public class OldDeterministicUnfolder extends Unfolder {
 			// copy incoming transitions
 			for (Place preOfPost : post.getPreset()) {
 				if (preOfPost.equals(oldP))
-					pg.getNet().createFlow(newP, newT);
+					pg.getGame().createFlow(newP, newT);
 				else
-					pg.getNet().createFlow(preOfPost, newT);
+					pg.getGame().createFlow(preOfPost, newT);
 			}
 			// copy outgoing transitions
 			for (Place postOfPost : post.getPostset()) {
@@ -96,14 +96,14 @@ public class OldDeterministicUnfolder extends Unfolder {
 						// we can unfold
 						Place newnewP = copyPlace(postOfPost);
 						unfoldPlaceRecursion(newnewP, postOfPost);
-						pg.getNet().createFlow(newT, postOfPost);
+						pg.getGame().createFlow(newT, postOfPost);
 					} else {
 						// we cannot unfold
-						pg.getNet().createFlow(newT, postOfPost);
+						pg.getGame().createFlow(newT, postOfPost);
 					}
 				} else {
 					// do not unfold
-					pg.getNet().createFlow(newT, postOfPost);
+					pg.getGame().createFlow(newT, postOfPost);
 				}
 			}
 		}

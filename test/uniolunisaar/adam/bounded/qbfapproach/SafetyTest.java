@@ -6,8 +6,11 @@ import org.testng.annotations.Test;
 
 import uniol.apt.adt.pn.PetriNet;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSafetySolver;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolver;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverFactory;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
 import uniolunisaar.adam.ds.winningconditions.Safety;
+import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 import uniolunisaar.adam.tools.Tools;
 
 @Test
@@ -76,8 +79,9 @@ public class SafetyTest extends EmptyTest {
 	
 	private void oneTest(String str, int n, int b, boolean result) throws Exception {
 		final String path = System.getProperty("examplesfolder") + "/safety/" + str + ".apt";
-        PetriNet pn = Tools.getPetriNet(path);
-		QBFSafetySolver sol = new QBFSafetySolver(pn, new Safety(), new QBFSolverOptions(n, b));
+//        PetriNet pn = Tools.getPetriNet(path);
+//		QBFSafetySolver sol = new QBFSafetySolver(pn, new Safety(), new QBFSolverOptions(n, b));
+		QBFSolver<? extends WinningCondition> sol = QBFSolverFactory.getInstance().getSolver(path, new QBFSolverOptions(n, b)); //todo MG: warum nicht so?
 		nextTest(sol, n, b, result);
 	}
 }

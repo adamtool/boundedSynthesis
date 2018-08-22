@@ -6,7 +6,6 @@ import java.util.Queue;
 import java.util.Set;
 
 import uniol.apt.adt.pn.Marking;
-import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Token;
 import uniol.apt.adt.pn.Transition;
@@ -22,20 +21,19 @@ import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolver;
  */
 public class PGSimplifier {
 
-	public static void simplifyPG(QBFPetriGame pg, boolean removeAdditionalPlaces, boolean removeUnreachablePlaces) {
+	public static void simplifyPG(QBFSolvingObject pg, boolean removeAdditionalPlaces, boolean removeUnreachablePlaces) {
 		// Initialization
-		PetriNet pn = pg.getNet();
 		int n = pg.getN();
 
 		Queue<Pair<Marking, Integer>> queue = new LinkedList<>();
-		queue.add(new Pair<>(pn.getInitialMarking(), 1));
+		queue.add(new Pair<>(pg.getGame().getInitialMarking(), 1));
 
 		Set<Marking> closed = new HashSet<>();
 		Set<Transition> firedTransitions = new HashSet<>();
 		Set<Place> reachedPlaces = new HashSet<>();
 		
 		if (removeUnreachablePlaces) {
-			addReachedPlaces(pg, pn.getInitialMarking(), reachedPlaces);
+			addReachedPlaces(pg, pg.getGame().getInitialMarking(), reachedPlaces);
 		}
 
 		// Search loop
@@ -44,7 +42,7 @@ public class PGSimplifier {
 			Marking marking = pair.getFirst();
 			int i = pair.getSecond();
 			closed.add(marking);
-			for (Transition transition : pn.getTransitions()) {
+			for (Transition transition : pg.getGame().getTransitions()) {
 				if (transition.isFireable(marking)) {
 					Marking nextMarking = transition.fire(marking);
 					firedTransitions.add(transition);
@@ -61,7 +59,7 @@ public class PGSimplifier {
 		}
 		
 		// Removal
-		Set<Transition> transitions = new HashSet<>(pn.getTransitions());
+		Set<Transition> transitions = new HashSet<>(pg.getGame().getTransitions());
 		for (Transition transition : transitions) {
 			if (!firedTransitions.contains(transition)) {
 				pg.removeTransitionRecursively(transition);
@@ -71,7 +69,7 @@ public class PGSimplifier {
 			removeAS(pg);
 		}
 		if (removeUnreachablePlaces) {
-			for (Place place : pn.getPlaces()) {
+			for (Place place : pg.getGame().getPlaces()) {
 				if (!reachedPlaces.contains(place)) {
 					pg.removePlaceRecursively(place);
 				}
@@ -83,17 +81,16 @@ public class PGSimplifier {
 	 * Additional system places from unfolder are removed including their flow.
 	 * @param pg
 	 */
-	private static void removeAS(QBFPetriGame pg) {
-		PetriNet pn = pg.getNet();
-		Set<Place> places = new HashSet<>(pn.getPlaces());
+	private static void removeAS(QBFSolvingObject pg) {
+		Set<Place> places = new HashSet<>(pg.getGame().getPlaces());
 		for (Place place : places) {
 			if (place.getId().startsWith(QBFSolver.additionalSystemName)) {
 				Set<Transition> transitions = new HashSet<>(place.getPreset());
 				for (Transition transition : transitions) {
-					pn.removeFlow(place, transition);
-					pn.removeFlow(transition, place);
+					pg.getGame().removeFlow(place, transition);
+					pg.getGame().removeFlow(transition, place);
 				}
-				pn.removePlace(place);
+				pg.getGame().removePlace(place);
 			}
 		}
 	}
@@ -105,8 +102,8 @@ public class PGSimplifier {
 	 * @param marking
 	 * @param reachedPlaces
 	 */
-	private static void addReachedPlaces(QBFPetriGame pg, Marking marking, Set<Place> reachedPlaces) {
-		for (Place place : pg.getNet().getPlaces()) {
+	private static void addReachedPlaces(QBFSolvingObject pg, Marking marking, Set<Place> reachedPlaces) {
+		for (Place place : pg.getGame().getPlaces()) {
 			Token token = marking.getToken(place);
 			if (token.getValue() > 0) {
 				reachedPlaces.add(place);

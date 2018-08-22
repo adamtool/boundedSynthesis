@@ -4,11 +4,10 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import uniol.apt.adt.pn.PetriNet;
-import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QBFExistsSafetySolver;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QBFFlowChainSolver;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolver;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverFactory;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
-import uniolunisaar.adam.ds.winningconditions.Safety;
+import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 import uniolunisaar.adam.tools.Tools;
 
 @Test
@@ -120,7 +119,8 @@ public class ExistsSafetyTest extends EmptyTest {
 	private void oneTest(String str, int n, int b, boolean result) throws Exception {
 		final String path = System.getProperty("examplesfolder") + "/existssafety/" + str + ".apt";
 		PetriNet pn = Tools.getPetriNet(path);
-		QBFFlowChainSolver<?> sol = new QBFExistsSafetySolver(new QBFPetriGame(pn), new Safety(), new QBFSolverOptions(n, b));
+//		QBFFlowChainSolver<?> sol = new QBFExistsSafetySolver(new QBFSolvingObject(pn), new Safety(), new QBFSolverOptions(n, b));
+		QBFSolver<? extends WinningCondition> sol = QBFSolverFactory.getInstance().getSolver(path, new QBFSolverOptions(n, b)); //todo MG: warum nicht so?
 		nextTest(sol, n, b, result);
 	}
 }

@@ -7,25 +7,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.io.parser.ParseException;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
-import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
 import uniolunisaar.adam.ds.exceptions.CouldNotFindSuitableWinningConditionException;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.petrigame.TokenFlow;
-import uniolunisaar.adam.ds.util.AdamExtensions;
+import uniolunisaar.adam.ds.petrigame.AdamExtensions;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 import uniolunisaar.adam.logic.util.PetriGameAnnotator;
 
 public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBFSolver<W> {
 
-	protected QBFFlowChainSolver(QBFPetriGame game, W winCon, QBFSolverOptions options) throws BoundedParameterMissingException {
+	protected QBFFlowChainSolver(PetriGame game, W winCon, QBFSolverOptions options) throws BoundedParameterMissingException {
 		super(game, winCon, options);
 	}
 
@@ -52,7 +50,7 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 		Set<Integer> forall = new HashSet<>();
 		int id;
 		for (int i = 1; i <= pg.getN(); ++i) {
-			for (Place p : pg.getNet().getPlaces()) {
+			for (Place p : pg.getGame().getPlaces()) {
 				id = createVariable(p.getId() + "." + i + "." + true);
 				forall.add(id);
 				id = createVariable(p.getId() + "." + i + "." + false);
@@ -67,7 +65,7 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 	private void makeThreeValuedLogic() throws IOException {
 		int top, bot, id;
 		for (int i = 1; i <= pg.getN(); ++i) {
-			for (Place p : pg.getNet().getPlaces()) {
+			for (Place p : pg.getGame().getPlaces()) {
 				top = getVarNr(p.getId() + "." + i + "." + true, true);
 				bot = getVarNr(p.getId() + "." + i + "." + false, true);
 
@@ -88,7 +86,8 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 
 	protected Set<Place> getIncomingTokenFlow(Transition t, Place p) {
 		Set<Place> result = new HashSet<>();
-		for (Pair<Place, Place> pair : pg.getFl().get(t)) {
+                Map<Transition, Set<Pair<Place, Place>>> map = pg.getFl();
+		for (Pair<Place, Place> pair : map.get(t)) {
 			if (pair.getSecond().equals(p)) {
 				if (!p.getId().startsWith(QBFSolver.additionalSystemName)) {
 					result.add(pair.getFirst());
@@ -100,7 +99,8 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 
 	protected Set<Place> getOutgoingTokenFlow(Place p, Transition t) {
 		Set<Place> result = new HashSet<>();
-		for (Pair<Place, Place> pair : pg.getFl().get(t)) {
+                Map<Transition, Set<Pair<Place, Place>>> map = pg.getFl();
+		for (Pair<Place, Place> pair : map.get(t)) {
 			if (pair.getFirst().equals(p)) {
 				if (!p.getId().startsWith(QBFSolver.additionalSystemName)) {
 					result.add(pair.getSecond());
@@ -363,7 +363,7 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 	}
 
 	@Override
-	protected PetriNet calculateStrategy() throws NoStrategyExistentException {
+	protected PetriGame calculateStrategy() throws NoStrategyExistentException {
 		if (existsWinningStrategy()) {
 			for (String outputCAQE_line : outputQBFsolver.split("\n")) {
 				if (outputCAQE_line.startsWith("V")) {
@@ -383,7 +383,7 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 									if (place.startsWith(QBFSolver.additionalSystemName)) {
 										// additional system place exactly removes transitions
 										// Transition might already be removed by recursion
-										Set<Transition> transitions = new HashSet<>(pg.getNet().getTransitions());
+										Set<Transition> transitions = new HashSet<>(pg.getGame().getTransitions());
 										for (Transition t : transitions) {
 											if (t.getId().equals(transition)) {
 												// System.out.println("starting " + t);
@@ -392,7 +392,7 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 										}
 									} else {
 										// original system place removes ALL transitions
-										Set<Place> places = new HashSet<>(pg.getNet().getPlaces());
+										Set<Place> places = new HashSet<>(pg.getGame().getPlaces());
 										for (Place p : places) {
 											if (p.getId().equals(place)) {
 												Set<Transition> transitions = new HashSet<>(p.getPostset());
@@ -410,8 +410,8 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 								// 0 is the last member
 								// System.out.println("Finished reading strategy.");
 								PGSimplifier.simplifyPG(pg, true, false);
-								strategy = new PetriGame(pg);
-								return pg.getNet();
+								strategy = new PetriGame(pg.getGame());
+								return pg.getGame();
 							}
 						}
 					}
@@ -419,8 +419,8 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 			}
 			// There were no decision points for the system, thus the previous loop did not leave the method
 			PGSimplifier.simplifyPG(pg, true, false);
-			strategy = new PetriGame(pg);
-			return pg.getNet();
+			strategy = new PetriGame(pg.getGame());
+			return pg.getGame();
 		}
 		throw new NoStrategyExistentException();
 	}

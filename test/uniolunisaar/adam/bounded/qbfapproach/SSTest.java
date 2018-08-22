@@ -8,7 +8,6 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 
-import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.io.parser.ParseException;
 import uniol.apt.module.exception.ModuleException;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolver;
@@ -22,6 +21,7 @@ import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 import uniolunisaar.adam.ds.exceptions.ParameterMissingException;
 import uniolunisaar.adam.ds.exceptions.SolverDontFitPetriGameException;
 import uniolunisaar.adam.ds.exceptions.NotSupportedGameException;
+import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 import uniolunisaar.adam.generators.SecuritySystem;
 import uniolunisaar.adam.logic.util.AdamTools;
@@ -62,7 +62,7 @@ public class SSTest {
         File f = new File(path);
         f.mkdir();
         System.out.println("Generate security system ...");
-        PetriNet pn = SecuritySystem.createSafetyVersionForBounded(intrudingPoints, true);
+        PetriGame pn = SecuritySystem.createSafetyVersionForBounded(intrudingPoints, true);
         AdamTools.savePG2PDF(path + name, pn, false);
         QBFSolver<? extends WinningCondition> solv = QBFSolverFactory.getInstance().getSolver(pn, false, new QBFSolverOptions(7, 3));
         if (hasStrategy) {

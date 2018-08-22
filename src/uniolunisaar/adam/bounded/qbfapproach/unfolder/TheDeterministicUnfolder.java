@@ -13,13 +13,13 @@ import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.analysis.exception.UnboundedException;
 import uniol.apt.util.Pair;
-import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
+import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFSolvingObject;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 
 public class TheDeterministicUnfolder extends Unfolder {
 
-	public TheDeterministicUnfolder(QBFPetriGame petriGame, Map<String, Integer> max) {
+	public TheDeterministicUnfolder(QBFSolvingObject petriGame, Map<String, Integer> max) {
 		super(petriGame, max);
 	}
 

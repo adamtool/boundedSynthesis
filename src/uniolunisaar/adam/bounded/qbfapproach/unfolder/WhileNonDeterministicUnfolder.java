@@ -11,7 +11,7 @@ import uniol.apt.adt.pn.Marking;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.analysis.exception.UnboundedException;
-import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
+import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFSolvingObject;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 
@@ -26,7 +26,7 @@ import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 public class WhileNonDeterministicUnfolder extends NonDeterministicUnfolder {
 	private Queue<String> placesToUnfold;
 
-	public WhileNonDeterministicUnfolder(QBFPetriGame QBFPetriGame, Map<String, Integer> max) {
+	public WhileNonDeterministicUnfolder(QBFSolvingObject QBFPetriGame, Map<String, Integer> max) {
 		super(QBFPetriGame, max);
 	}
 
@@ -93,7 +93,7 @@ public class WhileNonDeterministicUnfolder extends NonDeterministicUnfolder {
 				return true;
 			}
 			for (Place prePre : pre.getPreset()) {
-				if (pg.getEnvPlaces().contains(prePre)) {
+				if (pg.getGame().getEnvPlaces().contains(prePre)) {
 					return true;
 				}
 			}

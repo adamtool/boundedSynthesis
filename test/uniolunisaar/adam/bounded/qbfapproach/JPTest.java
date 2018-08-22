@@ -7,7 +7,7 @@ import uniolunisaar.adam.generators.ManufactorySystem;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import uniol.apt.adt.pn.PetriNet;
+import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Safety;
 import uniolunisaar.adam.logic.util.AdamTools;
 
@@ -30,12 +30,12 @@ public class JPTest { // Job Processing
 	}
 
 	private void oneTest(int a, int n, int b) throws Exception {
-		PetriNet pn = ManufactorySystem.generate(a, true, true, true);
+		PetriGame pn = ManufactorySystem.generate(a, true, true, true);
 		QBFSafetySolver sol = new QBFSafetySolver(pn, new Safety(), new QBFSolverOptions(n, b));
 		sol.existsWinningStrategy(); // calculate first, then output games, and then check for correctness
 		// TODO put this to an appropriate place in code
-		AdamTools.savePG2PDF("originalGame", sol.game.getNet(), false);
-		AdamTools.savePG2PDF("unfolding", sol.unfolding.getNet(), false);
+		AdamTools.savePG2PDF("originalGame", sol.game, false);
+		AdamTools.savePG2PDF("unfolding", sol.unfolding, false);
 		if (sol.existsWinningStrategy()) {
 			AdamTools.savePG2PDF("strategy", sol.getStrategy(), false);
 		}

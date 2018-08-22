@@ -7,14 +7,14 @@ import java.util.Set;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
-import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
+import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFSolvingObject;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolver;
 
 public abstract class NonDeterministicUnfolder extends Unfolder {
 
 	protected Set<Place> placesWithCopiedTransitions = new HashSet<>(); // Maintained during unfolding in order to afterwards add additional places
 	
-	public NonDeterministicUnfolder(QBFPetriGame petriGame, Map<String, Integer> max) {
+	public NonDeterministicUnfolder(QBFSolvingObject petriGame, Map<String, Integer> max) {
 		super(petriGame, max);
 	}
 	
@@ -69,7 +69,7 @@ public abstract class NonDeterministicUnfolder extends Unfolder {
 					}
 					if (otherTransitions.size() > 0) {
 						// create additional system place and place token
-						Place newSysPlace = pg.getNet().createPlace(QBFSolver.additionalSystemName + t.getId() + QBFSolver.additionalSystemUniqueDivider + p.getId());
+						Place newSysPlace = pg.getGame().createPlace(QBFSolver.additionalSystemName + t.getId() + QBFSolver.additionalSystemUniqueDivider + p.getId());
 						newSysPlace.setInitialToken(1);
 						// add transition the unfolding is based on BEFORE requiring system to decide for at least one
 						otherTransitions.add(t);
@@ -78,7 +78,8 @@ public abstract class NonDeterministicUnfolder extends Unfolder {
 						for (Transition trans : otherTransitions) {
 							pn.createFlow(newSysPlace, trans);
 							pn.createFlow(trans, newSysPlace);
-							pg.getFl().get(trans).add(new Pair<> (newSysPlace, newSysPlace));
+                                                        Map<Transition, Set<Pair<Place, Place>>> map = pg.getFl();
+							map.get(trans).add(new Pair<> (newSysPlace, newSysPlace));
 						}
 					}
 				}
@@ -119,7 +120,7 @@ public abstract class NonDeterministicUnfolder extends Unfolder {
 		// actual unfolding
 		for (int i = 0; i < maxNumberOfUnfoldings; ++i) {
 			// create new place
-			Place newP = pg.getNet().createPlace(p_id + "__" + current.get(p_id));
+			Place newP = pg.getGame().createPlace(p_id + "__" + current.get(p_id));
 			copies.add(newP);
 			current.put(p_id, current.get(p_id) + 1);
 			for (Pair<String, Object> pair : p.getExtensions()) {
@@ -133,25 +134,26 @@ public abstract class NonDeterministicUnfolder extends Unfolder {
 			for (Transition pre_transition : preSet) {
 				Transition newT = copyTransition(pre_transition);
 				for (Place prePre : pre_transition.getPreset()) {
-					pg.getNet().createFlow(prePre, newT);
+					pg.getGame().createFlow(prePre, newT);
 					placesWithCopiedTransitions.add(prePre);
 				}
 
 				for (Place prePost : pre_transition.getPostset()) {
 					if (prePost.equals(p)) {
-						pg.getNet().createFlow(newT, newP);
+						pg.getGame().createFlow(newT, newP);
 					} else {
-						pg.getNet().createFlow(newT, prePost);
+						pg.getGame().createFlow(newT, prePost);
 					}
 				}
 				
-				for (Pair<Place, Place> fl : pg.getFl().get(pre_transition)) {
+                                Map<Transition, Set<Pair<Place, Place>>> map = pg.getFl();
+				for (Pair<Place, Place> fl : map.get(pre_transition)) {
 					Place first = fl.getFirst();
 					Place second = fl.getSecond();
 					if (second.equals(p)) {
-						pg.getFl().get(newT).add(new Pair<>(first, newP));
+						map.get(newT).add(new Pair<>(first, newP));
 					} else {
-						pg.getFl().get(newT).add(new Pair<>(first, second));
+						map.get(newT).add(new Pair<>(first, second));
 					}
 				}
 			}
@@ -163,23 +165,24 @@ public abstract class NonDeterministicUnfolder extends Unfolder {
 				Transition newT = copyTransition(post_transition);
 				for (Place postPre : post_transition.getPreset()) {
 					if (postPre.equals(p)) {
-						pg.getNet().createFlow(newP, newT);
+						pg.getGame().createFlow(newP, newT);
 					} else {
-						pg.getNet().createFlow(postPre, newT);
+						pg.getGame().createFlow(postPre, newT);
 					}
 				}
 
 				for (Place postPost : post_transition.getPostset()) {
-					pg.getNet().createFlow(newT, postPost);
+					pg.getGame().createFlow(newT, postPost);
 				}
 				
-				for (Pair<Place, Place> fl : pg.getFl().get(post_transition)) {
+                                Map<Transition, Set<Pair<Place, Place>>> map = pg.getFl();
+				for (Pair<Place, Place> fl : map.get(post_transition)) {
 					Place first = fl.getFirst();
 					Place second = fl.getSecond();
 					if (first.equals(p)) {
-						pg.getFl().get(newT).add(new Pair<>(newP, second));
+						map.get(newT).add(new Pair<>(newP, second));
 					} else {
-						pg.getFl().get(newT).add(new Pair<>(first, second));
+						map.get(newT).add(new Pair<>(first, second));
 					}
 				}
 			}
@@ -203,24 +206,25 @@ public abstract class NonDeterministicUnfolder extends Unfolder {
 
 					for (Place postPre : loop.getPreset()) {
 						placesWithCopiedTransitions.add(postPre);
-						pg.getNet().createFlow(postPre, newT);
+						pg.getGame().createFlow(postPre, newT);
 					}
 
 					for (Place prePost : loop.getPostset()) {
 						if (prePost.equals(p)) {
-							pg.getNet().createFlow(newT, p2);
+							pg.getGame().createFlow(newT, p2);
 						} else {
-							pg.getNet().createFlow(newT, prePost);
+							pg.getGame().createFlow(newT, prePost);
 						}
 					}
 					
-					for (Pair<Place, Place> fl : pg.getFl().get(loop)) {
+                                        Map<Transition, Set<Pair<Place, Place>>> map = pg.getFl();
+					for (Pair<Place, Place> fl : map.get(loop)) {
 						Place first = fl.getFirst();
 						Place second = fl.getSecond();
 						if (first.equals(p)) {
-							pg.getFl().get(newT).add(new Pair<>(first, p2));
+							map.get(newT).add(new Pair<>(first, p2));
 						} else {
-							pg.getFl().get(newT).add(new Pair<>(first, second));
+							map.get(newT).add(new Pair<>(first, second));
 						}
 					}
 				}
