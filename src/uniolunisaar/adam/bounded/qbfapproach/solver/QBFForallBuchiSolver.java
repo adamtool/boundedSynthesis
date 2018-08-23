@@ -45,7 +45,7 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 		Set<Integer> initial = new HashSet<>();
 		for (Place p : pn.getPlaces()) {
 			if (initialMarking.getToken(p).getValue() == 1) {
-				if (AdamExtensions.isBuchi(p)) {
+				if (pg.getGame().isBuchi(p)) {
 					initial.add(getVarNr(p.getId() + "." + 1 + "." + "objective", true));
 				} else {
 					initial.add(getVarNr(p.getId() + "." + 1 + "." + "notobjective", true));
@@ -81,7 +81,7 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 
 			for (Place p : t.getPostset()) {
 				// Buchi place reached
-				if (AdamExtensions.isBuchi(p)) {
+				if (pg.getGame().isBuchi(p)) {
 					and.add(getVarNr(p.getId() + "." + (i + 1) + "." + "objective", true));
 				} else {
 					Set<Place> tokenFlow = getIncomingTokenFlow(t, p);

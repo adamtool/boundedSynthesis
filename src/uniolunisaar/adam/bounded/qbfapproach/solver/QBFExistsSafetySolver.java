@@ -40,7 +40,7 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 		Set<Integer> initial = new HashSet<>();
 		for (Place p : pn.getPlaces()) {
 			if (initialMarking.getToken(p).getValue() == 1) {
-				if (AdamExtensions.isBad(p)) {
+				if (pg.getGame().isBad(p)) {
 					initial.add(getVarNr(p.getId() + "." + 1 + "." + "objective", true));
 				} else {
 					initial.add(getVarNr(p.getId() + "." + 1 + "." + "notobjective", true));
@@ -76,7 +76,7 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 
 			for (Place p : t.getPostset()) {
 				// bad place reached
-				if (AdamExtensions.isBad(p)) {
+				if (pg.getGame().isBad(p)) {
 					and.add(getVarNr(p.getId() + "." + (i + 1) + "." + "objective", true));
 				} else {
 					Set<Place> tokenFlow = getIncomingTokenFlow(t, p);

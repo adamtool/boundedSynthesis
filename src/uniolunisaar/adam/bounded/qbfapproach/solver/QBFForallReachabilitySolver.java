@@ -40,7 +40,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 		Set<Integer> initial = new HashSet<>();
 		for (Place p : pn.getPlaces()) {
 			if (initialMarking.getToken(p).getValue() == 1) {
-				if (AdamExtensions.isReach(p)) {
+				if (pg.getGame().isReach(p)) {
 					initial.add(getVarNr(p.getId() + "." + 1 + "." + "objective", true));
 				} else {
 					initial.add(getVarNr(p.getId() + "." + 1 + "." + "notobjective", true));
@@ -76,7 +76,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 
 			for (Place p : t.getPostset()) {
 				// good place reached
-				if (AdamExtensions.isReach(p)) {
+				if (pg.getGame().isReach(p)) {
 					and.add(getVarNr(p.getId() + "." + (i + 1) + "." + "objective", true));
 				} else {
 					Set<Place> tokenFlow = getIncomingTokenFlow(t, p);

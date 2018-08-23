@@ -31,7 +31,7 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 		PetriGameAnnotator.parseAndAnnotateTokenflow(pn);
 		Map<Transition, Set<Pair<Place, Place>>> tfl = new HashMap<>();
 		for (Transition t : pn.getTransitions()) {
-			List<TokenFlow> list = AdamExtensions.getTokenFlow(t);
+			List<TokenFlow> list = getSolvingObject().getGame().getTokenFlow(t);
 			Set<Pair<Place, Place>> set = new HashSet<>();
 			for (TokenFlow tf : list) {
 				for (Place pre : tf.getPreset()) {
@@ -113,7 +113,7 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 	protected int getAllObjectiveFlowChain(Place p, Transition t, int i, Set<Place> tokenFlow) throws IOException {
 		Pair<Boolean, Integer> result = getVarNrWithResult("allOBJECTIVEFlowChain" + p.getId() + "." + t.getId() + "." + i);
 		if (result.getFirst()) {
-			List<TokenFlow> list = AdamExtensions.getTokenFlow(t);
+			List<TokenFlow> list = getSolvingObject().getGame().getTokenFlow(t);
 			for (TokenFlow tfl : list) {
 				if (tfl.getPostset().contains(p) && tfl.getPreset().isEmpty()) {
 					Pair<Boolean, Integer> or = getVarNrWithResult("or()");
@@ -136,7 +136,7 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 	protected int getOneNotObjectiveFlowChain(Place p, Transition t, int i, Set<Place> tokenflow) throws IOException {
 		Pair<Boolean, Integer> result = getVarNrWithResult("oneNOTOBJECTIVEFlowChain" + p.getId() + "." + t.getId() + "." + i);
 		if (result.getFirst()) {
-			List<TokenFlow> list = AdamExtensions.getTokenFlow(t);
+			List<TokenFlow> list = getSolvingObject().getGame().getTokenFlow(t);
 			for (TokenFlow tfl : list) {
 				if (tfl.getPostset().contains(p) && tfl.getPreset().isEmpty()) {
 					Pair<Boolean, Integer> and = getVarNrWithResult("and()");

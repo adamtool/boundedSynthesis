@@ -18,7 +18,6 @@ import java.util.Random;
 import java.util.Set;
 
 import uniol.apt.adt.pn.Marking;
-import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.analysis.exception.UnboundedException;
@@ -106,13 +105,13 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 	protected int[] terminatingSubFormulas;
 	protected File file = null;
 
-	public static boolean checkStrategy(PetriNet origNet, PetriNet strat) {
+	public static boolean checkStrategy(PetriGame origNet, PetriGame strat) {
 		// some preparation
 		for (Place p : origNet.getPlaces()) {
-			AdamExtensions.setOrigID(p, Unfolder.getTruncatedId(p.getId()));
+			origNet.setOrigID(p, Unfolder.getTruncatedId(p.getId()));
 		}
 		for (Place p : strat.getPlaces()) {
-			AdamExtensions.setOrigID(p, Unfolder.getTruncatedId(p.getId()));
+			strat.setOrigID(p, Unfolder.getTruncatedId(p.getId()));
 		}
 		for (Transition t : strat.getTransitions()) {
 			t.setLabel(Unfolder.getTruncatedId(t.getId()));
@@ -407,7 +406,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 		Transition[] sys_transitions;
 		for (Place sys : pn.getPlaces()) {
 			// Additional system places are not forced to behave deterministically, this is the faster variant (especially the larger the PG becomes)
-			if (!AdamExtensions.isEnvironment(sys) && !sys.getId().startsWith(QBFSolver.additionalSystemName)) {
+			if (!pg.getGame().isEnvironment(sys) && !sys.getId().startsWith(QBFSolver.additionalSystemName)) {
 				if (sys.getPostset().size() > 1) {
 					sys_transitions = sys.getPostset().toArray(new Transition[0]);
 					for (int j = 0; j < sys_transitions.length; ++j) {
@@ -643,7 +642,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 	}
 
 	protected int addSysStrategy(Place p, Transition t) {
-		if (!AdamExtensions.isEnvironment(p)) {
+		if (!pg.getGame().isEnvironment(p)) {
 			if (p.getId().startsWith(QBFSolver.additionalSystemName)) {
 				return getVarNr(p.getId() + ".." + t.getId(), true);
 			} else {
@@ -657,7 +656,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 	protected void addExists() throws IOException {
 		Set<Integer> exists = new HashSet<>();
 		for (Place p : pg.getGame().getPlaces()) {
-			if (!AdamExtensions.isEnvironment(p)) {
+			if (!pg.getGame().isEnvironment(p)) {
 				if (p.getId().startsWith(QBFSolver.additionalSystemName)) {
 					for (Transition t : p.getPostset()) {
 						int number = createVariable(p.getId() + ".." + t.getId());
