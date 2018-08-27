@@ -23,7 +23,6 @@ import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFSolvingObject;
 import uniolunisaar.adam.ds.solver.Solver;
-import uniolunisaar.adam.ds.petrigame.AdamExtensions;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 
@@ -73,13 +72,13 @@ public abstract class QBFConSolver<W extends WinningCondition> extends Solver<QB
 		 int n = so.getN();
 	        int b = so.getB();
 	        if (n == -1) {
-	            if (AdamExtensions.hasBoundedParameterN(game)) {
-	                n = AdamExtensions.getBoundedParameterN(game);
+	            if (getSolvingObject().hasBoundedParameterNinExtension()) {
+	                n = getSolvingObject().getBoundedParameterNFromExtension();
 	            }
 	        }
 	        if (b == -1) {
-	            if (AdamExtensions.hasBoundedParameterB(game)) {
-	                b = AdamExtensions.getBoundedParameterB(game);
+	            if (getSolvingObject().hasBoundedParameterBinExtension()) {
+	                b = getSolvingObject().getBoundedParameterBFromExtension();
 	            }
 	        }
 	        if (n == -1 || b == -1) {
