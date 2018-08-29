@@ -13,15 +13,12 @@ import java.util.Set;
 import org.apache.commons.io.FileUtils;
 
 import uniol.apt.adt.pn.Marking;
-import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
-import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFPetriGame;
-import uniolunisaar.adam.bounded.qbfapproach.petrigame.QCIRconsistency;
 import uniolunisaar.adam.ds.exceptions.NotSupportedGameException;
-import uniolunisaar.adam.ds.util.AdamExtensions;
+import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Safety;
 
 public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
@@ -35,8 +32,8 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
 	private Map<Transition, Integer[]> tt = new HashMap<>();
 	private Map<Place, Integer[]> nc = new HashMap<>();
 
-	public QBFSafetySolverTransitions(PetriNet net, Safety winCon, QBFSolverOptions so) throws BoundedParameterMissingException, NotSupportedGameException {
-		super(new QBFPetriGame(net), winCon, so);
+	public QBFSafetySolverTransitions(PetriGame game, Safety winCon, QBFSolverOptions so) throws BoundedParameterMissingException, NotSupportedGameException {
+		super(game, winCon, so);
 		bad = new int[pg.getN() + 1];
 		for (Place p : pn.getPlaces()) {
 			gp.put(p, new Integer[pg.getN() + 1]);
@@ -217,7 +214,7 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
 				and.clear();
 				for (Place pre : t.getPreset()) {
 					and.add(getVarNr(pre.getId() + "." + i, true));
-					if (pg.getEnvPlaces().contains(pre)) {
+					if (pg.getGame().getEnvPlaces().contains(pre)) {
 						//and.add(getVarNr(pre.getId() + "." + t.getId() + "." + i, true));		// TODO removed env decision
 					} else {
 						// system place
@@ -312,7 +309,7 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
 		Set<Integer> and = new HashSet<>();
 		for (int i = 1; i <= pg.getN(); ++i) {
 			and.clear();
-			for (Place p : getWinningCondition().getBadPlaces()) {
+			for (Place p : getSolvingObject().getWinCon().getBadPlaces()) {
 				and.add(-getVarNr(p.getId() + "." + i, true));
 			}
 			nobadplaces[i] = writeAnd(and);
@@ -322,7 +319,7 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
 	
 	
 	protected void writeNoBadPlaces() throws IOException {
-		if (!getWinningCondition().getBadPlaces().isEmpty()) {
+		if (!getSolvingObject().getWinCon().getBadPlaces().isEmpty()) {
 			String[] nobadplaces = getNoBadPlaces();
 			for (int i = 1; i <= pg.getN(); ++i) {
 				bad[i] = createUniqueID();
@@ -346,7 +343,7 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
 					if (strat != 0) {
 						or.add(-strat); // "p.t" if sys
 					}
-					if (pg.getEnvPlaces().contains(p)) {
+					if (pg.getGame().getEnvPlaces().contains(p)) {
 						//or.add(-getVarNr(p.getId() + "." + t.getId() + "." + i, true));		// TODO removed env decision
 					}
 				}
@@ -415,7 +412,7 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
 			if (strat != 0) {
 				or.add(-strat);
 			}
-			if (pg.getEnvPlaces().contains(p)) {
+			if (pg.getGame().getEnvPlaces().contains(p)) {
 				// or.add(-getVarNr(p.getId() + "." + t1.getId() + "." + i, true));		// TODO removed env decision
 			}
 		}
@@ -425,7 +422,7 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
 			if (strat != 0) {
 				or.add(-strat);
 			}
-			if (pg.getEnvPlaces().contains(p)) {
+			if (pg.getGame().getEnvPlaces().contains(p)) {
 				// or.add(-getVarNr(p.getId() + "." + t2.getId() + "." + i, true));		// TODO removed env decision
 			}
 		}
@@ -446,7 +443,7 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
 		for (Place sys : pn.getPlaces()) {
 			// Additional system places are not forced to behave deterministically, this is
 			// the faster variant (especially the larger the PG becomes)
-			if (!AdamExtensions.isEnvironment(sys) && !sys.getId().startsWith(QBFSolver.additionalSystemName)) {
+			if (!pg.getGame().isEnvironment(sys) && !sys.getId().startsWith(QBFSolver.additionalSystemName)) {
 				if (sys.getPostset().size() > 1) {
 					sys_transitions = sys.getPostset().toArray(new Transition[0]);
 					for (int j = 0; j < sys_transitions.length; ++j) {
@@ -540,10 +537,10 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
 		Map<Place, Set<Transition>> systemHasToDecideForAtLeastOne = unfoldPG();
 
 		if (QBFSolver.mcmillian) {
-			Set<Place> oldBad = new HashSet<>(getWinningCondition().getBadPlaces());
-	        getWinningCondition().buffer(pg);
+			Set<Place> oldBad = new HashSet<>(getSolvingObject().getWinCon().getBadPlaces());
+	        getWinningCondition().buffer(pg.getGame());
 	        for (Place old : oldBad) {
-	        	getWinningCondition().getBadPlaces().remove(old);
+	        	getSolvingObject().getWinCon().getBadPlaces().remove(old);
 	        }
 		}
         
