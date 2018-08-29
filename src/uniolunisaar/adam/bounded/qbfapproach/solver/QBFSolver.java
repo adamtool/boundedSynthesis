@@ -85,9 +85,9 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 	// working copy of the game
 	public QBFSolvingObject pg;
 //	protected PetriNet pn; // todo MG: changed this
-	protected PetriGame pn; 
+	protected PetriGame pn; // working copy
 
-	public PetriGame game;
+	public PetriGame game; // original
 	public PetriGame unfolding;
 	public PetriGame strategy;
 
