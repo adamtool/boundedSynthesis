@@ -33,11 +33,12 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 			List<TokenFlow> list = getSolvingObject().getGame().getTokenFlow(t);
 			Set<Pair<Place, Place>> set = new HashSet<>();
 			for (TokenFlow tf : list) {
-				for (Place pre : tf.getPreset()) {
+//				for (Place pre : tf.getPreset()) {
+                                        Place pre = tf.getPresetPlace();
 					for (Place post : tf.getPostset()) {
 						set.add(new Pair<>(pre, post));
 					}
-				}
+//				}
 			}
 			tfl.put(t, set);
 		}
@@ -114,7 +115,7 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 		if (result.getFirst()) {
 			List<TokenFlow> list = getSolvingObject().getGame().getTokenFlow(t);
 			for (TokenFlow tfl : list) {
-				if (tfl.getPostset().contains(p) && tfl.getPreset().isEmpty()) {
+				if (tfl.getPostset().contains(p) && tfl.isInitial()) {
 					Pair<Boolean, Integer> or = getVarNrWithResult("or()");
 					if (or.getFirst()) {
 						writer.write(or.getSecond() + " = or()" + QBFSolver.linebreak);
@@ -137,7 +138,7 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 		if (result.getFirst()) {
 			List<TokenFlow> list = getSolvingObject().getGame().getTokenFlow(t);
 			for (TokenFlow tfl : list) {
-				if (tfl.getPostset().contains(p) && tfl.getPreset().isEmpty()) {
+				if (tfl.getPostset().contains(p) && tfl.isInitial()) {
 					Pair<Boolean, Integer> and = getVarNrWithResult("and()");
 					if (and.getFirst()) {
 						writer.write(and.getSecond() + " = and()" + QBFSolver.linebreak);
