@@ -57,7 +57,7 @@ public class ReachabilityTest {
 		test ("toyExamples", "infiniteA", true, 10, 0);
 		test ("toyExamples", "infiniteB", false, 10, 0);
 		test ("toyExamples", "infiniteC", false, 10, 0);
-		test ("toyExamples", "infiniteD", true, 10, 0);
+		test ("toyExamples", "infiniteD", true, 12, 0);
 	
 		// correct as for some env behavior the place-to-reach is not reached
 		test ("toyExamples", "notReachable", false, 10, 0);

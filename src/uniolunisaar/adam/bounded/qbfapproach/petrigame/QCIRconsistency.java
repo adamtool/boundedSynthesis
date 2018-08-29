@@ -101,9 +101,9 @@ public class QCIRconsistency {
 			for (int def : defined) {
 				if (!used.contains(def)) {
 					System.out.println(def + " is defined but never used.");
+					return false;
 				}
 			}
-			return false;
 		}
 		if (numberAndTrue > 1 || numberOrFalse > 1) {
 			System.out.println("and() " + numberAndTrue + " or or() " + numberOrFalse + " is defined redundantly.");

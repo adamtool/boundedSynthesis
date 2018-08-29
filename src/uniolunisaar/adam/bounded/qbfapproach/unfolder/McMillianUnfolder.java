@@ -27,7 +27,7 @@ public class McMillianUnfolder extends Unfolder {
 
 	// Pair<Place, Transition>
 	// Pair<Transition, Set<Place>>
-	
+
 	Set<Pair<String, String>> conflicts = new HashSet<>();
 
 	Set<Pair<Transition, Set<Place>>> closed = new HashSet<>();
@@ -54,23 +54,6 @@ public class McMillianUnfolder extends Unfolder {
 			} else if (initial.getToken(p).getValue() > 1) {
 				// throw error exception -> not safe
 				System.out.println("ERROR");
-			}
-		}
-		
-		
-		Set<String> conflictIDs = new HashSet<>();
-		conflictIDs.add("t0");
-		conflictIDs.add("t1");
-		conflictIDs.add("t2");
-		conflictIDs.add("t3");
-		conflictIDs.add("t4");
-		conflictIDs.add("t5");
-		conflictIDs.add("t6");
-		for (String id1 : conflictIDs) {
-			for (String id2 : conflictIDs) {
-				if (!id1.equals(id2)) {
-					conflicts.add(new Pair<>(id1, id2));
-				}
 			}
 		}
 	}
@@ -109,7 +92,6 @@ public class McMillianUnfolder extends Unfolder {
 			}
 		}
 
-		//System.out.println("FINITO");
 		unfolding.setN(pg.getN());
 		unfolding.setB(pg.getB());
 		pg = unfolding;
@@ -119,7 +101,7 @@ public class McMillianUnfolder extends Unfolder {
 	// TODO NAIVE AND STUPID implementation
 	private Set<Pair<Transition, Set<Place>>> possibleExtensions() {
 		Set<Pair<Transition, Set<Place>>> possibleExtensions = new HashSet<Pair<Transition, Set<Place>>>();
-		//System.out.println(unfoldingNet.getPlaces().size());
+		// System.out.println(unfoldingNet.getPlaces().size());
 		Set<Place> places = new HashSet<>(unfoldingNet.getPlaces());
 
 		for (Place p : unfoldingNet.getPlaces()) {
@@ -127,7 +109,7 @@ public class McMillianUnfolder extends Unfolder {
 				places.remove(p);
 			}
 		}
-		
+
 		for (Set<Place> element : myPowerset(places)) {
 			Set<String> idPlaces = new HashSet<>();
 			Set<String> preTrans = new HashSet<>();
@@ -173,11 +155,11 @@ public class McMillianUnfolder extends Unfolder {
 	}
 
 	public static int max = 2;
-	
-	public static <T> Set<Set<T>> myPowerset (Set<T> originalSet) {
+
+	public static <T> Set<Set<T>> myPowerset(Set<T> originalSet) {
 		Set<Set<T>> result = new HashSet<>();
 		result.add(new HashSet<>());
-		for (int i = 1; i<= max; ++i) {
+		for (int i = 1; i <= max; ++i) {
 			for (Set<T> elementResult : result) {
 				Set<Set<T>> addList = new HashSet<>();
 				for (T element : originalSet) {
@@ -189,10 +171,10 @@ public class McMillianUnfolder extends Unfolder {
 				result = addList;
 			}
 		}
-		//System.out.println("REDUCED POWERSET SIZE: " + result.size());
+		// System.out.println("REDUCED POWERSET SIZE: " + result.size());
 		return result;
 	}
-	
+
 	public static <T> Set<Set<T>> powerset(Set<T> originalSet) {
 		Set<Set<T>> sets = new HashSet<Set<T>>();
 		if (originalSet.isEmpty()) {

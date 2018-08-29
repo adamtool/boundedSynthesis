@@ -6,10 +6,10 @@ import uniol.apt.adt.pn.PetriNet;
 import uniolunisaar.adam.generators.SelfOrganizingRobots;
 import uniolunisaar.adam.tools.Tools;
 
-@Test
+//@Test
 public class SelfReconfiguringRobotsBenchmark {
 
-	@Test
+	//@Test
 	public void test() throws Exception {
 		oneBenchmark(2, 1, 6, 2, "SR-sat-");
 		oneBenchmark(3, 1, 7, 2, "SR-sat-");

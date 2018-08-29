@@ -76,6 +76,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 	public static boolean deterministicStrat = true; // Controller
 	public static boolean debug = false;
 	public static boolean edacc = false;
+	public static boolean mcmillian = false; // Unfolder
 
 	// Caches
 	private Map<Transition, Set<Place>> restCache = new HashMap<>(); // proven to be slightly useful in terms of performance

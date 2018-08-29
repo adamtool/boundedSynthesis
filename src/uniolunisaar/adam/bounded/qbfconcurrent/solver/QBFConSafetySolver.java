@@ -278,12 +278,15 @@ public class QBFConSafetySolver extends QBFConSolver<Safety> {
         
         getWinningCondition().buffer(pg.getGame());
         
-        /*this.pg = unfolder.pg;
-        this.pn = unfolder.pn;
-        
-        /*Set<Place> oldBad = new HashSet<>(getWinningCondition().getBadPlaces());
-        for (Place old : oldBad) {
-        	getWinningCondition().getBadPlaces().remove(old);
+        // TODO retest McMillian with new setting of bad places etc
+        /*if (QBFSolver.mcmillian) {
+	        this.pg = unfolder.pg;
+	        this.pn = unfolder.pn;
+	        
+	        Set<Place> oldBad = new HashSet<>(getWinningCondition().getBadPlaces());
+	        for (Place old : oldBad) {
+	        	getWinningCondition().getBadPlaces().remove(old);
+	        }
         }*/
         
         seqImpliesWin = new int[pg.getN() + 1];

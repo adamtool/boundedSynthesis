@@ -6,38 +6,38 @@ import uniol.apt.adt.pn.PetriNet;
 import uniolunisaar.adam.generators.Workflow;
 import uniolunisaar.adam.tools.Tools;
 
-@Test
+//@Test
 public class ConcurrentMachinesBenchmark {						//    190 sec
 	
-	@Test
+	//@Test
 	public void CMBenchmark_6_3() throws Exception {
 		for (int i = 2; i <= 21; ++i) {
 			oneBenchmark(i, 1, 6, 3, "CM-sat-");
 		}
 	}
 	
-	@Test
+	//@Test
 	public void CMBenchmark_7_3() throws Exception {
 		for (int i = 2; i <= 21; ++i) {
 			oneBenchmark(i, 1, 7, 3, "CM-sat-");
 		}
 	}
 	
-	@Test
+	//@Test
 	public void CMBenchmark_6_4() throws Exception {
 		for (int i = 2; i <= 21; ++i) {
 			oneBenchmark(i, 1, 6, 4, "CM-sat-");
 		}
 	}
 	
-	@Test
+	//@Test
 	public void CMBenchmark_6_2() throws Exception {
 		for (int i = 2; i <= 21; ++i) {
 			oneBenchmark(i, 1, 6, 2, "CM-unsat-");
 		}
 	}
 	
-	@Test
+	//@Test
 	public void CMBenchmark_5_3() throws Exception {
 		for (int i = 2; i <= 21; ++i) {
 			oneBenchmark(i, 1, 5, 3, "CM-unsat-");

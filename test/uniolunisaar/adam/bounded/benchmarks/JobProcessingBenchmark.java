@@ -6,10 +6,10 @@ import uniol.apt.adt.pn.PetriNet;
 import uniolunisaar.adam.generators.ManufactorySystem;
 import uniolunisaar.adam.tools.Tools;
 
-@Test
+//@Test
 public class JobProcessingBenchmark {
 
-	@Test
+	//@Test
 	public void test() throws Exception {
 		oneBenchmark(2, 7, 3, "JP-sat-");
 		oneBenchmark(3, 8, 4, "JP-sat-");

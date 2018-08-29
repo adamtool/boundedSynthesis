@@ -6,10 +6,10 @@ import uniol.apt.adt.pn.PetriNet;
 import uniolunisaar.adam.generators.Clerks;
 import uniolunisaar.adam.tools.Tools;
 
-@Test
+//@Test
 public class DocumentWorkflowBenchmark {						//    190 sec
 	
-	@Test
+	//@Test
 	public void DWBenchmark_6() throws Exception {
 		int j = 6;
 		for (int i = 1; i <= 25; ++i) {
@@ -17,7 +17,8 @@ public class DocumentWorkflowBenchmark {						//    190 sec
 			j += 2;
 		}
 	}
-	@Test
+	
+	//@Test
 	public void DWBenchmark_tooShort() throws Exception {
 		int j = 7;
 		for (int i = 1; i <= 25; ++i) {
@@ -26,7 +27,7 @@ public class DocumentWorkflowBenchmark {						//    190 sec
 		}
 	}
 	
-	@Test
+	//@Test
 	public void DWBenchmark_short() throws Exception {
 		int j = 8;
 		for (int i = 1; i <= 25; ++i) {
@@ -35,7 +36,7 @@ public class DocumentWorkflowBenchmark {						//    190 sec
 		}
 	}
 	
-	@Test
+	//@Test
 	public void DWBenchmark_9() throws Exception {
 		int j = 9;
 		for (int i = 1; i <= 25; ++i) {
@@ -44,7 +45,7 @@ public class DocumentWorkflowBenchmark {						//    190 sec
 		}
 	}
 	
-	@Test
+	//@Test
 	public void DWBenchmark_10() throws Exception {
 		int j = 10;
 		for (int i = 1; i <= 25; ++i) {
@@ -53,7 +54,7 @@ public class DocumentWorkflowBenchmark {						//    190 sec
 		}
 	}
 	
-	@Test
+	//@Test
 	public void DWsBenchmark_3() throws Exception {
 		int j = 3;
 		for (int i = 1; i <= 25; ++i) {
@@ -62,7 +63,7 @@ public class DocumentWorkflowBenchmark {						//    190 sec
 		}
 	}
 	
-	@Test
+	//@Test
 	public void DWsBenchmark_tooShort() throws Exception {
 		int j = 4;
 		for (int i = 1; i <= 25; ++i) {
@@ -71,7 +72,7 @@ public class DocumentWorkflowBenchmark {						//    190 sec
 		}
 	}
 	
-	@Test
+	//@Test
 	public void DWsBenchmark_short() throws Exception {
 		int j = 5;
 		for (int i = 1; i <= 25; ++i) {
@@ -80,7 +81,7 @@ public class DocumentWorkflowBenchmark {						//    190 sec
 		}
 	}
 	
-	@Test
+	//@Test
 	public void DWsBenchmark_6() throws Exception {
 		int j = 6;
 		for (int i = 1; i <= 15; ++i) {
@@ -89,7 +90,7 @@ public class DocumentWorkflowBenchmark {						//    190 sec
 		}
 	}
 	
-	@Test
+	//@Test
 	public void DWsBenchmark_7() throws Exception {
 		int j = 7;
 		for (int i = 1; i <= 15; ++i) {
