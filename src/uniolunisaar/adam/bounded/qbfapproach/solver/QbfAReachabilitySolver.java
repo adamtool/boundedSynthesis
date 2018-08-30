@@ -17,12 +17,12 @@ import uniolunisaar.adam.bounded.qbfapproach.petrigame.QCIRconsistency;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Reachability;
 
-public class QBFReachabilitySolver extends QBFSolver<Reachability> {
+public class QbfAReachabilitySolver extends QBFSolver<Reachability> {
 
 	// variable to store keys of calculated components for later use (special to this winning condition)
 	private int[] goodPlaces;
 
-	public QBFReachabilitySolver(PetriGame game, Reachability win, QBFSolverOptions so) throws BoundedParameterMissingException {
+	public QbfAReachabilitySolver(PetriGame game, Reachability win, QBFSolverOptions so) throws BoundedParameterMissingException {
 		super(game, win, so);
 		goodPlaces = new int[pg.getN() + 1];
 	}
@@ -174,7 +174,7 @@ public class QBFReachabilitySolver extends QBFSolver<Reachability> {
 		raf.close();
 
 		if (QBFSolver.debug) {
-			FileUtils.copyFile(file, new File(pn.getName() + ".qcir"));
+			FileUtils.copyFile(file, new File(pg.getGame().getName() + ".qcir"));
 		}
 
 		assert (QCIRconsistency.checkConsistency(file));

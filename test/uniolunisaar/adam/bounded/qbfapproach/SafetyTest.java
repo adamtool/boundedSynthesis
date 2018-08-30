@@ -5,7 +5,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import uniol.apt.adt.pn.PetriNet;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSafetySolver;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QbfASafetySolver;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolver;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverFactory;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;

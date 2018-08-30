@@ -94,7 +94,7 @@ public class QBFSafetySolverPlaces extends QBFSolver<Safety> {
         
 		initializeVariablesForWriteQCIR();
 
-		writer.write("#QCIR-G14" + QBFSolver.spacesToReplaceWithMaxVarNumber + QBFSolver.linebreak); // spaces left to add variable count in the end
+		writer.write("#QCIR-G14" + QBFSolver.replaceAfterWardsSpaces + QBFSolver.linebreak); // spaces left to add variable count in the end
 		addExists();
 		addForall();
 
@@ -155,7 +155,7 @@ public class QBFSafetySolverPlaces extends QBFSolver<Safety> {
 		raf.close();
 
 		if (QBFSolver.debug) {
-			FileUtils.copyFile(file, new File(pn.getName() + ".qcir"));
+			FileUtils.copyFile(file, new File(pg.getGame().getName() + ".qcir"));
 		}
 
 		assert (QCIRconsistency.checkConsistency(file));

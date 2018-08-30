@@ -12,14 +12,12 @@ import org.apache.commons.io.FileUtils;
 import uniol.apt.adt.pn.Marking;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
-import uniol.apt.io.parser.ParseException;
 import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QCIRconsistency;
-import uniolunisaar.adam.ds.exceptions.CouldNotFindSuitableWinningConditionException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Buchi;
 
-public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
+public class QbfABuchiSolver extends QBFFlowChainSolver<Buchi> {
 
 	private int[] noFlowChainEnded;
 	private int[] goodSimultan;
@@ -28,7 +26,7 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 	private int[] resetChoice;
 	private int bl; // buchi loop
 
-	public QBFForallBuchiSolver(PetriGame game, Buchi winCon, QBFSolverOptions options) throws BoundedParameterMissingException, CouldNotFindSuitableWinningConditionException, ParseException {
+	public QbfABuchiSolver(PetriGame game, Buchi winCon, QBFSolverOptions options) throws BoundedParameterMissingException {
 		super(game, winCon, options);
 		setTokenFlow();
 		noFlowChainEnded = new int[pg.getN() + 1];
@@ -42,7 +40,7 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 	protected String getInitial() {
 		Marking initialMarking = pg.getGame().getInitialMarking();
 		Set<Integer> initial = new HashSet<>();
-		for (Place p : pn.getPlaces()) {
+		for (Place p : pg.getGame().getPlaces()) {
 			if (initialMarking.getToken(p).getValue() == 1) {
 				if (pg.getGame().isBuchi(p)) {
 					initial.add(getVarNr(p.getId() + "." + 1 + "." + "objective", true));
@@ -95,7 +93,7 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 				}
 			}
 
-			Set<Place> places = new HashSet<>(pn.getPlaces());
+			Set<Place> places = new HashSet<>(pg.getGame().getPlaces());
 			places.removeAll(t.getPreset());
 			places.removeAll(t.getPostset());
 			for (Place p : places) {
@@ -141,7 +139,7 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 		Set<Integer> and = new HashSet<>();
 		for (int i = 1; i < pg.getN(); ++i) {
 			and.clear();
-			for (Place p : pn.getPlaces()) {
+			for (Place p : pg.getGame().getPlaces()) {
 				int id = createUniqueID();
 				writer.write(id + " = or(" + getVarNr(p.getId() + "." + i + "." + "empty", true) + "," + getVarNr(p.getId() + "." + i + "." + "objective", true) + ")" + QBFSolver.linebreak);
 				and.add(id);
@@ -164,7 +162,7 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 		Set<Integer> and = new HashSet<>();
 		for (int i = 1; i < pg.getN(); ++i) {
 			and.clear();
-			for (Place p : pn.getPlaces()) {
+			for (Place p : pg.getGame().getPlaces()) {
 				and.add(writeImplication(getVarNr(p.getId() + "." + i + "." + "empty", true), getVarNr(p.getId() + "." + (i + 1) + "." + "empty", true)));
 
 				and.add(writeImplication(getVarNr(p.getId() + "." + i + "." + "objective", true), getVarNr(p.getId() + "." + (i + 1) + "." + "notobjective", true)));
@@ -181,7 +179,7 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 		for (int i = 1; i < pg.getN(); ++i) {
 			and.clear();
 			or.clear();
-			for (int j = 0; j < pn.getTransitions().size(); ++j) {
+			for (int j = 0; j < pg.getGame().getTransitions().size(); ++j) {
 				or.add(getOneTransition(transitions[j], i));
 			}
 			int normalFlow = createUniqueID();
@@ -208,7 +206,7 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 		Set<Integer> and = new HashSet<>();
 		for (int i = 1; i < pg.getN(); ++i) {
 			and.clear();
-			for (Place p : pn.getPlaces()) {
+			for (Place p : pg.getGame().getPlaces()) {
 				if (!p.getId().startsWith(QBFSolver.additionalSystemName)) {
 					and.add(-getVarNr(p.getId() + "." + i + "." + "notobjective", true));
 				}
@@ -231,7 +229,7 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 		Set<Integer> and = new HashSet<>();
 		for (int i = 1; i < pg.getN(); ++i) {
 			and.clear();
-			for (Transition t : pn.getTransitions()) {
+			for (Transition t : pg.getGame().getTransitions()) {
 				for (Place p : t.getPreset()) {
 					if (!p.getId().startsWith(additionalSystemName)) {
 						if (getOutgoingTokenFlow(p, t).isEmpty()) {
@@ -259,7 +257,7 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 		for (int i = 1; i < pg.getN(); ++i) {
 			for (int j = i + 1; j <= pg.getN(); ++j) {
 				and.clear();
-				for (Place p : pn.getPlaces()) {
+				for (Place p : pg.getGame().getPlaces()) {
 					// additional system places cannot leave their places, they always loop
 					if (!p.getId().startsWith(additionalSystemName)) {
 						int p_i_safe = getVarNr(p.getId() + "." + i + "." + "objective", true);
@@ -316,7 +314,7 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 		Set<Integer> or = new HashSet<>();
 		for (int i = 2; i <= pg.getN(); ++i) {
 			and.clear();
-			for (Place p : pn.getPlaces()) {
+			for (Place p : pg.getGame().getPlaces()) {
 				if (!p.getId().startsWith(QBFSolver.additionalSystemName)) {
 					or.clear();
 					or.add(getVarNr(p.getId() + "." + i + "." + "empty", true));
@@ -443,7 +441,7 @@ public class QBFForallBuchiSolver extends QBFFlowChainSolver<Buchi> {
 		raf.close();
 
 		if (QBFSolver.debug) {
-			FileUtils.copyFile(file, new File(pn.getName() + ".qcir"));
+			FileUtils.copyFile(file, new File(pg.getGame().getName() + ".qcir"));
 		}
 
 		assert (QCIRconsistency.checkConsistency(file));

@@ -56,7 +56,7 @@ public class BuechiTest {
 //        QBFBuchiSolver sol = new QBFBuchiSolver(pn, new Buchi(), new QBFSolverOptions(n, b));
 		QBFSolver<? extends WinningCondition> sol = QBFSolverFactory.getInstance().getSolver(path, new QBFSolverOptions(n, b)); //todo MG: warum nicht so?
         sol.existsWinningStrategy();
-        AdamTools.savePG2PDF("originalGame", sol.game, false);
+        AdamTools.savePG2PDF("originalGame", sol.originalGame, false);
         AdamTools.savePG2PDF("unfolding", sol.unfolding, false);
         if (sol.existsWinningStrategy()) {
             AdamTools.savePG2PDF("strategy", sol.getStrategy(), false);
@@ -64,7 +64,7 @@ public class BuechiTest {
         Assert.assertEquals(sol.existsWinningStrategy(), result);
         
         if (sol.existsWinningStrategy()) {
-			assertTrue(QBFSolver.checkStrategy(sol.game, sol.strategy));
+			assertTrue(QBFSolver.checkStrategy(sol.originalGame, sol.strategy));
 		}
     }
 }

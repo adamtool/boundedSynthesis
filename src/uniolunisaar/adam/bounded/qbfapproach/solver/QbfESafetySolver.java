@@ -12,21 +12,19 @@ import org.apache.commons.io.FileUtils;
 import uniol.apt.adt.pn.Marking;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
-import uniol.apt.io.parser.ParseException;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QCIRconsistency;
-import uniolunisaar.adam.ds.exceptions.CouldNotFindSuitableWinningConditionException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Safety;
 
-public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
+public class QbfESafetySolver extends QBFFlowChainSolver<Safety> {
 
 	private int[] bad;
 	private int[] simultan;
 	private int sFlCE;
 
-	public QBFExistsSafetySolver(PetriGame game, Safety winCon, QBFSolverOptions options) throws BoundedParameterMissingException, CouldNotFindSuitableWinningConditionException, ParseException {
+	public QbfESafetySolver(PetriGame game, Safety winCon, QBFSolverOptions options) throws BoundedParameterMissingException {
 		super(game, winCon, options);
 		bad = new int[pg.getN() + 1];
 		simultan = new int[pg.getN() + 1];
@@ -37,7 +35,7 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 	protected String getInitial() {
 		Marking initialMarking = pg.getGame().getInitialMarking();
 		Set<Integer> initial = new HashSet<>();
-		for (Place p : pn.getPlaces()) {
+		for (Place p : pg.getGame().getPlaces()) {
 			if (initialMarking.getToken(p).getValue() == 1) {
 				if (pg.getGame().isBad(p)) {
 					initial.add(getVarNr(p.getId() + "." + 1 + "." + "objective", true));
@@ -90,7 +88,7 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 				}
 			}
 
-			Set<Place> places = new HashSet<>(pn.getPlaces());
+			Set<Place> places = new HashSet<>(pg.getGame().getPlaces());
 			places.removeAll(t.getPreset());
 			places.removeAll(t.getPostset());
 			for (Place p : places) {
@@ -136,7 +134,7 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 		Set<Integer> or = new HashSet<>();
 		for (int i = 1; i <= pg.getN(); ++i) {
 			or.clear();
-			for (Place p : pn.getPlaces()) {
+			for (Place p : pg.getGame().getPlaces()) {
 				if (!p.getId().startsWith(QBFSolver.additionalSystemName)) {
 					or.add(getVarNr(p.getId() + "." + i + "." + "notobjective", true));
 				}
@@ -229,7 +227,7 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 		for (int i = 1; i < pg.getN(); ++i) {
 			for (int j = i + 1; j <= pg.getN(); ++j) {
 				Set<Integer> and = new HashSet<>();
-				for (Place p : pn.getPlaces()) {
+				for (Place p : pg.getGame().getPlaces()) {
 					// additional system places cannot leave their places, they always loop
 					if (!p.getId().startsWith(additionalSystemName)) {
 						int p_i_safe = getVarNr(p.getId() + "." + i + "." + "objective", true);
@@ -314,6 +312,7 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 		Map<Place, Set<Transition>> systemHasToDecideForAtLeastOne = unfoldPG();
 
 		initializeVariablesForWriteQCIR();
+		System.out.println("FL: " + pg.getFl());
 
 		writer.write("#QCIR-G14          " + QBFSolver.linebreak); // spaces left to add variable count in the end
 		addExists();
@@ -395,7 +394,7 @@ public class QBFExistsSafetySolver extends QBFFlowChainSolver<Safety> {
 		raf.close();
 
 		if (QBFSolver.debug) {
-			FileUtils.copyFile(file, new File(pn.getName() + ".qcir"));
+			FileUtils.copyFile(file, new File(pg.getGame().getName() + ".qcir"));
 		}
 
 		assert (QCIRconsistency.checkConsistency(file));

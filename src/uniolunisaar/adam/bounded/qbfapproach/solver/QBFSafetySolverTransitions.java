@@ -35,13 +35,13 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
 	public QBFSafetySolverTransitions(PetriGame game, Safety winCon, QBFSolverOptions so) throws BoundedParameterMissingException, NotSupportedGameException {
 		super(game, winCon, so);
 		bad = new int[pg.getN() + 1];
-		for (Place p : pn.getPlaces()) {
+		for (Place p : pg.getGame().getPlaces()) {
 			gp.put(p, new Integer[pg.getN() + 1]);
 			rp.put(p, new Integer[pg.getN() + 1]);
 			sp.put(p, new Integer[pg.getN() + 1]);
 			nc.put(p, new Integer[pg.getN()]);
 		}
-		for (Transition t : pn.getTransitions()) {
+		for (Transition t : pg.getGame().getTransitions()) {
 			et.put(t, new Integer[pg.getN()]);
 			tt.put(t, new Integer[pg.getN()]);
 		}
@@ -60,7 +60,7 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
 		}*/
 		
 		for (int i = 1; i < pg.getN(); ++i) {
-			for (Transition t : pn.getTransitions()) {
+			for (Transition t : pg.getGame().getTransitions()) {
 				int number = createVariable(t.getId() + "." + i);
 				System.out.println(number + " : " + t.getId() + "." + i);
 				forall.add(number);
@@ -73,7 +73,7 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
 	protected void addPlaces() throws IOException {
 		Set<Integer> exists = new HashSet<>();
 		for (int i = 1; i <= pg.getN(); ++i) {
-			for (Place p : pn.getPlaces()) {
+			for (Place p : pg.getGame().getPlaces()) {
 				int number = 
 				createVariable(p.getId() + "." + i);
 				System.out.println(number + " : " + p.getId() + "." + i);
@@ -82,13 +82,13 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
 		}
 
 		writer.write(writeExists(exists));
-		writer.write("output(1)" + QBFSolver.spacesToReplaceWithMaxVarNumber + QBFSolver.linebreak);
+		writer.write("output(1)" + QBFSolver.replaceAfterWardsSpaces + QBFSolver.linebreak);
 	}
 	
 	protected Map<Place, String[]> getGenerateToken() {
 		Map<Place, String[]> generateToken = new HashMap<>();
 		Set<Integer> or = new HashSet<>(); 
-		for (Place p : pn.getPlaces()) {
+		for (Place p : pg.getGame().getPlaces()) {
 			String[] gp = new String[pg.getN() + 1];
 			for (int i = 1; i < pg.getN(); ++i) {
 				or.clear();
@@ -104,7 +104,7 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
 	
 	protected void writeGenerateToken() throws IOException {
 		Map<Place, String[]> generateToken = getGenerateToken();
-		for (Place p : pn.getPlaces()) {
+		for (Place p : pg.getGame().getPlaces()) {
 			for (int i = 2; i <= pg.getN(); ++i) {
 				int id = createUniqueID();
 				writer.write(id + " = " + generateToken.get(p)[i]);
@@ -117,7 +117,7 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
 	protected Map<Place, String[]> getRemoveToken() {
 		Map<Place, String[]> removeToken = new HashMap<>();
 		Set<Integer> or = new HashSet<>(); 
-		for (Place p : pn.getPlaces()) {
+		for (Place p : pg.getGame().getPlaces()) {
 			String[] rp = new String[pg.getN() + 1];
 			for (int i = 1; i < pg.getN(); ++i) {
 				or.clear();
@@ -133,7 +133,7 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
 	
 	protected void writeRemoveToken() throws IOException {
 		Map<Place, String[]> removeToken = getRemoveToken();
-		for (Place p : pn.getPlaces()) {
+		for (Place p : pg.getGame().getPlaces()) {
 			for (int i = 2; i <= pg.getN(); ++i) {
 				int id = createUniqueID();
 				writer.write(id + " = " + removeToken.get(p)[i]);
@@ -146,7 +146,7 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
 	protected Map<Place, String[]> getStayToken() {
 		Map<Place, String[]> stayToken = new HashMap<>();
 		Set<Integer> and = new HashSet<>();
-		for (Place p : pn.getPlaces()) {
+		for (Place p : pg.getGame().getPlaces()) {
 			String[] sp = new String[pg.getN() + 1];
 			for (int i = 1; i < pg.getN(); ++i) {
 				and.clear();
@@ -161,7 +161,7 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
 	
 	protected void writeStayToken() throws IOException {
 		Map<Place, String[]> stayToken = getStayToken();
-		for (Place p : pn.getPlaces()) {
+		for (Place p : pg.getGame().getPlaces()) {
 			for (int i = 2; i <= pg.getN(); ++i) {
 				int id = createUniqueID();
 				writer.write(id + " = " + stayToken.get(p)[i]);
@@ -174,7 +174,7 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
 	protected Map<Place, String[]> getToken() {
 		Map<Place, String[]> token = new HashMap<>();
 		Set<Integer> or = new HashSet<>();
-		for (Place p : pn.getPlaces()) {
+		for (Place p : pg.getGame().getPlaces()) {
 			String[] pp = new String[pg.getN() + 1];
 			for (int i = 1; i < pg.getN(); ++i) {
 				or.clear();
@@ -189,15 +189,15 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
 	
 	protected void writeToken() throws IOException {
 		Map<Place, String[]> token = getToken();
-		Marking initial = pn.getInitialMarking();
-		for (Place p : pn.getPlaces()) {
+		Marking initial = pg.getGame().getInitialMarking();
+		for (Place p : pg.getGame().getPlaces()) {
 			if (initial.getToken(p).getValue() >= 1) {
 				writer.write(getVarNr(p.getId() + "." + 1, true) + " = and()\n");
 			} else {
 				writer.write(getVarNr(p.getId() + "." + 1, true) + " = or()\n");
 			}
 		}
-		for (Place p : pn.getPlaces()) {
+		for (Place p : pg.getGame().getPlaces()) {
 			for (int i = 2; i <= pg.getN(); ++i) {
 				writer.write(getVarNr(p.getId() + "." + i, true) + " = " + token.get(p)[i]);
 			}
@@ -208,7 +208,7 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
 	protected Map<Transition, String[]> getEnabledTransition() {
 		Map<Transition, String[]> enabledTransition = new HashMap<>();
 		Set<Integer> and = new HashSet<>();
-		for (Transition t : pn.getTransitions()) {
+		for (Transition t : pg.getGame().getTransitions()) {
 			String[] et = new String[pg.getN()];
 			for (int i = 1; i < pg.getN(); ++i) {
 				and.clear();
@@ -230,7 +230,7 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
 	
 	protected void writeEnabledTransition() throws IOException {
 		Map<Transition, String[]> enabledTransition = getEnabledTransition();
-		for (Transition t : pn.getTransitions()) {
+		for (Transition t : pg.getGame().getTransitions()) {
 			for (int i = 1; i < pg.getN(); ++i) {
 				int id = createUniqueID();
 				writer.write(id + " = " + enabledTransition.get(t)[i]);
@@ -243,7 +243,7 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
 	protected Map<Transition, String[]> getTIE() {		// TIE = transition implies enabled 
 		Map<Transition, String[]> tie = new HashMap<>();
 		Set<Integer> or = new HashSet<>();
-		for (Transition t : pn.getTransitions()) {
+		for (Transition t : pg.getGame().getTransitions()) {
 			String[] tt = new String[pg.getN()];
 			for (int i = 1; i < pg.getN(); ++i) {
 				or.clear();
@@ -258,7 +258,7 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
 	
 	protected void writeTIE() throws IOException {
 		Map<Transition, String[]> tie = getTIE();
-		for (Transition t : pn.getTransitions()) {
+		for (Transition t : pg.getGame().getTransitions()) {
 			for (int i = 1; i < pg.getN(); ++i) {
 				int id = createUniqueID();
 				writer.write(id + " = " + tie.get(t)[i]);
@@ -271,11 +271,11 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
 	protected Map<Place, String[]> getNoConflict() throws IOException {
 		Map<Place, String[]> noConflict = new HashMap<>();
 		Set<Integer> and = new HashSet<>();
-		for (Place p : pn.getPlaces()) {
+		for (Place p : pg.getGame().getPlaces()) {
 			String[] nc = new String[pg.getN()];
 			for (int i = 1; i < pg.getN(); ++i) {
 				and.clear();
-				Transition[] transitions = pn.getTransitions().toArray(new Transition[0]);
+				Transition[] transitions = pg.getGame().getTransitions().toArray(new Transition[0]);
 				for (int j = 0; j < transitions.length; ++j) {
 					Transition t1 = transitions[j];
 					for (int k = j + 1; k < transitions.length; ++k) {
@@ -294,7 +294,7 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
 	
 	protected void writeNoConflict() throws IOException {
 		Map<Place, String[]> noConflict = getNoConflict();
-		for (Place p : pn.getPlaces()) {
+		for (Place p : pg.getGame().getPlaces()) {
 			for (int i = 1; i < pg.getN(); ++i) {
 				int id = createUniqueID();
 				writer.write(id + " = " + noConflict.get(p)[i]);
@@ -334,7 +334,7 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
 		int key;
 		int strat;
 		for (int i = s; i <= e; ++i) {
-			for (int j = 0; j < pn.getTransitions().size(); ++j) {
+			for (int j = 0; j < pg.getGame().getTransitions().size(); ++j) {
 				t = transitions[j];
 				or.clear();
 				for (Place p : t.getPreset()) {
@@ -349,7 +349,7 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
 				}
 				key = createUniqueID();
 				writer.write(key + " = " + writeOr(or));
-				deadlockSubFormulas[pn.getTransitions().size() * (i - 1) + j] = key;
+				deadlockSubFormulas[pg.getGame().getTransitions().size() * (i - 1) + j] = key;
 			}
 		}
 	}
@@ -359,7 +359,7 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
 		Set<Integer> and = new HashSet<>();
 		for (int i = 1; i < pg.getN(); ++i) {
 			and.clear();
-			for (Transition t : pn.getTransitions()) {
+			for (Transition t : pg.getGame().getTransitions()) {
 				and.add(-getVarNr(t.getId() + "." + i, true));
 			}
 			deadlock[i] = writeAnd(and);
@@ -367,8 +367,8 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
 		// n via places
 		writeDeadlockSubFormulas(pg.getN(), pg.getN());
 		and.clear();
-		for (int j = 0; j < pn.getTransitions().size(); ++j) {
-			and.add(deadlockSubFormulas[pn.getTransitions().size() * (pg.getN() - 1) + j]);
+		for (int j = 0; j < pg.getGame().getTransitions().size(); ++j) {
+			and.add(deadlockSubFormulas[pg.getGame().getTransitions().size() * (pg.getN() - 1) + j]);
 		}
 		deadlock[pg.getN()] = writeAnd(and);
 		return deadlock;
@@ -387,7 +387,7 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
 		Set<Integer> or = new HashSet<>();
 		for (int i = 1; i < pg.getN(); ++i) {
 			or.clear();
-			for (Transition t : pn.getTransitions()) {
+			for (Transition t : pg.getGame().getTransitions()) {
 				or.add(getVarNr(t.getId() + "." + i, true));
 			}
 			flow[i] = writeOr(or);
@@ -440,7 +440,7 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
 		}
 		Transition t1, t2;
 		Transition[] sys_transitions;
-		for (Place sys : pn.getPlaces()) {
+		for (Place sys : pg.getGame().getPlaces()) {
 			// Additional system places are not forced to behave deterministically, this is
 			// the faster variant (especially the larger the PG becomes)
 			if (!pg.getGame().isEnvironment(sys) && !sys.getId().startsWith(QBFSolver.additionalSystemName)) {
@@ -499,10 +499,10 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
 				and.add(fl[j]);
 			}
 			for (int j = 2; j <= i - 1; ++j) {
-				for (Place p : pn.getPlaces()) {
+				for (Place p : pg.getGame().getPlaces()) {
 					and.add(nc.get(p)[j-1]);
 				}
-				for (Transition t : pn.getTransitions()) {
+				for (Transition t : pg.getGame().getTransitions()) {
 					and.add(tt.get(t)[j-1]);
 				}
 			}
@@ -547,7 +547,7 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
         
 		initializeVariablesForWriteQCIR();
 
-		writer.write("#QCIR-G14" + QBFSolver.spacesToReplaceWithMaxVarNumber + QBFSolver.linebreak); // spaces left to add variable count in the end
+		writer.write("#QCIR-G14" + QBFSolver.replaceAfterWardsSpaces + QBFSolver.linebreak); // spaces left to add variable count in the end
 		addExists();
 		addForall();
 		addPlaces();
@@ -582,13 +582,13 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
 		}
 		
 		/*// nc and tt have to be true
-		for (Place p : pn.getPlaces()) {
+		for (Place p : pg.getGame().getPlaces()) {
 			for (int i = 1; i < pg.getN(); ++i) {
 				phi.add(nc.get(p)[i]);
 			}
 		}
 		
-		for (Transition t : pn.getTransitions()) {
+		for (Transition t : pg.getGame().getTransitions()) {
 			for (int i = 1; i < pg.getN(); ++i) {
 				phi.add(tt.get(t)[i]);
 			}
@@ -631,7 +631,7 @@ public class QBFSafetySolverTransitions extends QBFSolver<Safety> {
 		raf.close();
 
 		if (QBFSolver.debug) {
-			FileUtils.copyFile(file, new File(pn.getName() + ".qcir"));
+			FileUtils.copyFile(file, new File(pg.getGame().getName() + ".qcir"));
 		}
 
 		//assert(QCIRconsistency.checkConsistency(file));

@@ -1,6 +1,6 @@
 package uniolunisaar.adam.bounded.qbfapproach;
 
-import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSafetySolver;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QbfASafetySolver;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
 import uniolunisaar.adam.generators.Clerks;
 
@@ -30,14 +30,14 @@ public class DWTest { // Document Workflow / DW
 
     private void oneTestTrue(int problemSize, int n, int b) throws Exception {
         PetriGame pn = Clerks.generateNonCP(problemSize, true, true);
-        QBFSafetySolver sol = new QBFSafetySolver(pn, new Safety(), new QBFSolverOptions(n, b));
+        QbfASafetySolver sol = new QbfASafetySolver(pn, new Safety(), new QBFSolverOptions(n, b));
         Assert.assertTrue(sol.existsWinningStrategy());
     }
 
     private void oneTestFalse(int problemSize, int n, int b) throws Exception {
         PetriGame pn = Clerks.generateNonCP(problemSize, true, true);
         AdamTools.savePG2PDF("before", pn, true);
-        QBFSafetySolver sol = new QBFSafetySolver(pn, new Safety(), new QBFSolverOptions(n, b));
+        QbfASafetySolver sol = new QbfASafetySolver(pn, new Safety(), new QBFSolverOptions(n, b));
         boolean bool = sol.existsWinningStrategy();
         if (bool) {
             AdamTools.savePG2PDF("strategy", sol.getStrategy(), true);

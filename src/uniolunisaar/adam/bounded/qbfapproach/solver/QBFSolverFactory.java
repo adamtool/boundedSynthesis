@@ -5,11 +5,11 @@ import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 import uniolunisaar.adam.ds.exceptions.NotSupportedGameException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.logic.solver.SolverFactory;
 import uniolunisaar.adam.ds.winningconditions.Buchi;
 import uniolunisaar.adam.ds.winningconditions.Reachability;
 import uniolunisaar.adam.ds.winningconditions.Safety;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
+import uniolunisaar.adam.logic.solver.SolverFactory;
 
 /**
  *
@@ -31,33 +31,33 @@ public class QBFSolverFactory extends SolverFactory<QBFSolverOptions, QBFSolver<
     }
 
     @Override
-    protected QBFSafetySolver getESafetySolver(PetriGame game, Safety winCon, boolean skipTests, QBFSolverOptions so) throws NotSupportedGameException, NetNotSafeException, NoSuitableDistributionFoundException, BoundedParameterMissingException {
-        return new QBFSafetySolver(game, winCon, so);
+    protected QbfESafetySolver getESafetySolver(PetriGame game, Safety winCon, boolean skipTests, QBFSolverOptions so) throws NotSupportedGameException, NetNotSafeException, NoSuitableDistributionFoundException, BoundedParameterMissingException {
+        return new QbfESafetySolver(game, winCon, so);
     }
 
     @Override
-    protected QBFSafetySolver getASafetySolver(PetriGame game, Safety winCon, boolean skipTests, QBFSolverOptions so) throws NotSupportedGameException, NetNotSafeException, NoSuitableDistributionFoundException, BoundedParameterMissingException {
-        return new QBFSafetySolver(game, winCon, so);
+    protected QbfASafetySolver getASafetySolver(PetriGame game, Safety winCon, boolean skipTests, QBFSolverOptions so) throws NotSupportedGameException, NetNotSafeException, NoSuitableDistributionFoundException, BoundedParameterMissingException {
+        return new QbfASafetySolver(game, winCon, so);
     }
 
     @Override
-    protected QBFReachabilitySolver getEReachabilitySolver(PetriGame game, Reachability winCon, boolean skipTests, QBFSolverOptions so) throws NotSupportedGameException, NetNotSafeException, NoSuitableDistributionFoundException, BoundedParameterMissingException {
-        return new QBFReachabilitySolver(game, winCon, so);
+    protected QbfEReachabilitySolver getEReachabilitySolver(PetriGame game, Reachability winCon, boolean skipTests, QBFSolverOptions so) throws NotSupportedGameException, NetNotSafeException, NoSuitableDistributionFoundException, BoundedParameterMissingException {
+        return new QbfEReachabilitySolver(game, winCon, so);
     }
 
     @Override
-    protected QBFReachabilitySolver getAReachabilitySolver(PetriGame game, Reachability winCon, boolean skipTests, QBFSolverOptions so) throws NotSupportedGameException, NetNotSafeException, NoSuitableDistributionFoundException, BoundedParameterMissingException {
-        return new QBFReachabilitySolver(game, winCon, so);
+    protected QbfAReachabilitySolver getAReachabilitySolver(PetriGame game, Reachability winCon, boolean skipTests, QBFSolverOptions so) throws NotSupportedGameException, NetNotSafeException, NoSuitableDistributionFoundException, BoundedParameterMissingException {
+        return new QbfAReachabilitySolver(game, winCon, so);
     }
 
     @Override
-    protected QBFBuchiSolver getEBuchiSolver(PetriGame game, Buchi winCon,  boolean skipTests, QBFSolverOptions so) throws NotSupportedGameException, NetNotSafeException, NoSuitableDistributionFoundException, BoundedParameterMissingException {
-        return new QBFBuchiSolver(game, winCon, so);
+    protected QbfEBuchiSolver getEBuchiSolver(PetriGame game, Buchi winCon,  boolean skipTests, QBFSolverOptions so) throws NotSupportedGameException, NetNotSafeException, NoSuitableDistributionFoundException, BoundedParameterMissingException {
+        return new QbfEBuchiSolver(game, winCon, so);
     }
 
     @Override
-    protected QBFBuchiSolver getABuchiSolver(PetriGame game, Buchi winCon,  boolean skipTests, QBFSolverOptions so) throws NotSupportedGameException, NetNotSafeException, NoSuitableDistributionFoundException, BoundedParameterMissingException {
-        return new QBFBuchiSolver(game, winCon, so);
+    protected QbfABuchiSolver getABuchiSolver(PetriGame game, Buchi winCon,  boolean skipTests, QBFSolverOptions so) throws NotSupportedGameException, NetNotSafeException, NoSuitableDistributionFoundException, BoundedParameterMissingException {
+        return new QbfABuchiSolver(game, winCon, so);
     }
 
 }

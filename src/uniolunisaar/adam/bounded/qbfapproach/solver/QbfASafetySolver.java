@@ -23,12 +23,12 @@ import uniolunisaar.adam.ds.winningconditions.Safety;
  *         This implements bad places.
  */
 
-public class QBFSafetySolver extends QBFSolver<Safety> {
+public class QbfASafetySolver extends QBFSolver<Safety> {
 
 	// variable to store keys of calculated components for later use (special to this winning condition)
 	private int[] bad;
 
-	public QBFSafetySolver(PetriGame game, Safety win, QBFSolverOptions so) throws BoundedParameterMissingException {
+	public QbfASafetySolver(PetriGame game, Safety win, QBFSolverOptions so) throws BoundedParameterMissingException {
 		super(game, win, so);
 		bad = new int[pg.getN() + 1];
 	}
@@ -152,7 +152,7 @@ public class QBFSafetySolver extends QBFSolver<Safety> {
 		raf.close();
 
 		if (QBFSolver.debug) {
-			FileUtils.copyFile(file, new File(pn.getName() + ".qcir"));
+			FileUtils.copyFile(file, new File(pg.getGame().getName() + ".qcir"));
 		}
 
 		assert (QCIRconsistency.checkConsistency(file));

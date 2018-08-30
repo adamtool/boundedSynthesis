@@ -24,12 +24,12 @@ import uniolunisaar.adam.ds.winningconditions.Buchi;
  *
  */
 
-public class QBFBuchiSolver extends QBFSolver<Buchi> {
+public class QbfEBuchiSolver extends QBFSolver<Buchi> {
 
 	// variable to store keys of calculated components for later use (special to this winning condition)
 	private int bl; // buchi loop
 
-	public QBFBuchiSolver(PetriGame game, Buchi win, QBFSolverOptions so) throws NotSupportedGameException, BoundedParameterMissingException {
+	public QbfEBuchiSolver(PetriGame game, Buchi win, QBFSolverOptions so) throws NotSupportedGameException, BoundedParameterMissingException {
 		super(game, win, so);
 	}
 
@@ -44,7 +44,7 @@ public class QBFBuchiSolver extends QBFSolver<Buchi> {
 		for (int i = 1; i < pg.getN(); ++i) {
 			for (int j = i + 1; j <= pg.getN(); ++j) {
 				Set<Integer> and = new HashSet<>();
-				for (Place p : pn.getPlaces()) {
+				for (Place p : pg.getGame().getPlaces()) {
 					int p_i = getVarNr(p.getId() + "." + i, true);
 					int p_j = getVarNr(p.getId() + "." + j, true);
 					and.add(writeImplication(p_i, p_j));
@@ -162,7 +162,7 @@ public class QBFBuchiSolver extends QBFSolver<Buchi> {
 		raf.close();
 
 		if (QBFSolver.debug) {
-			FileUtils.copyFile(file, new File(pn.getName() + ".qcir"));
+			FileUtils.copyFile(file, new File(pg.getGame().getName() + ".qcir"));
 		}
 
 		assert (QCIRconsistency.checkConsistency(file));

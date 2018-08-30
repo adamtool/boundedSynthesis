@@ -30,7 +30,7 @@ public class QBFSolvingObject<W extends WinningCondition> extends SolvingObject<
 
     public QBFSolvingObject(PetriGame game, W winCon) {
         super(game, winCon);
-        for (Transition t : game.getTransitions()) {
+        for (Transition t : game.getTransitions()) {	// TODO talk with Manuel about this
             fl.put(t, new HashSet<>());
         }
     }

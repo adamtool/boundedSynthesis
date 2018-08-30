@@ -3,7 +3,7 @@ package uniolunisaar.adam.bounded.qbfapproach;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSafetySolver;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QbfASafetySolver;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Safety;
@@ -21,7 +21,7 @@ public class BurglarTestSafety {
 	
 	private void oneTest(int problemSize, int n, int b, boolean result) throws Exception {
 		PetriGame pn = SecuritySystem.createSafetyVersion(problemSize, false);
-		QBFSafetySolver sol = new QBFSafetySolver(pn, new Safety(), new QBFSolverOptions(n, b));
+		QbfASafetySolver sol = new QbfASafetySolver(pn, new Safety(), new QBFSolverOptions(n, b));
 		Assert.assertEquals(sol.existsWinningStrategy(), result);
 	}
 	

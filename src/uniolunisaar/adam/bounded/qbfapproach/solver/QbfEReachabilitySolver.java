@@ -12,20 +12,18 @@ import org.apache.commons.io.FileUtils;
 import uniol.apt.adt.pn.Marking;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
-import uniol.apt.io.parser.ParseException;
 import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QCIRconsistency;
-import uniolunisaar.adam.ds.exceptions.CouldNotFindSuitableWinningConditionException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Reachability;
 
-public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability> {
+public class QbfEReachabilitySolver extends QBFFlowChainSolver<Reachability> {
 
 	private int[] goodPlaces;
 	private int[] notUnreachEnded;
 	private int[] goodSimultan;
 
-	public QBFForallReachabilitySolver(PetriGame game, Reachability winCon, QBFSolverOptions options) throws BoundedParameterMissingException, CouldNotFindSuitableWinningConditionException, ParseException {
+	public QbfEReachabilitySolver(PetriGame game, Reachability winCon, QBFSolverOptions options) throws BoundedParameterMissingException {
 		super(game, winCon, options);
 		goodPlaces = new int[pg.getN() + 1];
 		notUnreachEnded = new int[pg.getN() + 1];
@@ -37,7 +35,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 	protected String getInitial() {
 		Marking initialMarking = pg.getGame().getInitialMarking();
 		Set<Integer> initial = new HashSet<>();
-		for (Place p : pn.getPlaces()) {
+		for (Place p : pg.getGame().getPlaces()) {
 			if (initialMarking.getToken(p).getValue() == 1) {
 				if (pg.getGame().isReach(p)) {
 					initial.add(getVarNr(p.getId() + "." + 1 + "." + "objective", true));
@@ -90,7 +88,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 				}
 			}
 
-			Set<Place> places = new HashSet<>(pn.getPlaces());
+			Set<Place> places = new HashSet<>(pg.getGame().getPlaces());
 			places.removeAll(t.getPreset());
 			places.removeAll(t.getPostset());
 			for (Place p : places) {
@@ -136,7 +134,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 		Set<Integer> and = new HashSet<>();
 		for (int i = 1; i <= pg.getN(); ++i) {
 			and.clear();
-			for (Place p : pn.getPlaces()) {
+			for (Place p : pg.getGame().getPlaces()) {
 				if (!p.getId().startsWith(QBFSolver.additionalSystemName)) {
 					and.add(-getVarNr(p.getId() + "." + i + "." + "notobjective", true));
 				}
@@ -160,7 +158,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 		Set<Integer> or = new HashSet<>();
 		for (int i = 1; i < pg.getN(); ++i) {
 			and.clear();
-			for (Transition t : pn.getTransitions()) {
+			for (Transition t : pg.getGame().getTransitions()) {
 				for (Place p : t.getPreset()) {
 					if (!p.getId().startsWith(additionalSystemName)) {
 						if (getOutgoingTokenFlow(p, t).isEmpty()) {
@@ -186,7 +184,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 		for (int i = 1; i < pg.getN(); ++i) {
 			for (int j = i + 1; j <= pg.getN(); ++j) {
 				Set<Integer> and = new HashSet<>();
-				for (Place p : pn.getPlaces()) {
+				for (Place p : pg.getGame().getPlaces()) {
 					// additional system places cannot leave their places, they always loop
 					if (!p.getId().startsWith(additionalSystemName)) {
 						int p_i_safe = getVarNr(p.getId() + "." + i + "." + "objective", true);
@@ -243,7 +241,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 		Set<Integer> or = new HashSet<>();
 		for (int i = 2; i <= pg.getN(); ++i) {
 			and.clear();
-			for (Place p : pn.getPlaces()) {
+			for (Place p : pg.getGame().getPlaces()) {
 				if (!p.getId().startsWith(QBFSolver.additionalSystemName)) {
 					or.clear();
 					or.add(getVarNr(p.getId() + "." + i + "." + "empty", true));
@@ -371,7 +369,7 @@ public class QBFForallReachabilitySolver extends QBFFlowChainSolver<Reachability
 		raf.close();
 
 		if (QBFSolver.debug) {
-			FileUtils.copyFile(file, new File(pn.getName() + ".qcir"));
+			FileUtils.copyFile(file, new File(pg.getGame().getName() + ".qcir"));
 		}
 
 		assert (QCIRconsistency.checkConsistency(file));
