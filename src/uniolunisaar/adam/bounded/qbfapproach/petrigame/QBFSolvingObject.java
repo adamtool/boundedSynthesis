@@ -35,6 +35,13 @@ public class QBFSolvingObject<W extends WinningCondition> extends SolvingObject<
         }
     }
 
+    public QBFSolvingObject(QBFSolvingObject<W> obj) {
+        super(new PetriGame(obj.getGame()), obj.getWinCon().getCopy());
+        this.n = obj.n;
+        this.b = obj.b;
+        // todo: JESKO add how the flows should be copied or if you still need them after the reconstructuring.
+    }
+
     // Before removing a transition, always check that it has not already been removed, because a single missing place suffices.
     public void removeTransitionRecursively(Transition t) {
         if (getGame().getTransitions().contains(t)) {
@@ -97,5 +104,10 @@ public class QBFSolvingObject<W extends WinningCondition> extends SolvingObject<
 
     public boolean hasBoundedParameterBinExtension() {
         return getGame().hasExtension(AdamExtensions.b.name());
+    }
+
+    @Override
+    public QBFSolvingObject<W> getCopy() {
+        return new QBFSolvingObject<W>(this);
     }
 }
