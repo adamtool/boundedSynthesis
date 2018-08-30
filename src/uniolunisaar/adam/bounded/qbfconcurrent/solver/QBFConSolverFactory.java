@@ -3,7 +3,7 @@ package uniolunisaar.adam.bounded.qbfconcurrent.solver;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 import uniolunisaar.adam.ds.exceptions.NotSupportedGameException;
-import uniolunisaar.adam.ds.exceptions.ParameterMissingException;
+import uniolunisaar.adam.logic.exceptions.ParameterMissingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Buchi;
 import uniolunisaar.adam.ds.winningconditions.Reachability;
