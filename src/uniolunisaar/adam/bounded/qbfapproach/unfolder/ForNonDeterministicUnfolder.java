@@ -11,12 +11,13 @@ import uniol.apt.analysis.exception.UnboundedException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFSolvingObject;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
+import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 
 public class ForNonDeterministicUnfolder extends NonDeterministicUnfolder {
 	
 	Set<String> closed = new HashSet<>();
 
-	public ForNonDeterministicUnfolder(QBFSolvingObject QBFPetriGame, Map<String, Integer> max) {
+	public ForNonDeterministicUnfolder(QBFSolvingObject<? extends WinningCondition> QBFPetriGame, Map<String, Integer> max) {
 		super(QBFPetriGame, max);
 	}
 

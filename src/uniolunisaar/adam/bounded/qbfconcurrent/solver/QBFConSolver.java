@@ -47,7 +47,7 @@ public abstract class QBFConSolver<W extends WinningCondition> extends Solver<QB
 	private Map<Transition, Set<Place>> restCache = new HashMap<>();	
 	private Map<Transition, Set<Place>> preMinusPostCache = new HashMap<>();
 
-	protected QBFSolvingObject pg;
+	protected QBFSolvingObject<? extends WinningCondition> pg;
 	protected PetriNet pn;
 	protected BufferedWriter writer;
 	protected int variablesCounter = 2; // 1 reserved for phi

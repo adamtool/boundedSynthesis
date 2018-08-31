@@ -17,6 +17,7 @@ import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFSolvingObject;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
+import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 
 /**
  * 
@@ -27,7 +28,7 @@ import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 public abstract class Unfolder {
 
 	// PetriGame which will be unfolded
-	public QBFSolvingObject pg;
+	public QBFSolvingObject<? extends WinningCondition> pg;
 	public PetriNet pn;
 
 	// how much unfolding of places was done and how much can still be done
@@ -42,7 +43,7 @@ public abstract class Unfolder {
 	
 	protected Set<String> closed = new HashSet<>();
 	
-	public Unfolder(QBFSolvingObject petriGame, Map<String, Integer> max) {
+	public Unfolder(QBFSolvingObject<? extends WinningCondition> petriGame, Map<String, Integer> max) {
 		this.pg = petriGame;
 		this.pn = pg.getGame();
 		this.limit = max;

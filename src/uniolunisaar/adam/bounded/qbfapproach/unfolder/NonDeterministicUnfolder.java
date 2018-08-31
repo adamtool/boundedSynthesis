@@ -9,12 +9,13 @@ import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFSolvingObject;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolver;
+import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 
 public abstract class NonDeterministicUnfolder extends Unfolder {
 
 	protected Set<Place> placesWithCopiedTransitions = new HashSet<>(); // Maintained during unfolding in order to afterwards add additional places
 	
-	public NonDeterministicUnfolder(QBFSolvingObject petriGame, Map<String, Integer> max) {
+	public NonDeterministicUnfolder(QBFSolvingObject<? extends WinningCondition> petriGame, Map<String, Integer> max) {
 		super(petriGame, max);
 	}
 	

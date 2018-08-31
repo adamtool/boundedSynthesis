@@ -14,6 +14,7 @@ import uniol.apt.analysis.exception.UnboundedException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFSolvingObject;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
+import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 
 /**
  * 
@@ -26,7 +27,7 @@ import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 public class WhileNonDeterministicUnfolder extends NonDeterministicUnfolder {
 	private Queue<String> placesToUnfold;
 
-	public WhileNonDeterministicUnfolder(QBFSolvingObject QBFPetriGame, Map<String, Integer> max) {
+	public WhileNonDeterministicUnfolder(QBFSolvingObject<? extends WinningCondition> QBFPetriGame, Map<String, Integer> max) {
 		super(QBFPetriGame, max);
 	}
 

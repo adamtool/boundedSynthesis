@@ -14,10 +14,11 @@ import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFSolvingObject;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolver;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
+import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 
 public class NewDeterministicUnfolder extends Unfolder {
 
-	public NewDeterministicUnfolder(QBFSolvingObject petriGame, Map<String, Integer> max) {
+	public NewDeterministicUnfolder(QBFSolvingObject<? extends WinningCondition> petriGame, Map<String, Integer> max) {
 		super(petriGame, max);
 	}
 

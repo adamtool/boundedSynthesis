@@ -11,6 +11,7 @@ import uniol.apt.adt.pn.Token;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolver;
+import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 
 /**
  * This class removes transitions and following places according to the decisions of the WINNING strategy and the simulation length. 
@@ -21,7 +22,7 @@ import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolver;
  */
 public class PGSimplifier {
 
-	public static void simplifyPG(QBFSolvingObject pg, boolean removeAdditionalPlaces, boolean removeUnreachablePlaces) {
+	public static void simplifyPG(QBFSolvingObject<? extends WinningCondition> pg, boolean removeAdditionalPlaces, boolean removeUnreachablePlaces) {
 		// Initialization
 		int n = pg.getN();
 
@@ -81,7 +82,7 @@ public class PGSimplifier {
 	 * Additional system places from unfolder are removed including their flow.
 	 * @param pg
 	 */
-	private static void removeAS(QBFSolvingObject pg) {
+	private static void removeAS(QBFSolvingObject<? extends WinningCondition> pg) {
 		Set<Place> places = new HashSet<>(pg.getGame().getPlaces());
 		for (Place place : places) {
 			if (place.getId().startsWith(QBFSolver.additionalSystemName)) {
@@ -102,7 +103,7 @@ public class PGSimplifier {
 	 * @param marking
 	 * @param reachedPlaces
 	 */
-	private static void addReachedPlaces(QBFSolvingObject pg, Marking marking, Set<Place> reachedPlaces) {
+	private static void addReachedPlaces(QBFSolvingObject<? extends WinningCondition> pg, Marking marking, Set<Place> reachedPlaces) {
 		for (Place place : pg.getGame().getPlaces()) {
 			Token token = marking.getToken(place);
 			if (token.getValue() > 0) {

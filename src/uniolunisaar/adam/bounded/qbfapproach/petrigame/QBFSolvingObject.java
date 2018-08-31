@@ -108,6 +108,6 @@ public class QBFSolvingObject<W extends WinningCondition> extends SolvingObject<
 
     @Override
     public QBFSolvingObject<W> getCopy() {
-        return new QBFSolvingObject<W>(this);
+        return new QBFSolvingObject<>(this);
     }
 }
