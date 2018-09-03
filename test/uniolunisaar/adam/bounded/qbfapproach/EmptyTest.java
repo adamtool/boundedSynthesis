@@ -5,7 +5,6 @@ import static org.testng.Assert.assertTrue;
 import org.testng.Assert;
 
 import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolver;
-import uniolunisaar.adam.logic.util.AdamTools;
 
 public abstract class EmptyTest {
 
