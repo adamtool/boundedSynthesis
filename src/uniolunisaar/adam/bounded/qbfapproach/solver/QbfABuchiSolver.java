@@ -12,12 +12,12 @@ import org.apache.commons.io.FileUtils;
 import uniol.apt.adt.pn.Marking;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
-import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QCIRconsistency;
+import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Buchi;
 
-public class QbfABuchiSolver extends QBFFlowChainSolver<Buchi> {
+public class QbfABuchiSolver extends QbfFlowChainSolver<Buchi> {
 
 	private int[] noFlowChainEnded;
 	private int[] goodSimultan;
@@ -26,23 +26,23 @@ public class QbfABuchiSolver extends QBFFlowChainSolver<Buchi> {
 	private int[] resetChoice;
 	private int bl; // buchi loop
 
-	public QbfABuchiSolver(PetriGame game, Buchi winCon, QBFSolverOptions options) throws BoundedParameterMissingException {
+	public QbfABuchiSolver(PetriGame game, Buchi winCon, QbfSolverOptions options) throws SolvingException {
 		super(game, winCon, options);
 		setTokenFlow();
-		noFlowChainEnded = new int[pg.getN() + 1];
-		goodSimultan = new int[pg.getN() + 1];
-		buchiPlaces = new int[pg.getN() + 1];
-		reset = new int[pg.getN() + 1];
-		resetChoice = new int[pg.getN() + 1];
+		noFlowChainEnded = new int[getSolvingObject().getN() + 1];
+		goodSimultan = new int[getSolvingObject().getN() + 1];
+		buchiPlaces = new int[getSolvingObject().getN() + 1];
+		reset = new int[getSolvingObject().getN() + 1];
+		resetChoice = new int[getSolvingObject().getN() + 1];
 	}
 
 	@Override
 	protected String getInitial() {
-		Marking initialMarking = pg.getGame().getInitialMarking();
+		Marking initialMarking = getSolvingObject().getGame().getInitialMarking();
 		Set<Integer> initial = new HashSet<>();
-		for (Place p : pg.getGame().getPlaces()) {
+		for (Place p : getSolvingObject().getGame().getPlaces()) {
 			if (initialMarking.getToken(p).getValue() == 1) {
-				if (pg.getGame().isBuchi(p)) {
+				if (getSolvingObject().getGame().isBuchi(p)) {
 					initial.add(getVarNr(p.getId() + "." + 1 + "." + "objective", true));
 				} else {
 					initial.add(getVarNr(p.getId() + "." + 1 + "." + "notobjective", true));
@@ -78,7 +78,7 @@ public class QbfABuchiSolver extends QBFFlowChainSolver<Buchi> {
 
 			for (Place p : t.getPostset()) {
 				// Buchi place reached
-				if (pg.getGame().isBuchi(p)) {
+				if (getSolvingObject().getGame().isBuchi(p)) {
 					and.add(getVarNr(p.getId() + "." + (i + 1) + "." + "objective", true));
 				} else {
 					Set<Place> tokenFlow = getIncomingTokenFlow(t, p);
@@ -93,7 +93,7 @@ public class QbfABuchiSolver extends QBFFlowChainSolver<Buchi> {
 				}
 			}
 
-			Set<Place> places = new HashSet<>(pg.getGame().getPlaces());
+			Set<Place> places = new HashSet<>(getSolvingObject().getGame().getPlaces());
 			places.removeAll(t.getPreset());
 			places.removeAll(t.getPostset());
 			for (Place p : places) {
@@ -128,20 +128,20 @@ public class QbfABuchiSolver extends QBFFlowChainSolver<Buchi> {
 
 	protected void writeResetChoice() throws IOException {
 		String[] resetArr = getResetChoice();
-		for (int i = 1; i < pg.getN(); ++i) {
+		for (int i = 1; i < getSolvingObject().getN(); ++i) {
 			resetChoice[i] = createUniqueID();
 			writer.write(resetChoice[i] + " = " + resetArr[i]);
 		}
 	}
 
 	protected String[] getResetChoice() throws IOException {
-		String[] reset = new String[pg.getN() + 1];
+		String[] reset = new String[getSolvingObject().getN() + 1];
 		Set<Integer> and = new HashSet<>();
-		for (int i = 1; i < pg.getN(); ++i) {
+		for (int i = 1; i < getSolvingObject().getN(); ++i) {
 			and.clear();
-			for (Place p : pg.getGame().getPlaces()) {
+			for (Place p : getSolvingObject().getGame().getPlaces()) {
 				int id = createUniqueID();
-				writer.write(id + " = or(" + getVarNr(p.getId() + "." + i + "." + "empty", true) + "," + getVarNr(p.getId() + "." + i + "." + "objective", true) + ")" + QBFSolver.linebreak);
+				writer.write(id + " = or(" + getVarNr(p.getId() + "." + i + "." + "empty", true) + "," + getVarNr(p.getId() + "." + i + "." + "objective", true) + ")" + QbfSolver.linebreak);
 				and.add(id);
 			}
 			reset[i] = writeAnd(and);
@@ -151,18 +151,18 @@ public class QbfABuchiSolver extends QBFFlowChainSolver<Buchi> {
 
 	protected void writeReset() throws IOException {
 		String[] resetArr = getReset();
-		for (int i = 1; i < pg.getN(); ++i) {
+		for (int i = 1; i < getSolvingObject().getN(); ++i) {
 			reset[i] = createUniqueID();
 			writer.write(reset[i] + " = " + resetArr[i]);
 		}
 	}
 
 	protected String[] getReset() throws IOException {
-		String[] reset = new String[pg.getN() + 1];
+		String[] reset = new String[getSolvingObject().getN() + 1];
 		Set<Integer> and = new HashSet<>();
-		for (int i = 1; i < pg.getN(); ++i) {
+		for (int i = 1; i < getSolvingObject().getN(); ++i) {
 			and.clear();
-			for (Place p : pg.getGame().getPlaces()) {
+			for (Place p : getSolvingObject().getGame().getPlaces()) {
 				and.add(writeImplication(getVarNr(p.getId() + "." + i + "." + "empty", true), getVarNr(p.getId() + "." + (i + 1) + "." + "empty", true)));
 
 				and.add(writeImplication(getVarNr(p.getId() + "." + i + "." + "objective", true), getVarNr(p.getId() + "." + (i + 1) + "." + "notobjective", true)));
@@ -173,13 +173,13 @@ public class QbfABuchiSolver extends QBFFlowChainSolver<Buchi> {
 	}
 
 	protected String[] getFlow() throws IOException {
-		String[] flow = new String[pg.getN() + 1];
+		String[] flow = new String[getSolvingObject().getN() + 1];
 		Set<Integer> and = new HashSet<>();
 		Set<Integer> or = new HashSet<>();
-		for (int i = 1; i < pg.getN(); ++i) {
+		for (int i = 1; i < getSolvingObject().getN(); ++i) {
 			and.clear();
 			or.clear();
-			for (int j = 0; j < pg.getGame().getTransitions().size(); ++j) {
+			for (int j = 0; j < getSolvingObject().getGame().getTransitions().size(); ++j) {
 				or.add(getOneTransition(transitions[j], i));
 			}
 			int normalFlow = createUniqueID();
@@ -195,19 +195,19 @@ public class QbfABuchiSolver extends QBFFlowChainSolver<Buchi> {
 
 	protected void writeBuchiPlaces() throws IOException {
 		String[] buchi = getBuchiPlaces();
-		for (int i = 1; i < pg.getN(); ++i) {
+		for (int i = 1; i < getSolvingObject().getN(); ++i) {
 			buchiPlaces[i] = createUniqueID();
 			writer.write(buchiPlaces[i] + " = " + buchi[i]);
 		}
 	}
 
 	protected String[] getBuchiPlaces() throws IOException {
-		String[] buchi = new String[pg.getN() + 1];
+		String[] buchi = new String[getSolvingObject().getN() + 1];
 		Set<Integer> and = new HashSet<>();
-		for (int i = 1; i < pg.getN(); ++i) {
+		for (int i = 1; i < getSolvingObject().getN(); ++i) {
 			and.clear();
-			for (Place p : pg.getGame().getPlaces()) {
-				if (!p.getId().startsWith(QBFSolver.additionalSystemName)) {
+			for (Place p : getSolvingObject().getGame().getPlaces()) {
+				if (!p.getId().startsWith(QbfSolver.additionalSystemName)) {
 					and.add(-getVarNr(p.getId() + "." + i + "." + "notobjective", true));
 				}
 			}
@@ -218,18 +218,18 @@ public class QbfABuchiSolver extends QBFFlowChainSolver<Buchi> {
 
 	protected void writeNoFlowChainEnded() throws IOException {
 		String[] noflended = getNoFlowChainEnded();
-		for (int i = 1; i < pg.getN(); ++i) {
+		for (int i = 1; i < getSolvingObject().getN(); ++i) {
 			noFlowChainEnded[i] = createUniqueID();
 			writer.write(noFlowChainEnded[i] + " = " + noflended[i]);
 		}
 	}
 
 	protected String[] getNoFlowChainEnded() throws IOException {
-		String[] unreachEnded = new String[pg.getN() + 1];
+		String[] unreachEnded = new String[getSolvingObject().getN() + 1];
 		Set<Integer> and = new HashSet<>();
-		for (int i = 1; i < pg.getN(); ++i) {
+		for (int i = 1; i < getSolvingObject().getN(); ++i) {
 			and.clear();
-			for (Transition t : pg.getGame().getTransitions()) {
+			for (Transition t : getSolvingObject().getGame().getTransitions()) {
 				for (Place p : t.getPreset()) {
 					if (!p.getId().startsWith(additionalSystemName)) {
 						if (getOutgoingTokenFlow(p, t).isEmpty()) {
@@ -254,10 +254,10 @@ public class QbfABuchiSolver extends QBFFlowChainSolver<Buchi> {
 		Set<Integer> or = new HashSet<>();
 		Set<Integer> innerOr = new HashSet<>();
 		Set<Integer> and = new HashSet<>();
-		for (int i = 1; i < pg.getN(); ++i) {
-			for (int j = i + 1; j <= pg.getN(); ++j) {
+		for (int i = 1; i < getSolvingObject().getN(); ++i) {
+			for (int j = i + 1; j <= getSolvingObject().getN(); ++j) {
 				and.clear();
-				for (Place p : pg.getGame().getPlaces()) {
+				for (Place p : getSolvingObject().getGame().getPlaces()) {
 					// additional system places cannot leave their places, they always loop
 					if (!p.getId().startsWith(additionalSystemName)) {
 						int p_i_safe = getVarNr(p.getId() + "." + i + "." + "objective", true);
@@ -302,20 +302,20 @@ public class QbfABuchiSolver extends QBFFlowChainSolver<Buchi> {
 
 	protected void writeGoodSimultan() throws IOException {
 		String[] goodSimu = getGoodSimultan();
-		for (int i = 2; i <= pg.getN(); ++i) {
+		for (int i = 2; i <= getSolvingObject().getN(); ++i) {
 			goodSimultan[i] = createUniqueID();
 			writer.write(goodSimultan[i] + " = " + goodSimu[i]);
 		}
 	}
 
 	protected String[] getGoodSimultan() throws IOException {
-		String[] goodSimultan = new String[pg.getN() + 1];
+		String[] goodSimultan = new String[getSolvingObject().getN() + 1];
 		Set<Integer> and = new HashSet<>();
 		Set<Integer> or = new HashSet<>();
-		for (int i = 2; i <= pg.getN(); ++i) {
+		for (int i = 2; i <= getSolvingObject().getN(); ++i) {
 			and.clear();
-			for (Place p : pg.getGame().getPlaces()) {
-				if (!p.getId().startsWith(QBFSolver.additionalSystemName)) {
+			for (Place p : getSolvingObject().getGame().getPlaces()) {
+				if (!p.getId().startsWith(QbfSolver.additionalSystemName)) {
 					or.clear();
 					or.add(getVarNr(p.getId() + "." + i + "." + "empty", true));
 					or.add(getVarNr(p.getId() + "." + i + "." + "objective", true));
@@ -336,7 +336,7 @@ public class QbfABuchiSolver extends QBFFlowChainSolver<Buchi> {
 
 	protected void writeWinning() throws IOException {
 		Set<Integer> and = new HashSet<>();
-		for (int i = 1; i < pg.getN(); ++i) {
+		for (int i = 1; i < getSolvingObject().getN(); ++i) {
 			and.clear();
 			and.add(-dl[i]);
 			and.add(det[i]);
@@ -348,11 +348,11 @@ public class QbfABuchiSolver extends QBFFlowChainSolver<Buchi> {
 
 		}
 		and.clear();
-		and.add(-dl[pg.getN()]);
-		and.add(det[pg.getN()]);
+		and.add(-dl[getSolvingObject().getN()]);
+		and.add(det[getSolvingObject().getN()]);
 		and.add(bl);
-		win[pg.getN()] = createUniqueID();
-		writer.write(win[pg.getN()] + " = " + writeAnd(and));
+		win[getSolvingObject().getN()] = createUniqueID();
+		writer.write(win[getSolvingObject().getN()] + " = " + writeAnd(and));
 	}
 
 	@Override
@@ -361,7 +361,7 @@ public class QbfABuchiSolver extends QBFFlowChainSolver<Buchi> {
 
 		initializeVariablesForWriteQCIR();
 
-		writer.write("#QCIR-G14          " + QBFSolver.linebreak); // spaces left to add variable count in the end
+		writer.write("#QCIR-G14          " + QbfSolver.linebreak); // spaces left to add variable count in the end
 		addExists();
 		addForall();
 
@@ -393,12 +393,12 @@ public class QbfABuchiSolver extends QBFFlowChainSolver<Buchi> {
 			phi.add(index_for_non_det_unfolding_info);
 		}
 
-		for (int i = 1; i <= pg.getN(); ++i) {
+		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 			seqImpliesWin[i] = createUniqueID();
-			if (i < pg.getN()) {
-				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + QBFSolver.linebreak);
+			if (i < getSolvingObject().getN()) {
+				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + QbfSolver.linebreak);
 			} else {
-				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + "," + u + ")" + QBFSolver.linebreak); // adding unfair
+				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + "," + u + ")" + QbfSolver.linebreak); // adding unfair
 			}
 			phi.add(seqImpliesWin[i]);
 		}
@@ -440,8 +440,8 @@ public class QbfABuchiSolver extends QBFFlowChainSolver<Buchi> {
 
 		raf.close();
 
-		if (QBFSolver.debug) {
-			FileUtils.copyFile(file, new File(pg.getGame().getName() + ".qcir"));
+		if (QbfSolver.debug) {
+			FileUtils.copyFile(file, new File(getSolvingObject().getGame().getName() + ".qcir"));
 		}
 
 		assert (QCIRconsistency.checkConsistency(file));

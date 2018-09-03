@@ -4,7 +4,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import uniolunisaar.adam.bounded.qbfapproach.solver.QbfAReachabilitySolver;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverOptions;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Reachability;
 import uniolunisaar.adam.generators.SecuritySystem;
@@ -22,7 +22,7 @@ public class BurglarTestReachability {
 	
 	private void oneTest(int problemSize, int n, int b, boolean result) throws Exception {
 		PetriGame pn = SecuritySystem.createReachabilityVersion(problemSize, false);
-		QbfAReachabilitySolver sol = new QbfAReachabilitySolver(pn,  new Reachability(), new QBFSolverOptions(n, b));
+		QbfAReachabilitySolver sol = new QbfAReachabilitySolver(pn,  new Reachability(), new QbfSolverOptions(n, b));
 		Assert.assertEquals(sol.existsWinningStrategy(), result);
 	}
 	

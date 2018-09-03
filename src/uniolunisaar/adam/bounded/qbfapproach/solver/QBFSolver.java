@@ -30,6 +30,7 @@ import uniolunisaar.adam.bounded.qbfapproach.unfolder.Unfolder;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
+import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.solver.Solver;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
@@ -42,7 +43,7 @@ import uniolunisaar.adam.tools.AdamProperties;
  *
  * @param <W>
  */
-public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSolvingObject<W>, QBFSolverOptions> {
+public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSolvingObject<W>, QbfSolverOptions> {
 
 	// variable to store keys of calculated components for later use (shared among all solvers)
 	protected int in;
@@ -57,7 +58,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 	protected int[] win;
 	protected int[] seqImpliesWin;
 
-	// results
+	// results TODO still needed?
 	public Boolean solvable = null;
 	public Boolean sat = null;
 	public Boolean error = null;
@@ -78,19 +79,17 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 	public static boolean edacc = false;
 	public static boolean mcmillian = false; // Unfolder
 
-	// Caches
+	// caches
 	private Map<Transition, Set<Place>> restCache = new HashMap<>(); // proven to be slightly useful in terms of performance
 	private Map<Transition, Set<Place>> preMinusPostCache = new HashMap<>();
 
-	// working copy of the game
-	public QBFSolvingObject<W> pg;	// working copy net
 	public QBFSolvingObject<W> originalSolvingObject; // TODO use it?
 
 	public PetriGame originalGame;
 	public PetriGame unfolding;
 	public PetriGame strategy;
 
-	// Solving
+	// solving
 	protected BufferedWriter writer;
 	protected int variablesCounter = 1;
 	protected Map<String, Integer> numbersForVariables = new HashMap<>(); // map for storing keys and the corresponding value
@@ -99,7 +98,6 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 	protected Map<Transition, Integer> transitionKeys = new HashMap<>();
 
 	protected Transition[] transitions;
-	protected int[] flowSubFormulas;
 	protected int[] deadlockSubFormulas;
 	protected int[] terminatingSubFormulas;
 	protected File file = null;
@@ -118,11 +116,12 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 		return AdamTools.checkStrategy(origNet, strat);
 	}
 
-	public QBFSolver(PetriGame game, W winCon, QBFSolverOptions so) throws BoundedParameterMissingException {
+	public QbfSolver(PetriGame game, W winCon, QbfSolverOptions so) throws SolvingException {
 		super(new QBFSolvingObject<>(game, winCon), so);
-
-		pg = getSolvingObject();
-		originalSolvingObject = new QBFSolvingObject<W>(new PetriGame(pg.getGame()), winCon);
+		
+		originalSolvingObject = getSolvingObject().getCopy();
+		
+		// initializing bounded parameters n and b
 		int n = so.getN();
 		int b = so.getB();
 		if (n == -1) {
@@ -138,19 +137,20 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 		if (n == -1 || b == -1) {
 			throw new BoundedParameterMissingException(n, b);
 		}
-		pg.setN(n);
-		pg.setB(b);
+		getSolvingObject().setN(n);
+		getSolvingObject().setB(b);
 
-		fl = new int[pg.getN() + 1];
-		det = new int[pg.getN() + 1];
-		dlt = new int[pg.getN() + 1];
-		dl = new int[pg.getN() + 1];
-		term = new int[pg.getN() + 1];
-		seq = new int[pg.getN() + 1];
-		win = new int[pg.getN() + 1];
-		seqImpliesWin = new int[pg.getN() + 1];
+		// initializing arrays for storing variable IDs
+		fl = new int[n + 1];
+		det = new int[n + 1];
+		dlt = new int[n + 1];
+		dl = new int[n + 1];
+		term = new int[n + 1];
+		seq = new int[n + 1];
+		win = new int[n + 1];
+		seqImpliesWin = new int[n + 1];
 
-		// Create random file in tmp directory which is deleted after solving it
+		// create random file in tmp directory which is deleted after solving it
 		String prefix = "";
 		final Random rand = new Random();
 		final String lexicon = "ABCDEFGHIJKLMNOPQRSTUVWXYZ12345674890";
@@ -159,19 +159,14 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 		}
 		try {
 			file = File.createTempFile(prefix, /* pn.getName() + */ ".qcir");
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+		} catch (IOException e) {
+			throw new SolvingException("Generation of QBF-file failed.", e.fillInStackTrace());
 		}
 		file.deleteOnExit();
 		try {
 			writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "utf-8"));
-		} catch (UnsupportedEncodingException e) {
-			System.out.println("Error: Your computer does not support \"utf-8\".");
-			e.printStackTrace();
-		} catch (FileNotFoundException e) {
-			System.out.println("Error: The file created in the temp directory was already removed.");
-			e.printStackTrace();
+		} catch (FileNotFoundException | UnsupportedEncodingException e) {
+			throw new SolvingException("Writing of QBF-file failed.", e.fillInStackTrace());
 		}
 	}
 
@@ -180,10 +175,10 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 		writer.write(in + " = " + getInitial());
 	}
 
-	protected String getInitial() { // TODO adapt when extension initial exists
-		Marking initialMarking = pg.getGame().getInitialMarking();
+	protected String getInitial() {
+		Marking initialMarking = getSolvingObject().getGame().getInitialMarking();
 		Set<Integer> initial = new HashSet<>();
-		for (Place p : pg.getGame().getPlaces()) {
+		for (Place p : getSolvingObject().getGame().getPlaces()) {
 			if (initialMarking.getToken(p).getValue() == 1) {
 				initial.add(getVarNr(p.getId() + "." + 1, true));
 			} else {
@@ -195,20 +190,20 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 
 	protected void writeDeadlock() throws IOException {
 		String[] deadlock = getDeadlock();
-		for (int i = 1; i <= pg.getN(); ++i) {
+		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 			dl[i] = createUniqueID();
 			writer.write(dl[i] + " = " + deadlock[i]);
 		}
 	}
 
 	protected String[] getDeadlock() throws IOException {
-		writeDeadlockSubFormulas(1, pg.getN());
-		String[] deadlock = new String[pg.getN() + 1];
+		writeDeadlockSubFormulas(1, getSolvingObject().getN());
+		String[] deadlock = new String[getSolvingObject().getN() + 1];
 		Set<Integer> and = new HashSet<>();
-		for (int i = 1; i <= pg.getN(); ++i) {
+		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 			and.clear();
-			for (int j = 0; j < pg.getGame().getTransitions().size(); ++j) {
-				and.add(deadlockSubFormulas[pg.getGame().getTransitions().size() * (i - 1) + j]);
+			for (int j = 0; j < getSolvingObject().getGame().getTransitions().size(); ++j) {
+				and.add(deadlockSubFormulas[getSolvingObject().getGame().getTransitions().size() * (i - 1) + j]);
 			}
 			deadlock[i] = writeAnd(and);
 		}
@@ -221,7 +216,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 		int number;
 		int strat;
 		for (int i = s; i <= e; ++i) {
-			for (int j = 0; j < pg.getGame().getTransitions().size(); ++j) {
+			for (int j = 0; j < getSolvingObject().getGame().getTransitions().size(); ++j) {
 				t = transitions[j];
 				or.clear();
 				for (Place p : t.getPreset()) {
@@ -233,29 +228,29 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 				}
 				number = createUniqueID();
 				writer.write(number + " = " + writeOr(or));
-				deadlockSubFormulas[pg.getGame().getTransitions().size() * (i - 1) + j] = number;
+				deadlockSubFormulas[getSolvingObject().getGame().getTransitions().size() * (i - 1) + j] = number;
 			}
 		}
 	}
 
 	protected void writeTerminating() throws IOException {
-		String[] terminating = new String[pg.getN() + 1];
+		String[] terminating = new String[getSolvingObject().getN() + 1];
 		terminating = getTerminating();
-		for (int i = 1; i <= pg.getN(); ++i) {
+		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 			term[i] = createUniqueID();
 			writer.write(term[i] + " = " + terminating[i]);
 		}
 	}
 
 	protected String[] getTerminating() throws IOException {
-		writeTerminatingSubFormulas(1, pg.getN());
-		String[] terminating = new String[pg.getN() + 1];
+		writeTerminatingSubFormulas(1, getSolvingObject().getN());
+		String[] terminating = new String[getSolvingObject().getN() + 1];
 		Set<Integer> and = new HashSet<>();
-		for (int i = 1; i <= pg.getN(); ++i) {
-			if (pg.getGame().getTransitions().size() >= 1) {
+		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
+			if (getSolvingObject().getGame().getTransitions().size() >= 1) {
 				and.clear();
-				for (int j = 0; j < pg.getGame().getTransitions().size(); ++j) {
-					and.add(terminatingSubFormulas[pg.getGame().getTransitions().size() * (i - 1) + j]);
+				for (int j = 0; j < getSolvingObject().getGame().getTransitions().size(); ++j) {
+					and.add(terminatingSubFormulas[getSolvingObject().getGame().getTransitions().size() * (i - 1) + j]);
 				}
 				terminating[i] = writeAnd(and);
 			}
@@ -269,7 +264,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 		Transition t;
 		int key;
 		for (int i = s; i <= e; ++i) {
-			for (int j = 0; j < pg.getGame().getTransitions().size(); ++j) {
+			for (int j = 0; j < getSolvingObject().getGame().getTransitions().size(); ++j) {
 				t = transitions[j];
 				pre = t.getPreset();
 				or.clear();
@@ -278,14 +273,14 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 				}
 				key = createUniqueID();
 				writer.write(key + " = " + writeOr(or));
-				terminatingSubFormulas[pg.getGame().getTransitions().size() * (i - 1) + j] = key;
+				terminatingSubFormulas[getSolvingObject().getGame().getTransitions().size() * (i - 1) + j] = key;
 			}
 		}
 	}
 
 	protected void writeDeadlocksterm() throws IOException {
 		Set<Integer> or = new HashSet<>();
-		for (int i = 1; i <= pg.getN(); ++i) {
+		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 			or.clear();
 			or.add(-dl[i]);
 			or.add(term[i]);
@@ -296,7 +291,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 
 	protected void writeFlow() throws IOException {
 		String[] flow = getFlow();
-		for (int i = 1; i < pg.getN(); ++i) {
+		for (int i = 1; i < getSolvingObject().getN(); ++i) {
 			fl[i] = createUniqueID();
 			writer.write(fl[i] + " = " + flow[i]);
 		}
@@ -304,12 +299,11 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 	}
 
 	protected String[] getFlow() throws IOException {
-		// writeFlowSubFormulas(); // slower
-		String[] flow = new String[pg.getN() + 1];
+		String[] flow = new String[getSolvingObject().getN() + 1];
 		Set<Integer> or = new HashSet<>();
-		for (int i = 1; i < pg.getN(); ++i) {
+		for (int i = 1; i < getSolvingObject().getN(); ++i) {
 			or.clear();
-			for (int j = 0; j < pg.getGame().getTransitions().size(); ++j) {
+			for (int j = 0; j < getSolvingObject().getGame().getTransitions().size(); ++j) {
 				// or.add(flowSubFormulas[pn.getTransitions().size() * (i - 1) + j]);
 				or.add(getOneTransition(transitions[j], i));
 			}
@@ -335,7 +329,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 			// Slight performance gain by using these caches
 			Set<Place> rest = restCache.get(t);
 			if (rest == null) {
-				rest = new HashSet<>(pg.getGame().getPlaces());
+				rest = new HashSet<>(getSolvingObject().getGame().getPlaces());
 				rest.removeAll(t.getPreset());
 				rest.removeAll(t.getPostset());
 				restCache.put(t, rest);
@@ -359,7 +353,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 			}
 			int number = createUniqueID();
 			writer.write(number + " = " + writeAnd(and));
-			// oneTransitionFormulas[transitionKeys.get(t)][i] = number;
+			oneTransitionFormulas[transitionKeys.get(t)][i] = number;
 			return number;
 		} else {
 			return oneTransitionFormulas[transitionKeys.get(t)][i];
@@ -369,7 +363,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 
 	protected void writeSequence() throws IOException {
 		Set<Integer> and = new HashSet<>();
-		for (int i = 1; i <= pg.getN(); ++i) {
+		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 			and.clear();
 			and.add(in);
 			for (int j = 1; j <= i - 1; ++j) {
@@ -384,7 +378,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 	protected void writeDeterministic() throws IOException {
 		if (deterministicStrat) {
 			String[] deterministic = getDeterministic();
-			for (int i = 1; i <= pg.getN(); ++i) {
+			for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 				if (!deterministic[i].matches("")) {
 					det[i] = createUniqueID();
 					writer.write(det[i] + " = " + deterministic[i]);
@@ -396,23 +390,23 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 	}
 
 	protected String[] getDeterministic() throws IOException { // faster than naive implementation
-		List<Set<Integer>> and = new ArrayList<>(pg.getN() + 1);
+		List<Set<Integer>> and = new ArrayList<>(getSolvingObject().getN() + 1);
 		and.add(null); // first element is never accessed
-		for (int i = 1; i <= pg.getN(); ++i) {
+		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 			and.add(new HashSet<Integer>());
 		}
 		Transition t1, t2;
 		Transition[] sys_transitions;
-		for (Place sys : pg.getGame().getPlaces()) {
+		for (Place sys : getSolvingObject().getGame().getPlaces()) {
 			// Additional system places are not forced to behave deterministically, this is the faster variant (especially the larger the PG becomes)
-			if (!pg.getGame().isEnvironment(sys) && !sys.getId().startsWith(QBFSolver.additionalSystemName)) {
+			if (!getSolvingObject().getGame().isEnvironment(sys) && !sys.getId().startsWith(QbfSolver.additionalSystemName)) {
 				if (sys.getPostset().size() > 1) {
 					sys_transitions = sys.getPostset().toArray(new Transition[0]);
 					for (int j = 0; j < sys_transitions.length; ++j) {
 						t1 = sys_transitions[j];
 						for (int k = j + 1; k < sys_transitions.length; ++k) {
 							t2 = sys_transitions[k];
-							for (int i = 1; i <= pg.getN(); ++i) {
+							for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 								and.get(i).add(writeOneMissingPre(t1, t2, i));
 							}
 						}
@@ -420,14 +414,14 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 				}
 			}
 		}
-		String[] deterministic = new String[pg.getN() + 1];
-		for (int i = 1; i <= pg.getN(); ++i) {
+		String[] deterministic = new String[getSolvingObject().getN() + 1];
+		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 			if (!and.get(i).isEmpty()) {
 				deterministic[i] = writeAnd(and.get(i));
 			} else {
 				Pair<Boolean, Integer> result = getVarNrWithResult("and()");
 				if (result.getFirst()) {
-					writer.write(result.getSecond() + " = and()" + QBFSolver.linebreak);
+					writer.write(result.getSecond() + " = and()" + QbfSolver.linebreak);
 				}
 				deterministic[i] = "";
 			}
@@ -466,10 +460,10 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 
 	protected String getLoopIJ() throws IOException {
 		Set<Integer> or = new HashSet<>();
-		for (int i = 1; i < pg.getN(); ++i) {
-			for (int j = i + 1; j <= pg.getN(); ++j) {
+		for (int i = 1; i < getSolvingObject().getN(); ++i) {
+			for (int j = i + 1; j <= getSolvingObject().getN(); ++j) {
 				Set<Integer> and = new HashSet<>();
-				for (Place p : pg.getGame().getPlaces()) {
+				for (Place p : getSolvingObject().getGame().getPlaces()) {
 					// additional system places cannot leave their places, they always loop
 					if (!p.getId().startsWith(additionalSystemName)) {
 						int p_i = getVarNr(p.getId() + "." + i, true);
@@ -489,10 +483,10 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 	// wahrscheinlich nur hilfreich für deterministic unfolding, macht aber auf jeden fall nichts kaputt, wohl nur langsamer
 	protected String getLoopIJunfolded() throws IOException {
 		Set<Integer> outerOr = new HashSet<>();
-		for (int i = 1; i < pg.getN(); ++i) {
-			for (int j = i + 1; j <= pg.getN(); ++j) {
+		for (int i = 1; i < getSolvingObject().getN(); ++i) {
+			for (int j = i + 1; j <= getSolvingObject().getN(); ++j) {
 				Set<Integer> and = new HashSet<>();
-				for (Place p : pg.getGame().getPlaces()) {
+				for (Place p : getSolvingObject().getGame().getPlaces()) {
 					// additional system places cannot leave their places, they always loop
 					if (!p.getId().startsWith(additionalSystemName)) {
 						int p_i = getVarNr(p.getId() + "." + i, true);
@@ -516,7 +510,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 
 	private Set<Place> unfoldingsOf(Place place) {
 		Set<Place> result = new HashSet<>();
-		for (Place p : pg.getGame().getPlaces()) {
+		for (Place p : getSolvingObject().getGame().getPlaces()) {
 			if (/* !p.equals(place) && */getTruncatedId(place.getId()).equals(getTruncatedId(p.getId()))) { // forcing into different unfolded place yields more necessary unfoldings
 				result.add(p);
 			}
@@ -532,10 +526,10 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 
 	protected String getUnfair() throws IOException {
 		Set<Integer> outerOr = new HashSet<>();
-		for (int i = 1; i < pg.getN(); ++i) {
-			for (int j = i + 2; j <= pg.getN(); ++j) {
+		for (int i = 1; i < getSolvingObject().getN(); ++i) {
+			for (int j = i + 2; j <= getSolvingObject().getN(); ++j) {
 				Set<Integer> and = new HashSet<>();
-				for (Place p : pg.getGame().getPlaces()) {
+				for (Place p : getSolvingObject().getGame().getPlaces()) {
 					// additional system places cannot leave their places, they always loop
 					if (!p.getId().startsWith(additionalSystemName)) {
 						int p_i = getVarNr(p.getId() + "." + i, true);
@@ -545,7 +539,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 					}
 				}
 				Set<Integer> or = new HashSet<>();
-				for (Transition t : pg.getGame().getTransitions()) {
+				for (Transition t : getSolvingObject().getGame().getTransitions()) {
 					Set<Integer> innerAnd = new HashSet<>();
 					for (int k = i; k < j; ++k) {
 						for (Place p : t.getPreset()) {
@@ -579,10 +573,10 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 	// this has one more quantifier alternation, it should therefore be slower
 	protected String getUnfairMoreQuantifierAlternation() throws IOException {
 		Set<Integer> outerOr = new HashSet<>();
-		for (int i = 1; i < pg.getN(); ++i) {
-			for (int j = i + 2; j <= pg.getN(); ++j) {
+		for (int i = 1; i < getSolvingObject().getN(); ++i) {
+			for (int j = i + 2; j <= getSolvingObject().getN(); ++j) {
 				Set<Integer> and = new HashSet<>();
-				for (Place p : pg.getGame().getPlaces()) {
+				for (Place p : getSolvingObject().getGame().getPlaces()) {
 					// additional system places cannot leave their places, they always loop
 					if (!p.getId().startsWith(additionalSystemName)) {
 						int p_i = getVarNr(p.getId() + "." + i, true);
@@ -592,7 +586,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 					}
 				}
 				Set<Integer> or = new HashSet<>();
-				for (Place p : pg.getGame().getPlaces()) {
+				for (Place p : getSolvingObject().getGame().getPlaces()) {
 					// additional system places are not responsible for unfair loops, exclude them
 					if (!p.getId().startsWith(additionalSystemName)) {
 						Set<Integer> outerAnd = new HashSet<>();
@@ -641,8 +635,8 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 	}
 
 	protected int addSysStrategy(Place p, Transition t) {
-		if (!pg.getGame().isEnvironment(p)) {
-			if (p.getId().startsWith(QBFSolver.additionalSystemName)) {
+		if (!getSolvingObject().getGame().isEnvironment(p)) {
+			if (p.getId().startsWith(QbfSolver.additionalSystemName)) {
 				return getVarNr(p.getId() + ".." + t.getId(), true);
 			} else {
 				return getVarNr(p.getId() + ".." + getTruncatedId(t.getId()), true);
@@ -654,9 +648,9 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 
 	protected void addExists() throws IOException {
 		Set<Integer> exists = new HashSet<>();
-		for (Place p : pg.getGame().getPlaces()) {
-			if (!pg.getGame().isEnvironment(p)) {
-				if (p.getId().startsWith(QBFSolver.additionalSystemName)) {
+		for (Place p : getSolvingObject().getGame().getPlaces()) {
+			if (!getSolvingObject().getGame().isEnvironment(p)) {
+				if (p.getId().startsWith(QbfSolver.additionalSystemName)) {
 					for (Transition t : p.getPostset()) {
 						int number = createVariable(p.getId() + ".." + t.getId());
 						exists.add(number);
@@ -683,15 +677,15 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 
 	protected void addForall() throws IOException {
 		Set<Integer> forall = new HashSet<>();
-		for (Place p : pg.getGame().getPlaces()) {
-			for (int i = 1; i <= pg.getN(); ++i) {
+		for (Place p : getSolvingObject().getGame().getPlaces()) {
+			for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 				int number = createVariable(p.getId() + "." + i);
 				forall.add(number);
 				// System.out.println(number + " = " + p.getId() + "." + i);
 			}
 		}
 		writer.write(writeForall(forall));
-		writer.write("output(1)" + QBFSolver.replaceAfterWardsSpaces + QBFSolver.linebreak);
+		writer.write("output(1)" + QbfSolver.replaceAfterWardsSpaces + QbfSolver.linebreak);
 	}
 
 	// Additional information from nondeterministic unfolding is utilized:
@@ -825,7 +819,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 			delim = ",";
 			sb.append(i);
 		}
-		sb.append(")" + QBFSolver.linebreak);
+		sb.append(")" + QbfSolver.linebreak);
 		String result = sb.toString();
 		return result;
 	}
@@ -843,12 +837,12 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 	}
 
 	protected Map<Place, Set<Transition>> unfoldPG() {
-		originalGame = new PetriGame(pg.getGame());
+		originalGame = new PetriGame(getSolvingObject().getGame());
 
-		ForNonDeterministicUnfolder unfolder = new ForNonDeterministicUnfolder(pg, null); // null forces unfolder to use b as bound for every place
+		ForNonDeterministicUnfolder unfolder = new ForNonDeterministicUnfolder(getSolvingObject(), null); // null forces unfolder to use b as bound for every place
 		/*McMillianUnfolder unfolder = null;
 		try {
-			unfolder = new McMillianUnfolder(pg, null);
+			unfolder = new McMillianUnfolder(getSolvingObject(), null);
 		} catch (NotSupportedGameException e2) {
 			// TODO Auto-generated catch block
 			e2.printStackTrace();
@@ -860,23 +854,22 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
             e1.printStackTrace();
         }
         
-        //this.pg = unfolder.pg;
+        //this.getSolvingObject() = unfolder.getSolvingObject();
         //this.pn = unfolder.pn;
         
-        getWinningCondition().buffer(pg.getGame());
+        getWinningCondition().buffer(getSolvingObject().getGame());
 
-		unfolding = new PetriGame(pg.getGame());
+		unfolding = new PetriGame(getSolvingObject().getGame());
 
 		return unfolder.systemHasToDecideForAtLeastOne;
 	}
 
 	protected void initializeVariablesForWriteQCIR() {
-		transitions = pg.getGame().getTransitions().toArray(new Transition[0]);
-		flowSubFormulas = new int[pg.getN() * pg.getGame().getTransitions().size()];
-		deadlockSubFormulas = new int[(pg.getN() + 1) * pg.getGame().getTransitions().size()];
-		terminatingSubFormulas = new int[(pg.getN() + 1) * pg.getGame().getTransitions().size()];
+		transitions = getSolvingObject().getGame().getTransitions().toArray(new Transition[0]);
+		deadlockSubFormulas = new int[(getSolvingObject().getN() + 1) * getSolvingObject().getGame().getTransitions().size()];
+		terminatingSubFormulas = new int[(getSolvingObject().getN() + 1) * getSolvingObject().getGame().getTransitions().size()];
 
-		oneTransitionFormulas = new int[pg.getGame().getTransitions().size()][pg.getN() + 1];
+		oneTransitionFormulas = new int[getSolvingObject().getGame().getTransitions().size()][getSolvingObject().getN() + 1];
 		for (int i = 0; i < transitions.length; ++i) {
 			transitionKeys.put(transitions[i], i);
 		}
@@ -898,7 +891,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 				// pb = new ProcessBuilder("./" + solver + "_mac", "--partial-assignment", file.getAbsolutePath());
 				pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + solver + "_mac", "--partial-assignment"/* , "--preprocessing", "0" */, file.getAbsolutePath());
 			} else if (os.startsWith("Linux")) {
-				if (QBFSolver.edacc) {
+				if (QbfSolver.edacc) {
                 	// for use with EDACC
 					pb = new ProcessBuilder("./" + solver + "_unix", "--partial-assignment", file.getAbsolutePath());
 				} else {
@@ -910,7 +903,7 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 				System.out.println("Your operation system is not supported.");
 				return false;
 			}
-			if (QBFSolver.debug) {
+			if (QbfSolver.debug) {
 				System.out.println("A temporary file is saved to \"" + file.getAbsolutePath() + "\".");
 			}
 
@@ -969,47 +962,47 @@ public abstract class QBFSolver<W extends WinningCondition> extends Solver<QBFSo
 								if (in != -1) { // CTL has exists variables for path EF which mean not remove
 									String place = remove.substring(0, in);
 									String transition = remove.substring(in + 2, remove.length());
-									if (place.startsWith(QBFSolver.additionalSystemName)) {
+									if (place.startsWith(QbfSolver.additionalSystemName)) {
 										// additional system place exactly removes transitions
 										// Transition might already be removed by recursion
-										Set<Transition> transitions = new HashSet<>(pg.getGame().getTransitions());
+										Set<Transition> transitions = new HashSet<>(getSolvingObject().getGame().getTransitions());
 										for (Transition t : transitions) {
 											if (t.getId().equals(transition)) {
 												// System.out.println("starting " + t);
-												pg.removeTransitionRecursively(t);
+												getSolvingObject().removeTransitionRecursively(t);
 											}
 										}
 									} else {
 										// original system place removes ALL transitions
-										Set<Place> places = new HashSet<>(pg.getGame().getPlaces());
+										Set<Place> places = new HashSet<>(getSolvingObject().getGame().getPlaces());
 										for (Place p : places) {
 											if (p.getId().equals(place)) {
 												Set<Transition> transitions = new HashSet<>(p.getPostset());
 												for (Transition post : transitions) {
 													if (transition.equals(getTruncatedId(post.getId()))) {
 														// System.out.println("starting " + post);
-														pg.removeTransitionRecursively(post);
+														getSolvingObject().removeTransitionRecursively(post);
 													}
 												}
 											}
 										}
 									}
 								}
-							} else { // TODO CHECK GAME WITHOUT SYS DECISIONS
+							} else {
 								// 0 is the last member
 								// System.out.println("Finished reading strategy.");
-								PGSimplifier.simplifyPG(pg, true, false);
-								strategy = new PetriGame(pg.getGame());
-								return pg.getGame();
+								PGSimplifier.simplifyPG(getSolvingObject(), true, false);
+								strategy = new PetriGame(getSolvingObject().getGame());
+								return getSolvingObject().getGame();
 							}
 						}
 					}
 				}
 			}
 			// There were no decision points for the system, thus the previous loop did not leave the method
-			PGSimplifier.simplifyPG(pg, true, false);
-			strategy = new PetriGame(pg.getGame());
-			return pg.getGame();
+			PGSimplifier.simplifyPG(getSolvingObject(), true, false);
+			strategy = new PetriGame(getSolvingObject().getGame());
+			return getSolvingObject().getGame();
 		}
 		throw new NoStrategyExistentException();
 	}

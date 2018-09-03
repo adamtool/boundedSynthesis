@@ -11,9 +11,8 @@ import org.apache.commons.io.FileUtils;
 
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
-import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QCIRconsistency;
-import uniolunisaar.adam.ds.exceptions.NotSupportedGameException;
+import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Safety;
 
@@ -25,20 +24,20 @@ import uniolunisaar.adam.ds.winningconditions.Safety;
  *         This implements bad places.
  */
 
-public class QBFSafetySolverPlaces extends QBFSolver<Safety> {
+public class QBFSafetySolverPlaces extends QbfSolver<Safety> {
 
 	// variable to store keys of calculated components for later use (special to this winning condition)
 	private int[] bad;
 
-	public QBFSafetySolverPlaces(PetriGame game, Safety win, QBFSolverOptions so) throws NotSupportedGameException, BoundedParameterMissingException {
+	public QBFSafetySolverPlaces(PetriGame game, Safety win, QbfSolverOptions so) throws SolvingException {
 		super(game, win, so);
-		bad = new int[pg.getN() + 1];
+		bad = new int[getSolvingObject().getN() + 1];
 	}
 
 	protected void writeNoBadPlaces() throws IOException {
 		if (!getSolvingObject().getWinCon().getBadPlaces().isEmpty()) {
 			String[] nobadplaces = getNoBadPlaces();
-			for (int i = 1; i <= pg.getN(); ++i) {
+			for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 				bad[i] = createUniqueID();
 				writer.write(bad[i] + " = " + nobadplaces[i]);
 			}
@@ -46,9 +45,9 @@ public class QBFSafetySolverPlaces extends QBFSolver<Safety> {
 	}
 
 	public String[] getNoBadPlaces() throws IOException {
-		String[] nobadplaces = new String[pg.getN() + 1];
+		String[] nobadplaces = new String[getSolvingObject().getN() + 1];
 		Set<Integer> and = new HashSet<>();
-		for (int i = 1; i <= pg.getN(); ++i) {
+		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 			and.clear();
 			for (Place p : getSolvingObject().getWinCon().getBadPlaces()) {
 				and.add(-getVarNr(p.getId() + "." + i, true));
@@ -60,7 +59,7 @@ public class QBFSafetySolverPlaces extends QBFSolver<Safety> {
 
 	protected void writeWinning() throws IOException {
 		Set<Integer> and = new HashSet<>();
-		for (int i = 1; i <= pg.getN(); ++i) {
+		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 			and.clear();
 			if (bad[i] != 0) {
 				and.add(bad[i]);
@@ -71,7 +70,7 @@ public class QBFSafetySolverPlaces extends QBFSolver<Safety> {
 			if (det[i] != 0) {
 				and.add(det[i]);
 			}
-			if (i == pg.getN()) { // slightly optimized in the sense that winning and loop are put together for n
+			if (i == getSolvingObject().getN()) { // slightly optimized in the sense that winning and loop are put together for n
 				and.add(l);
 			}
 			win[i] = createUniqueID();
@@ -83,9 +82,9 @@ public class QBFSafetySolverPlaces extends QBFSolver<Safety> {
 	protected void writeQCIR() throws IOException {
 		Map<Place, Set<Transition>> systemHasToDecideForAtLeastOne = unfoldPG();
 
-		if (QBFSolver.mcmillian) {
+		if (QbfSolver.mcmillian) {
 			Set<Place> oldBad = new HashSet<>(getSolvingObject().getWinCon().getBadPlaces());
-	        getWinningCondition().buffer(pg.getGame());
+	        getWinningCondition().buffer(getSolvingObject().getGame());
 	        for (Place old : oldBad) {
 	        	getSolvingObject().getWinCon().getBadPlaces().remove(old);
 	        }
@@ -94,7 +93,7 @@ public class QBFSafetySolverPlaces extends QBFSolver<Safety> {
         
 		initializeVariablesForWriteQCIR();
 
-		writer.write("#QCIR-G14" + QBFSolver.replaceAfterWardsSpaces + QBFSolver.linebreak); // spaces left to add variable count in the end
+		writer.write("#QCIR-G14" + QbfSolver.replaceAfterWardsSpaces + QbfSolver.linebreak); // spaces left to add variable count in the end
 		addExists();
 		addForall();
 
@@ -119,9 +118,9 @@ public class QBFSafetySolverPlaces extends QBFSolver<Safety> {
 			phi.add(index_for_non_det_unfolding_info);
 		}
 
-		for (int i = 1; i <= pg.getN(); ++i) {
+		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 			seqImpliesWin[i] = createUniqueID();
-			writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + QBFSolver.linebreak);
+			writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + QbfSolver.linebreak);
 			phi.add(seqImpliesWin[i]);
 		}
 
@@ -154,8 +153,8 @@ public class QBFSafetySolverPlaces extends QBFSolver<Safety> {
 
 		raf.close();
 
-		if (QBFSolver.debug) {
-			FileUtils.copyFile(file, new File(pg.getGame().getName() + ".qcir"));
+		if (QbfSolver.debug) {
+			FileUtils.copyFile(file, new File(getSolvingObject().getGame().getName() + ".qcir"));
 		}
 
 		assert (QCIRconsistency.checkConsistency(file));

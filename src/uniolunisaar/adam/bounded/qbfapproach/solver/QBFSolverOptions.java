@@ -6,15 +6,15 @@ import uniolunisaar.adam.ds.solver.SolverOptions;
  *
  * @author Manuel Gieseking
  */
-public class QBFSolverOptions extends SolverOptions {
+public class QbfSolverOptions extends SolverOptions {
     private int n = 0;
     private int b = 0;
 
-    public QBFSolverOptions() {
+    public QbfSolverOptions() {
         super("qbf");
     }
 
-    public QBFSolverOptions(int n, int b) {
+    public QbfSolverOptions(int n, int b) {
         super("qbf");
         this.n = n;
         this.b = b;

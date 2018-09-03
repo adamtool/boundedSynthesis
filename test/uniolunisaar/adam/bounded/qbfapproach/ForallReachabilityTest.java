@@ -4,9 +4,9 @@ package uniolunisaar.adam.bounded.qbfapproach;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolver;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverFactory;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolver;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverFactory;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverOptions;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 
 @Test
@@ -93,7 +93,7 @@ public class ForallReachabilityTest extends EmptyTest {
 		final String path = System.getProperty("examplesfolder") + "/forallreachability/" + str + ".apt";
 //		PetriNet pn = Tools.getPetriNet(path);
 //		QBFFlowChainSolver<?> sol = new QBFForallReachabilitySolver(new QBFSolvingObject(pn), new Reachability(), new QBFSolverOptions(n, b));
-		QBFSolver<? extends WinningCondition> sol = QBFSolverFactory.getInstance().getSolver(path, new QBFSolverOptions(n, b)); //todo MG: warum nicht so?
+		QbfSolver<? extends WinningCondition> sol = QbfSolverFactory.getInstance().getSolver(path, new QbfSolverOptions(n, b)); //todo MG: warum nicht so?
         nextTest(sol, n, b, result);
 	}
 }

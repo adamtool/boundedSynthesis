@@ -12,32 +12,32 @@ import org.apache.commons.io.FileUtils;
 import uniol.apt.adt.pn.Marking;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
-import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QCIRconsistency;
+import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Reachability;
 
-public class QbfEReachabilitySolver extends QBFFlowChainSolver<Reachability> {
+public class QbfEReachabilitySolver extends QbfFlowChainSolver<Reachability> {
 
 	private int[] goodPlaces;
 	private int[] notUnreachEnded;
 	private int[] goodSimultan;
 
-	public QbfEReachabilitySolver(PetriGame game, Reachability winCon, QBFSolverOptions options) throws BoundedParameterMissingException {
+	public QbfEReachabilitySolver(PetriGame game, Reachability winCon, QbfSolverOptions options) throws SolvingException {
 		super(game, winCon, options);
-		goodPlaces = new int[pg.getN() + 1];
-		notUnreachEnded = new int[pg.getN() + 1];
-		goodSimultan = new int[pg.getN() + 1];
+		goodPlaces = new int[getSolvingObject().getN() + 1];
+		notUnreachEnded = new int[getSolvingObject().getN() + 1];
+		goodSimultan = new int[getSolvingObject().getN() + 1];
 		setTokenFlow();
 	}
 
 	@Override
 	protected String getInitial() {
-		Marking initialMarking = pg.getGame().getInitialMarking();
+		Marking initialMarking = getSolvingObject().getGame().getInitialMarking();
 		Set<Integer> initial = new HashSet<>();
-		for (Place p : pg.getGame().getPlaces()) {
+		for (Place p : getSolvingObject().getGame().getPlaces()) {
 			if (initialMarking.getToken(p).getValue() == 1) {
-				if (pg.getGame().isReach(p)) {
+				if (getSolvingObject().getGame().isReach(p)) {
 					initial.add(getVarNr(p.getId() + "." + 1 + "." + "objective", true));
 				} else {
 					initial.add(getVarNr(p.getId() + "." + 1 + "." + "notobjective", true));
@@ -73,7 +73,7 @@ public class QbfEReachabilitySolver extends QBFFlowChainSolver<Reachability> {
 
 			for (Place p : t.getPostset()) {
 				// good place reached
-				if (pg.getGame().isReach(p)) {
+				if (getSolvingObject().getGame().isReach(p)) {
 					and.add(getVarNr(p.getId() + "." + (i + 1) + "." + "objective", true));
 				} else {
 					Set<Place> tokenFlow = getIncomingTokenFlow(t, p);
@@ -88,7 +88,7 @@ public class QbfEReachabilitySolver extends QBFFlowChainSolver<Reachability> {
 				}
 			}
 
-			Set<Place> places = new HashSet<>(pg.getGame().getPlaces());
+			Set<Place> places = new HashSet<>(getSolvingObject().getGame().getPlaces());
 			places.removeAll(t.getPreset());
 			places.removeAll(t.getPostset());
 			for (Place p : places) {
@@ -123,19 +123,19 @@ public class QbfEReachabilitySolver extends QBFFlowChainSolver<Reachability> {
 
 	protected void writeGoodPlaces() throws IOException {
 		String[] good = getGoodPlaces();
-		for (int i = 1; i < pg.getN(); ++i) {
+		for (int i = 1; i < getSolvingObject().getN(); ++i) {
 			goodPlaces[i] = createUniqueID();
 			writer.write(goodPlaces[i] + " = " + good[i]);
 		}
 	}
 
 	protected String[] getGoodPlaces() throws IOException {
-		String[] goodPlaces = new String[pg.getN() + 1];
+		String[] goodPlaces = new String[getSolvingObject().getN() + 1];
 		Set<Integer> and = new HashSet<>();
-		for (int i = 1; i <= pg.getN(); ++i) {
+		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 			and.clear();
-			for (Place p : pg.getGame().getPlaces()) {
-				if (!p.getId().startsWith(QBFSolver.additionalSystemName)) {
+			for (Place p : getSolvingObject().getGame().getPlaces()) {
+				if (!p.getId().startsWith(QbfSolver.additionalSystemName)) {
 					and.add(-getVarNr(p.getId() + "." + i + "." + "notobjective", true));
 				}
 			}
@@ -146,19 +146,19 @@ public class QbfEReachabilitySolver extends QBFFlowChainSolver<Reachability> {
 
 	protected void writeNotUnreachEnded() throws IOException {
 		String[] unreach = getNotUnreachEnded();
-		for (int i = 1; i < pg.getN(); ++i) {
+		for (int i = 1; i < getSolvingObject().getN(); ++i) {
 			notUnreachEnded[i] = createUniqueID();
 			writer.write(notUnreachEnded[i] + " = " + unreach[i]);
 		}
 	}
 
 	protected String[] getNotUnreachEnded() throws IOException {
-		String[] unreachEnded = new String[pg.getN() + 1];
+		String[] unreachEnded = new String[getSolvingObject().getN() + 1];
 		Set<Integer> and = new HashSet<>();
 		Set<Integer> or = new HashSet<>();
-		for (int i = 1; i < pg.getN(); ++i) {
+		for (int i = 1; i < getSolvingObject().getN(); ++i) {
 			and.clear();
-			for (Transition t : pg.getGame().getTransitions()) {
+			for (Transition t : getSolvingObject().getGame().getTransitions()) {
 				for (Place p : t.getPreset()) {
 					if (!p.getId().startsWith(additionalSystemName)) {
 						if (getOutgoingTokenFlow(p, t).isEmpty()) {
@@ -181,10 +181,10 @@ public class QbfEReachabilitySolver extends QBFFlowChainSolver<Reachability> {
 	protected String getLoopIJ() throws IOException {
 		Set<Integer> or = new HashSet<>();
 		Set<Integer> innerOr = new HashSet<>();
-		for (int i = 1; i < pg.getN(); ++i) {
-			for (int j = i + 1; j <= pg.getN(); ++j) {
+		for (int i = 1; i < getSolvingObject().getN(); ++i) {
+			for (int j = i + 1; j <= getSolvingObject().getN(); ++j) {
 				Set<Integer> and = new HashSet<>();
-				for (Place p : pg.getGame().getPlaces()) {
+				for (Place p : getSolvingObject().getGame().getPlaces()) {
 					// additional system places cannot leave their places, they always loop
 					if (!p.getId().startsWith(additionalSystemName)) {
 						int p_i_safe = getVarNr(p.getId() + "." + i + "." + "objective", true);
@@ -229,20 +229,20 @@ public class QbfEReachabilitySolver extends QBFFlowChainSolver<Reachability> {
 
 	protected void writeGoodSimultan() throws IOException {
 		String[] goodSimu = getGoodSimultan();
-		for (int i = 2; i <= pg.getN(); ++i) {
+		for (int i = 2; i <= getSolvingObject().getN(); ++i) {
 			goodSimultan[i] = createUniqueID();
 			writer.write(goodSimultan[i] + " = " + goodSimu[i]);
 		}
 	}
 
 	protected String[] getGoodSimultan() throws IOException {
-		String[] goodSimultan = new String[pg.getN() + 1];
+		String[] goodSimultan = new String[getSolvingObject().getN() + 1];
 		Set<Integer> and = new HashSet<>();
 		Set<Integer> or = new HashSet<>();
-		for (int i = 2; i <= pg.getN(); ++i) {
+		for (int i = 2; i <= getSolvingObject().getN(); ++i) {
 			and.clear();
-			for (Place p : pg.getGame().getPlaces()) {
-				if (!p.getId().startsWith(QBFSolver.additionalSystemName)) {
+			for (Place p : getSolvingObject().getGame().getPlaces()) {
+				if (!p.getId().startsWith(QbfSolver.additionalSystemName)) {
 					or.clear();
 					or.add(getVarNr(p.getId() + "." + i + "." + "empty", true));
 					or.add(getVarNr(p.getId() + "." + i + "." + "objective", true));
@@ -263,7 +263,7 @@ public class QbfEReachabilitySolver extends QBFFlowChainSolver<Reachability> {
 
 	protected void writeWinning() throws IOException {
 		Set<Integer> and = new HashSet<>();
-		for (int i = 1; i < pg.getN(); ++i) {
+		for (int i = 1; i < getSolvingObject().getN(); ++i) {
 			and.clear();
 			and.add(dlt[i]);
 			and.add(det[i]);
@@ -276,11 +276,11 @@ public class QbfEReachabilitySolver extends QBFFlowChainSolver<Reachability> {
 
 		}
 		and.clear();
-		and.add(dlt[pg.getN()]);
-		and.add(det[pg.getN()]);
+		and.add(dlt[getSolvingObject().getN()]);
+		and.add(det[getSolvingObject().getN()]);
 		and.add(l);
-		win[pg.getN()] = createUniqueID();
-		writer.write(win[pg.getN()] + " = " + writeAnd(and));
+		win[getSolvingObject().getN()] = createUniqueID();
+		writer.write(win[getSolvingObject().getN()] + " = " + writeAnd(and));
 	}
 
 	@Override
@@ -289,7 +289,7 @@ public class QbfEReachabilitySolver extends QBFFlowChainSolver<Reachability> {
 
 		initializeVariablesForWriteQCIR();
 
-		writer.write("#QCIR-G14          " + QBFSolver.linebreak); // spaces left to add variable count in the end
+		writer.write("#QCIR-G14          " + QbfSolver.linebreak); // spaces left to add variable count in the end
 		addExists();
 		addForall();
 
@@ -321,12 +321,12 @@ public class QbfEReachabilitySolver extends QBFFlowChainSolver<Reachability> {
 			phi.add(index_for_non_det_unfolding_info);
 		}
 
-		for (int i = 1; i <= pg.getN(); ++i) {
+		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 			seqImpliesWin[i] = createUniqueID();
-			if (i < pg.getN()) {
-				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + QBFSolver.linebreak);
+			if (i < getSolvingObject().getN()) {
+				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + QbfSolver.linebreak);
 			} else {
-				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + "," + u + ")" + QBFSolver.linebreak);		// adding unfair
+				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + "," + u + ")" + QbfSolver.linebreak);		// adding unfair
 			}
 			phi.add(seqImpliesWin[i]);
 		}
@@ -368,8 +368,8 @@ public class QbfEReachabilitySolver extends QBFFlowChainSolver<Reachability> {
 
 		raf.close();
 
-		if (QBFSolver.debug) {
-			FileUtils.copyFile(file, new File(pg.getGame().getName() + ".qcir"));
+		if (QbfSolver.debug) {
+			FileUtils.copyFile(file, new File(getSolvingObject().getGame().getName() + ".qcir"));
 		}
 
 		assert (QCIRconsistency.checkConsistency(file));

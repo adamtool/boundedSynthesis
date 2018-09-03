@@ -1,7 +1,7 @@
 package uniolunisaar.adam.bounded.qbfapproach;
 
 import uniolunisaar.adam.bounded.qbfapproach.solver.QbfASafetySolver;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverOptions;
 import uniolunisaar.adam.generators.SelfOrganizingRobots;
 
 import org.testng.Assert;
@@ -23,7 +23,7 @@ public class SRTest {
 
 	private void oneTest(int robot1, int robot2, int n, int b) throws Exception {
 		PetriGame pn = SelfOrganizingRobots.generate(robot1, robot2, true, true);
-		QbfASafetySolver sol = new QbfASafetySolver(pn, new Safety(), new QBFSolverOptions(n, b));
+		QbfASafetySolver sol = new QbfASafetySolver(pn, new Safety(), new QbfSolverOptions(n, b));
 		sol.existsWinningStrategy(); // calculate first, then output games, and then check for correctness
 		// TODO put this to an appropriate place in code
 		AdamTools.savePG2PDF("originalGame", sol.originalGame, false);

@@ -1,7 +1,7 @@
 package uniolunisaar.adam.bounded.qbfapproach;
 
 import uniolunisaar.adam.bounded.qbfapproach.solver.QbfASafetySolver;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverOptions;
 import uniolunisaar.adam.generators.Workflow;
 
 import org.testng.Assert;
@@ -27,7 +27,7 @@ public class CMTest { // Concurrent Machines / WF
 
 	private void oneTest(int ps1, int ps2, int n, int b) throws Exception {
 		PetriGame pn = Workflow.generate(ps1, ps2, true, true);
-		QbfASafetySolver sol = new QbfASafetySolver(pn, new Safety(), new QBFSolverOptions(n, b));
+		QbfASafetySolver sol = new QbfASafetySolver(pn, new Safety(), new QbfSolverOptions(n, b));
 		sol.existsWinningStrategy(); // calculate first, then output games, and then check for correctness
 		AdamTools.savePG2PDF("originalGame", sol.originalGame, false);
 		AdamTools.savePG2PDF("unfolding", sol.unfolding, false);

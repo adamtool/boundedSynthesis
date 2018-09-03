@@ -12,9 +12,8 @@ import org.apache.commons.io.FileUtils;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
-import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QCIRconsistency;
-import uniolunisaar.adam.ds.exceptions.NotSupportedGameException;
+import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Buchi;
 
@@ -24,12 +23,12 @@ import uniolunisaar.adam.ds.winningconditions.Buchi;
  *
  */
 
-public class QbfEBuchiSolver extends QBFSolver<Buchi> {
+public class QbfEBuchiSolver extends QbfSolver<Buchi> {
 
 	// variable to store keys of calculated components for later use (special to this winning condition)
 	private int bl; // buchi loop
 
-	public QbfEBuchiSolver(PetriGame game, Buchi win, QBFSolverOptions so) throws NotSupportedGameException, BoundedParameterMissingException {
+	public QbfEBuchiSolver(PetriGame game, Buchi win, QbfSolverOptions so) throws SolvingException {
 		super(game, win, so);
 	}
 
@@ -41,10 +40,10 @@ public class QbfEBuchiSolver extends QBFSolver<Buchi> {
 
 	public String getBuchiLoop() throws IOException {
 		Set<Integer> outerOr = new HashSet<>();
-		for (int i = 1; i < pg.getN(); ++i) {
-			for (int j = i + 1; j <= pg.getN(); ++j) {
+		for (int i = 1; i < getSolvingObject().getN(); ++i) {
+			for (int j = i + 1; j <= getSolvingObject().getN(); ++j) {
 				Set<Integer> and = new HashSet<>();
-				for (Place p : pg.getGame().getPlaces()) {
+				for (Place p : getSolvingObject().getGame().getPlaces()) {
 					int p_i = getVarNr(p.getId() + "." + i, true);
 					int p_j = getVarNr(p.getId() + "." + j, true);
 					and.add(writeImplication(p_i, p_j));
@@ -60,7 +59,7 @@ public class QbfEBuchiSolver extends QBFSolver<Buchi> {
 				if (innerOr.isEmpty()) {
 					Pair<Boolean, Integer> pair = getVarNrWithResult("or()");
 					if (pair.getFirst()) {
-						writer.write(pair.getSecond() + " = or()" + QBFSolver.linebreak);
+						writer.write(pair.getSecond() + " = or()" + QbfSolver.linebreak);
 					}
 					innerOrNumber = pair.getSecond();
 				} else {
@@ -79,7 +78,7 @@ public class QbfEBuchiSolver extends QBFSolver<Buchi> {
 
 	private void writeWinning() throws IOException {
 		Set<Integer> and = new HashSet<>();
-		for (int i = 1; i <= pg.getN(); ++i) {
+		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 			and.clear();
 			if (dl[i] != 0) {
 				and.add(-dl[i]);
@@ -87,7 +86,7 @@ public class QbfEBuchiSolver extends QBFSolver<Buchi> {
 			if (det[i] != 0) {
 				and.add(det[i]);
 			}
-			if (i == pg.getN()) {
+			if (i == getSolvingObject().getN()) {
 				and.add(bl);	// slightly optimized in the sense that winning and loop are put together for n
 			}
 			win[i] = createUniqueID();
@@ -101,7 +100,7 @@ public class QbfEBuchiSolver extends QBFSolver<Buchi> {
 
 		initializeVariablesForWriteQCIR();
 
-		writer.write("#QCIR-G14" + QBFSolver.replaceAfterWardsSpaces + QBFSolver.linebreak); // spaces left to add variable count in the end
+		writer.write("#QCIR-G14" + QbfSolver.replaceAfterWardsSpaces + QbfSolver.linebreak); // spaces left to add variable count in the end
 		addExists();
 		addForall();
 
@@ -122,12 +121,12 @@ public class QbfEBuchiSolver extends QBFSolver<Buchi> {
 			phi.add(index_for_non_det_unfolding_info);
 		}
 
-		for (int i = 1; i <= pg.getN(); ++i) {
+		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 			seqImpliesWin[i] = createUniqueID();
-			if (i < pg.getN()) {
-				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + QBFSolver.linebreak);
+			if (i < getSolvingObject().getN()) {
+				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + QbfSolver.linebreak);
 			} else {
-				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + "," + u + ")" + QBFSolver.linebreak);		// adding unfair
+				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + "," + u + ")" + QbfSolver.linebreak);		// adding unfair
 			}
 			phi.add(seqImpliesWin[i]);
 		}
@@ -161,8 +160,8 @@ public class QbfEBuchiSolver extends QBFSolver<Buchi> {
 
 		raf.close();
 
-		if (QBFSolver.debug) {
-			FileUtils.copyFile(file, new File(pg.getGame().getName() + ".qcir"));
+		if (QbfSolver.debug) {
+			FileUtils.copyFile(file, new File(getSolvingObject().getGame().getName() + ".qcir"));
 		}
 
 		assert (QCIRconsistency.checkConsistency(file));

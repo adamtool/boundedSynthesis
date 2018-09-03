@@ -3,12 +3,10 @@ package uniolunisaar.adam.bounded.qbfapproach;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import uniol.apt.adt.pn.PetriNet;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolver;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverFactory;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolver;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverFactory;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverOptions;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
-import uniolunisaar.adam.tools.Tools;
 
 @Test
 public class ExistsSafetyTest extends EmptyTest {
@@ -120,7 +118,7 @@ public class ExistsSafetyTest extends EmptyTest {
 		final String path = System.getProperty("examplesfolder") + "/existssafety/" + str + ".apt";
 //		PetriNet pn = Tools.getPetriNet(path);
 //		QBFFlowChainSolver<?> sol = new QBFExistsSafetySolver(new QBFSolvingObject(pn), new Safety(), new QBFSolverOptions(n, b));
-		QBFSolver<? extends WinningCondition> sol = QBFSolverFactory.getInstance().getSolver(path, new QBFSolverOptions(n, b)); //TODO MG: warum nicht so?
+		QbfSolver<? extends WinningCondition> sol = QbfSolverFactory.getInstance().getSolver(path, new QbfSolverOptions(n, b)); //TODO MG: warum nicht so?
 		nextTest(sol, n, b, result);
 	}
 }

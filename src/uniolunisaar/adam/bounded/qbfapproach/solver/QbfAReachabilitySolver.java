@@ -12,25 +12,25 @@ import org.apache.commons.io.FileUtils;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
-import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QCIRconsistency;
+import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Reachability;
 
-public class QbfAReachabilitySolver extends QBFSolver<Reachability> {
+public class QbfAReachabilitySolver extends QbfSolver<Reachability> {
 
 	// variable to store keys of calculated components for later use (special to this winning condition)
 	private int[] goodPlaces;
 
-	public QbfAReachabilitySolver(PetriGame game, Reachability win, QBFSolverOptions so) throws BoundedParameterMissingException {
+	public QbfAReachabilitySolver(PetriGame game, Reachability win, QbfSolverOptions so) throws SolvingException {
 		super(game, win, so);
-		goodPlaces = new int[pg.getN() + 1];
+		goodPlaces = new int[getSolvingObject().getN() + 1];
 	}
 
 	private void writeGoodPlaces() throws IOException {
 		if (!getSolvingObject().getWinCon().getPlaces2Reach().isEmpty()) {
 			String[] good = getGoodPlaces();
-			for (int i = 1; i <= pg.getN(); ++i) {
+			for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 				goodPlaces[i] = createUniqueID();
 				writer.write(goodPlaces[i] + " = " + good[i]);
 			}
@@ -38,9 +38,9 @@ public class QbfAReachabilitySolver extends QBFSolver<Reachability> {
 	}
 
 	public String[] getGoodPlaces() {
-		String[] goodPlaces = new String[pg.getN() + 1];
+		String[] goodPlaces = new String[getSolvingObject().getN() + 1];
 		Set<Integer> or = new HashSet<>();
-		for (int i = 1; i <= pg.getN(); ++i) {
+		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 			or.clear();
 			for (Place p : getSolvingObject().getWinCon().getPlaces2Reach()) {
 				or.add(getVarNr(p.getId() + "." + i, true));
@@ -53,7 +53,7 @@ public class QbfAReachabilitySolver extends QBFSolver<Reachability> {
 	private void writeWinning() throws IOException {
 		Set<Integer> and = new HashSet<>();
 		Set<Integer> or = new HashSet<>();
-		for (int i = 1; i < pg.getN(); ++i) {
+		for (int i = 1; i < getSolvingObject().getN(); ++i) {
 			and.clear();
 			and.add(dlt[i]);
 			and.add(det[i]);
@@ -66,7 +66,7 @@ public class QbfAReachabilitySolver extends QBFSolver<Reachability> {
 					// empty set of places to reach never lets system win
 					Pair<Boolean, Integer> result = getVarNrWithResult("or()");
 					if (result.getFirst()) {
-						writer.write(result.getSecond() + " = or()" + QBFSolver.linebreak);
+						writer.write(result.getSecond() + " = or()" + QbfSolver.linebreak);
 					}
 					or.add(result.getSecond());
 				}
@@ -79,18 +79,18 @@ public class QbfAReachabilitySolver extends QBFSolver<Reachability> {
 
 		}
 		and.clear();
-		and.add(dlt[pg.getN()]);
-		and.add(det[pg.getN()]);
+		and.add(dlt[getSolvingObject().getN()]);
+		and.add(det[getSolvingObject().getN()]);
 		and.add(l);	// slightly optimized in the sense that winning and loop are put together for n
 		or.clear();
-		for (int i = 1; i <= pg.getN(); ++i) {
+		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 			if (goodPlaces[i] != 0) {
 				or.add(goodPlaces[i]);
 			} else {
 				// empty set of places to reach never lets system win
 				Pair<Boolean, Integer> result = getVarNrWithResult("or()");
 				if (result.getFirst()) {
-					writer.write(result.getSecond() + " = or()" + QBFSolver.linebreak);
+					writer.write(result.getSecond() + " = or()" + QbfSolver.linebreak);
 				}
 				or.add(result.getSecond());
 			}
@@ -98,8 +98,8 @@ public class QbfAReachabilitySolver extends QBFSolver<Reachability> {
 		int orID = createUniqueID();
 		writer.write(orID + " = " + writeOr(or));
 		and.add(orID);
-		win[pg.getN()] = createUniqueID();
-		writer.write(win[pg.getN()] + " = " + writeAnd(and));
+		win[getSolvingObject().getN()] = createUniqueID();
+		writer.write(win[getSolvingObject().getN()] + " = " + writeAnd(and));
 	}
 
 	@Override
@@ -108,7 +108,7 @@ public class QbfAReachabilitySolver extends QBFSolver<Reachability> {
 
 		initializeVariablesForWriteQCIR();
 
-		writer.write("#QCIR-G14" + QBFSolver.replaceAfterWardsSpaces + QBFSolver.linebreak); // spaces left to add variable count in the end
+		writer.write("#QCIR-G14" + QbfSolver.replaceAfterWardsSpaces + QbfSolver.linebreak); // spaces left to add variable count in the end
 		addExists();
 		addForall();
 
@@ -134,12 +134,12 @@ public class QbfAReachabilitySolver extends QBFSolver<Reachability> {
 			phi.add(index_for_non_det_unfolding_info);
 		}
 
-		for (int i = 1; i <= pg.getN(); ++i) {
+		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 			seqImpliesWin[i] = createUniqueID();
-			if (i < pg.getN()) {
-				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + QBFSolver.linebreak);
+			if (i < getSolvingObject().getN()) {
+				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + QbfSolver.linebreak);
 			} else {
-				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + "," + u + ")" + QBFSolver.linebreak);		// adding unfair
+				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + "," + u + ")" + QbfSolver.linebreak);		// adding unfair
 			}
 			phi.add(seqImpliesWin[i]);
 		}
@@ -173,8 +173,8 @@ public class QbfAReachabilitySolver extends QBFSolver<Reachability> {
 
 		raf.close();
 
-		if (QBFSolver.debug) {
-			FileUtils.copyFile(file, new File(pg.getGame().getName() + ".qcir"));
+		if (QbfSolver.debug) {
+			FileUtils.copyFile(file, new File(getSolvingObject().getGame().getName() + ".qcir"));
 		}
 
 		assert (QCIRconsistency.checkConsistency(file));

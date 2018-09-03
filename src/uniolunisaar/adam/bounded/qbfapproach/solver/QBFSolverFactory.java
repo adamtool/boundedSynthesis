@@ -12,48 +12,48 @@ import uniolunisaar.adam.logic.solver.SolverFactory;
  *
  * @author Manuel Gieseking
  */
-public class QBFSolverFactory extends SolverFactory<QBFSolverOptions, QBFSolver<? extends WinningCondition>> {
+public class QbfSolverFactory extends SolverFactory<QbfSolverOptions, QbfSolver<? extends WinningCondition>> {
 
-    private static QBFSolverFactory instance = null;
+    private static QbfSolverFactory instance = null;
 
-    public static QBFSolverFactory getInstance() {
+    public static QbfSolverFactory getInstance() {
         if (instance == null) {
-            instance = new QBFSolverFactory();
+            instance = new QbfSolverFactory();
         }
         return instance;
     }
 
-    private QBFSolverFactory() {
+    private QbfSolverFactory() {
 
     }
 
     @Override
-    protected QbfESafetySolver getESafetySolver(PetriGame game, Safety winCon, boolean skipTests, QBFSolverOptions so) throws SolvingException {
+    protected QbfESafetySolver getESafetySolver(PetriGame game, Safety winCon, boolean skipTests, QbfSolverOptions so) throws SolvingException {
         return new QbfESafetySolver(game, winCon, so);
     }
 
     @Override
-    protected QbfASafetySolver getASafetySolver(PetriGame game, Safety winCon, boolean skipTests, QBFSolverOptions so) throws SolvingException {
+    protected QbfASafetySolver getASafetySolver(PetriGame game, Safety winCon, boolean skipTests, QbfSolverOptions so) throws SolvingException {
         return new QbfASafetySolver(game, winCon, so);
     }
 
     @Override
-    protected QbfEReachabilitySolver getEReachabilitySolver(PetriGame game, Reachability winCon, boolean skipTests, QBFSolverOptions so) throws SolvingException {
+    protected QbfEReachabilitySolver getEReachabilitySolver(PetriGame game, Reachability winCon, boolean skipTests, QbfSolverOptions so) throws SolvingException {
         return new QbfEReachabilitySolver(game, winCon, so);
     }
 
     @Override
-    protected QbfAReachabilitySolver getAReachabilitySolver(PetriGame game, Reachability winCon, boolean skipTests, QBFSolverOptions so) throws SolvingException {
+    protected QbfAReachabilitySolver getAReachabilitySolver(PetriGame game, Reachability winCon, boolean skipTests, QbfSolverOptions so) throws SolvingException {
         return new QbfAReachabilitySolver(game, winCon, so);
     }
 
     @Override
-    protected QbfEBuchiSolver getEBuchiSolver(PetriGame game, Buchi winCon, boolean skipTests, QBFSolverOptions so) throws SolvingException {
+    protected QbfEBuchiSolver getEBuchiSolver(PetriGame game, Buchi winCon, boolean skipTests, QbfSolverOptions so) throws SolvingException {
         return new QbfEBuchiSolver(game, winCon, so);
     }
 
     @Override
-    protected QbfABuchiSolver getABuchiSolver(PetriGame game, Buchi winCon, boolean skipTests, QBFSolverOptions so) throws SolvingException {
+    protected QbfABuchiSolver getABuchiSolver(PetriGame game, Buchi winCon, boolean skipTests, QbfSolverOptions so) throws SolvingException {
         return new QbfABuchiSolver(game, winCon, so);
     }
 

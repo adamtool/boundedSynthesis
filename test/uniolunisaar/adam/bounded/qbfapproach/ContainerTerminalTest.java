@@ -9,9 +9,9 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import uniol.apt.io.parser.ParseException;
 import uniol.apt.module.exception.ModuleException;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolver;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverFactory;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolver;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverFactory;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverOptions;
 import uniolunisaar.adam.logic.exceptions.NetNotConcurrencyPreservingException;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
@@ -64,7 +64,7 @@ public class ContainerTerminalTest {
         System.out.println("Generate container terminal...");
         PetriGame pn = ContainerTerminal.createSafetyVersion(containerPlaces, true);
         AdamTools.savePG2PDF(path + name, pn, false);
-        QBFSolver<? extends WinningCondition> solv = QBFSolverFactory.getInstance().getSolver(pn, false, new QBFSolverOptions(15, 3));
+        QbfSolver<? extends WinningCondition> solv = QbfSolverFactory.getInstance().getSolver(pn, false, new QbfSolverOptions(15, 3));
         if (hasStrategy) {
             Assert.assertTrue(solv.existsWinningStrategy());
             AdamTools.savePG2PDF(path + name + "_pg", solv.getStrategy(), true);

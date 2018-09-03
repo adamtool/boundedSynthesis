@@ -1,7 +1,7 @@
 package uniolunisaar.adam.bounded.qbfapproach;
 
 import uniolunisaar.adam.bounded.qbfapproach.solver.QbfASafetySolver;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QBFSolverOptions;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverOptions;
 import uniolunisaar.adam.generators.RobotCell;
 
 import org.testng.Assert;
@@ -43,7 +43,7 @@ public class RobotCellTest {
 
 	private void oneTest(int ps1, int ps2, int n, int b) throws Exception {
 		PetriGame pn = RobotCell.generate(ps1, ps2, true);
-		QbfASafetySolver sol = new QbfASafetySolver(pn, new Safety(),new QBFSolverOptions(n, b));
+		QbfASafetySolver sol = new QbfASafetySolver(pn, new Safety(),new QbfSolverOptions(n, b));
 		Assert.assertTrue(sol.existsWinningStrategy());
 	}
 }

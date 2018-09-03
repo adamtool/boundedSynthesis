@@ -10,16 +10,16 @@ import java.util.Set;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
-import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
+import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.petrigame.TokenFlow;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 
-public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBFSolver<W> {
+public abstract class QbfFlowChainSolver<W extends WinningCondition> extends QbfSolver<W> {
 
-	protected QBFFlowChainSolver(PetriGame game, W winCon, QBFSolverOptions options) throws BoundedParameterMissingException {
+	protected QbfFlowChainSolver(PetriGame game, W winCon, QbfSolverOptions options) throws SolvingException {
 		super(game, winCon, options);
 	}
 
@@ -27,13 +27,13 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 		// TODO talk with Manuel about this try-catch and parseexception
                 // TODO: do you still need this?
 //		try {
-//			PetriGameAnnotator.parseAndAnnotateTokenflow(pg.getGame());
+//			PetriGameAnnotator.parseAndAnnotateTokenflow(getSolvingObject().getGame());
 //		} catch (ParseException e) {
 //			// TODO Auto-generated catch block
 //			e.printStackTrace();
 //		}
 		Map<Transition, Set<Pair<Place, Place>>> tfl = new HashMap<>();
-		for (Transition t : pg.getGame().getTransitions()) {
+		for (Transition t : getSolvingObject().getGame().getTransitions()) {
 			Collection<TokenFlow> list = getSolvingObject().getGame().getTokenFlows(t);
 			Set<Pair<Place, Place>> set = new HashSet<>();
 			for (TokenFlow tf : list) {
@@ -46,15 +46,15 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 			}
 			tfl.put(t, set);
 		}
-		pg.setFl(tfl);
+		getSolvingObject().setFl(tfl);
 	}
 
 	@Override
 	protected void addForall() throws IOException {
 		Set<Integer> forall = new HashSet<>();
 		int id;
-		for (int i = 1; i <= pg.getN(); ++i) {
-			for (Place p : pg.getGame().getPlaces()) {
+		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
+			for (Place p : getSolvingObject().getGame().getPlaces()) {
 				id = createVariable(p.getId() + "." + i + "." + true);
 				forall.add(id);
 				id = createVariable(p.getId() + "." + i + "." + false);
@@ -62,27 +62,27 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 			}
 		}
 		writer.write(writeForall(forall));
-		writer.write("output(1)" + QBFSolver.replaceAfterWardsSpaces + QBFSolver.linebreak);
+		writer.write("output(1)" + QbfSolver.replaceAfterWardsSpaces + QbfSolver.linebreak);
 		makeThreeValuedLogic();
 	}
 
 	private void makeThreeValuedLogic() throws IOException {
 		int top, bot, id;
-		for (int i = 1; i <= pg.getN(); ++i) {
-			for (Place p : pg.getGame().getPlaces()) {
+		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
+			for (Place p : getSolvingObject().getGame().getPlaces()) {
 				top = getVarNr(p.getId() + "." + i + "." + true, true);
 				bot = getVarNr(p.getId() + "." + i + "." + false, true);
 
 				id = createVariable(p.getId() + "." + i + "." + "objective");
-				writer.write(id + " = and(" + top + "," + "-" + bot + ")" + QBFSolver.linebreak);
+				writer.write(id + " = and(" + top + "," + "-" + bot + ")" + QbfSolver.linebreak);
 				// System.out.println(p.getId() + "." + i + "." + "objective" + " -> " + "and(" + top + "," + "-" + bot + ")");
 
 				id = createVariable(p.getId() + "." + i + "." + "notobjective");
-				writer.write(id + " = and(" + "-" + top + "," + bot + ")" + QBFSolver.linebreak);
+				writer.write(id + " = and(" + "-" + top + "," + bot + ")" + QbfSolver.linebreak);
 				// System.out.println(p.getId() + "." + i + "." + "notobjective" + " -> " + "and(" + -top + "," + bot + ")");
 
 				id = createVariable(p.getId() + "." + i + "." + "empty");
-				writer.write(id + " = and(" + "-" + top + "," + "-" + bot + ")" + QBFSolver.linebreak);
+				writer.write(id + " = and(" + "-" + top + "," + "-" + bot + ")" + QbfSolver.linebreak);
 				// System.out.println(p.getId() + "." + i + "." + "empty" + " -> " + "and(" + -top + "," + -bot + ")");
 			}
 		}
@@ -90,10 +90,10 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 
 	protected Set<Place> getIncomingTokenFlow(Transition t, Place p) {
 		Set<Place> result = new HashSet<>();
-		Map<Transition, Set<Pair<Place, Place>>> map = pg.getFl();
+		Map<Transition, Set<Pair<Place, Place>>> map = getSolvingObject().getFl();
 		for (Pair<Place, Place> pair : map.get(t)) {
 			if (pair.getSecond().equals(p)) {
-				if (!p.getId().startsWith(QBFSolver.additionalSystemName)) {
+				if (!p.getId().startsWith(QbfSolver.additionalSystemName)) {
 					result.add(pair.getFirst());
 				}
 			}
@@ -103,10 +103,10 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 
 	protected Set<Place> getOutgoingTokenFlow(Place p, Transition t) {
 		Set<Place> result = new HashSet<>();
-        Map<Transition, Set<Pair<Place, Place>>> map = pg.getFl();
+        Map<Transition, Set<Pair<Place, Place>>> map = getSolvingObject().getFl();
 		for (Pair<Place, Place> pair : map.get(t)) {
 			if (pair.getFirst().equals(p)) {
-				if (!p.getId().startsWith(QBFSolver.additionalSystemName)) {
+				if (!p.getId().startsWith(QbfSolver.additionalSystemName)) {
 					result.add(pair.getSecond());
 				}
 			}
@@ -122,7 +122,7 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 				if (tfl.getPostset().contains(p) && tfl.isInitial()) {
 					Pair<Boolean, Integer> or = getVarNrWithResult("or()");
 					if (or.getFirst()) {
-						writer.write(or.getSecond() + " = or()" + QBFSolver.linebreak);
+						writer.write(or.getSecond() + " = or()" + QbfSolver.linebreak);
 					}
 					return or.getSecond();
 				}
@@ -145,7 +145,7 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 				if (tfl.getPostset().contains(p) && tfl.isInitial()) {
 					Pair<Boolean, Integer> and = getVarNrWithResult("and()");
 					if (and.getFirst()) {
-						writer.write(and.getSecond() + " = and()" + QBFSolver.linebreak);
+						writer.write(and.getSecond() + " = and()" + QbfSolver.linebreak);
 					}
 					return and.getSecond();
 				}
@@ -167,7 +167,7 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 		int number;
 		int strat;
 		for (int i = s; i <= e; ++i) {
-			for (int j = 0; j < pg.getGame().getTransitions().size(); ++j) {
+			for (int j = 0; j < getSolvingObject().getGame().getTransitions().size(); ++j) {
 				t = transitions[j];
 				or.clear();
 				for (Place p : t.getPreset()) {
@@ -179,7 +179,7 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 				}
 				number = createUniqueID();
 				writer.write(number + " = " + writeOr(or));
-				deadlockSubFormulas[pg.getGame().getTransitions().size() * (i - 1) + j] = number;
+				deadlockSubFormulas[getSolvingObject().getGame().getTransitions().size() * (i - 1) + j] = number;
 			}
 		}
 	}
@@ -191,7 +191,7 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 		Transition t;
 		int key;
 		for (int i = s; i <= e; ++i) {
-			for (int j = 0; j < pg.getGame().getTransitions().size(); ++j) {
+			for (int j = 0; j < getSolvingObject().getGame().getTransitions().size(); ++j) {
 				t = transitions[j];
 				pre = t.getPreset();
 				or.clear();
@@ -200,7 +200,7 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 				}
 				key = createUniqueID();
 				writer.write(key + " = " + writeOr(or));
-				terminatingSubFormulas[pg.getGame().getTransitions().size() * (i - 1) + j] = key;
+				terminatingSubFormulas[getSolvingObject().getGame().getTransitions().size() * (i - 1) + j] = key;
 			}
 		}
 	}
@@ -234,10 +234,10 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 		Set<Integer> innerOr = new HashSet<>();
 		Set<Integer> innerAnd = new HashSet<>();
 
-		for (int i = 1; i < pg.getN() - 1; ++i) {
-			for (int j = i + 2; j <= pg.getN(); ++j) {
+		for (int i = 1; i < getSolvingObject().getN() - 1; ++i) {
+			for (int j = i + 2; j <= getSolvingObject().getN(); ++j) {
 				outerAnd.clear();
-				for (Place p : pg.getGame().getPlaces()) {
+				for (Place p : getSolvingObject().getGame().getPlaces()) {
 					if (!p.getId().startsWith(additionalSystemName)) {
 						int p_i_safe = getVarNr(p.getId() + "." + i + "." + "objective", true);
 						int p_j_safe = getVarNr(p.getId() + "." + j + "." + "objective", true);
@@ -256,13 +256,13 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 					}
 				}
 				innerOr.clear();
-				for (Transition t : pg.getGame().getTransitions()) {
+				for (Transition t : getSolvingObject().getGame().getTransitions()) {
 					innerAnd.clear();
 					// search for transition enabled the whole time but never fired
 					for (int k = i; k < j; ++k) {
 						for (Place p : t.getPreset()) {
 							int id = createUniqueID();
-							writer.write(id + " = or(" + getVarNr(p.getId() + "." + k + "." + "objective", true) + "," + getVarNr(p.getId() + "." + k + "." + "notobjective", true) + ")" + QBFSolver.linebreak);
+							writer.write(id + " = or(" + getVarNr(p.getId() + "." + k + "." + "objective", true) + "," + getVarNr(p.getId() + "." + k + "." + "notobjective", true) + ")" + QbfSolver.linebreak);
 							innerAnd.add(id);
 							int strategy = addSysStrategy(p, t);
 							if (strategy != 0) {
@@ -291,10 +291,10 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 	@Override
 	protected String getLoopIJ() throws IOException {
 		Set<Integer> or = new HashSet<>();
-		for (int i = 1; i < pg.getN(); ++i) {
-			for (int j = i + 1; j <= pg.getN(); ++j) {
+		for (int i = 1; i < getSolvingObject().getN(); ++i) {
+			for (int j = i + 1; j <= getSolvingObject().getN(); ++j) {
 				Set<Integer> and = new HashSet<>();
-				for (Place p : pg.getGame().getPlaces()) {
+				for (Place p : getSolvingObject().getGame().getPlaces()) {
 					// additional system places cannot leave their places, they always loop
 					if (!p.getId().startsWith(additionalSystemName)) {
 						int p_i_safe = getVarNr(p.getId() + "." + i + "." + "objective", true);
@@ -323,8 +323,8 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 	protected int valid() throws IOException {
 		Set<Integer> and = new HashSet<>();
 		Set<Integer> or = new HashSet<>();
-		for (int i = 1; i <= pg.getN(); ++i) {
-			for (Place p : pg.getGame().getPlaces()) {
+		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
+			for (Place p : getSolvingObject().getGame().getPlaces()) {
 				or.clear();
 				or.add(-getVarNr(p.getId() + "." + i + "." + true, true));
 				or.add(-getVarNr(p.getId() + "." + i + "." + false, true));
@@ -340,9 +340,9 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 
 	protected Set<Transition> getTransitionCreatingTokenFlow() {
 		Set<Transition> result = new HashSet<>();
-		for (Transition t : pg.getGame().getTransitions()) {
+		for (Transition t : getSolvingObject().getGame().getTransitions()) {
 			for (Place p : t.getPostset()) {
-				if (!p.getId().startsWith(QBFSolver.additionalSystemName)) {
+				if (!p.getId().startsWith(QbfSolver.additionalSystemName)) {
 					if (getIncomingTokenFlow(t, p).isEmpty()) {
 						result.add(t);
 					}
@@ -354,9 +354,9 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 
 	protected Set<Transition> getTransitionFinishingTokenFlow() {
 		Set<Transition> result = new HashSet<>();
-		for (Transition t : pg.getGame().getTransitions()) {
+		for (Transition t : getSolvingObject().getGame().getTransitions()) {
 			for (Place p : t.getPreset()) {
-				if (!p.getId().startsWith(QBFSolver.additionalSystemName)) {
+				if (!p.getId().startsWith(QbfSolver.additionalSystemName)) {
 					if (getOutgoingTokenFlow(p, t).isEmpty()) {
 						result.add(t);
 					}
@@ -384,26 +384,26 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 								if (in != -1) { // CTL has exists variables for path EF which mean not remove
 									String place = remove.substring(0, in);
 									String transition = remove.substring(in + 2, remove.length());
-									if (place.startsWith(QBFSolver.additionalSystemName)) {
+									if (place.startsWith(QbfSolver.additionalSystemName)) {
 										// additional system place exactly removes transitions
 										// Transition might already be removed by recursion
-										Set<Transition> transitions = new HashSet<>(pg.getGame().getTransitions());
+										Set<Transition> transitions = new HashSet<>(getSolvingObject().getGame().getTransitions());
 										for (Transition t : transitions) {
 											if (t.getId().equals(transition)) {
 												// System.out.println("starting " + t);
-												pg.removeTransitionRecursively(t);
+												getSolvingObject().removeTransitionRecursively(t);
 											}
 										}
 									} else {
 										// original system place removes ALL transitions
-										Set<Place> places = new HashSet<>(pg.getGame().getPlaces());
+										Set<Place> places = new HashSet<>(getSolvingObject().getGame().getPlaces());
 										for (Place p : places) {
 											if (p.getId().equals(place)) {
 												Set<Transition> transitions = new HashSet<>(p.getPostset());
 												for (Transition post : transitions) {
 													if (transition.equals(getTruncatedId(post.getId()))) {
 														// System.out.println("starting " + post);
-														pg.removeTransitionRecursively(post);
+														getSolvingObject().removeTransitionRecursively(post);
 													}
 												}
 											}
@@ -413,18 +413,18 @@ public abstract class QBFFlowChainSolver<W extends WinningCondition> extends QBF
 							} else {
 								// 0 is the last member
 								// System.out.println("Finished reading strategy.");
-								PGSimplifier.simplifyPG(pg, true, false);
-								strategy = new PetriGame(pg.getGame());
-								return pg.getGame();
+								PGSimplifier.simplifyPG(getSolvingObject(), true, false);
+								strategy = new PetriGame(getSolvingObject().getGame());
+								return getSolvingObject().getGame();
 							}
 						}
 					}
 				}
 			}
 			// There were no decision points for the system, thus the previous loop did not leave the method
-			PGSimplifier.simplifyPG(pg, true, false);
-			strategy = new PetriGame(pg.getGame());
-			return pg.getGame();
+			PGSimplifier.simplifyPG(getSolvingObject(), true, false);
+			strategy = new PetriGame(getSolvingObject().getGame());
+			return getSolvingObject().getGame();
 		}
 		throw new NoStrategyExistentException();
 	}
