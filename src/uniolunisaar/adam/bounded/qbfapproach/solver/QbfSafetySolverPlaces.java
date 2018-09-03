@@ -24,12 +24,12 @@ import uniolunisaar.adam.ds.winningconditions.Safety;
  *         This implements bad places.
  */
 
-public class QBFSafetySolverPlaces extends QbfSolver<Safety> {
+public class QbfSafetySolverPlaces extends QbfSolver<Safety> {
 
 	// variable to store keys of calculated components for later use (special to this winning condition)
 	private int[] bad;
 
-	public QBFSafetySolverPlaces(PetriGame game, Safety win, QbfSolverOptions so) throws SolvingException {
+	public QbfSafetySolverPlaces(PetriGame game, Safety win, QbfSolverOptions so) throws SolvingException {
 		super(game, win, so);
 		bad = new int[getSolvingObject().getN() + 1];
 	}

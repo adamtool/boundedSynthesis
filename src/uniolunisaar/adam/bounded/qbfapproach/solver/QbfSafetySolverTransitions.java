@@ -20,7 +20,7 @@ import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Safety;
 
-public class QBFSafetySolverTransitions extends QbfSolver<Safety> {
+public class QbfSafetySolverTransitions extends QbfSolver<Safety> {
 	
 	// variable to store keys of calculated components for later use (special to this winning condition)
 	private int[] bad;
@@ -31,7 +31,7 @@ public class QBFSafetySolverTransitions extends QbfSolver<Safety> {
 	private Map<Transition, Integer[]> tt = new HashMap<>();
 	private Map<Place, Integer[]> nc = new HashMap<>();
 
-	public QBFSafetySolverTransitions(PetriGame game, Safety winCon, QbfSolverOptions so) throws SolvingException {
+	public QbfSafetySolverTransitions(PetriGame game, Safety winCon, QbfSolverOptions so) throws SolvingException {
 		super(game, winCon, so);
 		bad = new int[getSolvingObject().getN() + 1];
 		for (Place p : getSolvingObject().getGame().getPlaces()) {
