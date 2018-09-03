@@ -116,9 +116,7 @@ public class ExistsSafetyTest extends EmptyTest {
 
 	private void oneTest(String str, int n, int b, boolean result) throws Exception {
 		final String path = System.getProperty("examplesfolder") + "/existssafety/" + str + ".apt";
-//		PetriNet pn = Tools.getPetriNet(path);
-//		QBFFlowChainSolver<?> sol = new QBFExistsSafetySolver(new QBFSolvingObject(pn), new Safety(), new QBFSolverOptions(n, b));
-		QbfSolver<? extends WinningCondition> sol = QbfSolverFactory.getInstance().getSolver(path, new QbfSolverOptions(n, b)); //TODO MG: warum nicht so?
+		QbfSolver<? extends WinningCondition> sol = QbfSolverFactory.getInstance().getSolver(path, new QbfSolverOptions(n, b));
 		nextTest(sol, n, b, result);
 	}
 }

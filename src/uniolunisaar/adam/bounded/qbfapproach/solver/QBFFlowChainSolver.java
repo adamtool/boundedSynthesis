@@ -24,24 +24,18 @@ public abstract class QbfFlowChainSolver<W extends WinningCondition> extends Qbf
 	}
 
 	protected void setTokenFlow() {
-		// TODO talk with Manuel about this try-catch and parseexception
-                // TODO: do you still need this?
-//		try {
-//			PetriGameAnnotator.parseAndAnnotateTokenflow(getSolvingObject().getGame());
-//		} catch (ParseException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
 		Map<Transition, Set<Pair<Place, Place>>> tfl = new HashMap<>();
 		for (Transition t : getSolvingObject().getGame().getTransitions()) {
 			Collection<TokenFlow> list = getSolvingObject().getGame().getTokenFlows(t);
 			Set<Pair<Place, Place>> set = new HashSet<>();
 			for (TokenFlow tf : list) {
 //				for (Place pre : tf.getPreset()) {
-                                        Place pre = tf.getPresetPlace();
-					for (Place post : tf.getPostset()) {
-						set.add(new Pair<>(pre, post));
-					}
+                    Place pre = tf.getPresetPlace();
+                    if (pre != null) {
+	                    for (Place post : tf.getPostset()) {
+							set.add(new Pair<>(pre, post));
+						}
+                    }
 //				}
 			}
 			tfl.put(t, set);
@@ -414,7 +408,7 @@ public abstract class QbfFlowChainSolver<W extends WinningCondition> extends Qbf
 								// 0 is the last member
 								// System.out.println("Finished reading strategy.");
 								PGSimplifier.simplifyPG(getSolvingObject(), true, false);
-								strategy = new PetriGame(getSolvingObject().getGame());
+								//strategy = new PetriGame(getSolvingObject().getGame());
 								return getSolvingObject().getGame();
 							}
 						}
@@ -423,7 +417,7 @@ public abstract class QbfFlowChainSolver<W extends WinningCondition> extends Qbf
 			}
 			// There were no decision points for the system, thus the previous loop did not leave the method
 			PGSimplifier.simplifyPG(getSolvingObject(), true, false);
-			strategy = new PetriGame(getSolvingObject().getGame());
+			//strategy = new PetriGame(getSolvingObject().getGame());
 			return getSolvingObject().getGame();
 		}
 		throw new NoStrategyExistentException();

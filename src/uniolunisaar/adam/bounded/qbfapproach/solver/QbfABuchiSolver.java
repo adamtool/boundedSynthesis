@@ -28,12 +28,12 @@ public class QbfABuchiSolver extends QbfFlowChainSolver<Buchi> {
 
 	public QbfABuchiSolver(PetriGame game, Buchi winCon, QbfSolverOptions options) throws SolvingException {
 		super(game, winCon, options);
-		setTokenFlow();
 		noFlowChainEnded = new int[getSolvingObject().getN() + 1];
 		goodSimultan = new int[getSolvingObject().getN() + 1];
 		buchiPlaces = new int[getSolvingObject().getN() + 1];
 		reset = new int[getSolvingObject().getN() + 1];
 		resetChoice = new int[getSolvingObject().getN() + 1];
+		setTokenFlow();
 	}
 
 	@Override

@@ -1,10 +1,7 @@
 package uniolunisaar.adam.bounded.qbfapproach;
 
-import static org.testng.Assert.assertTrue;
-
 import java.io.File;
 
-import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -12,10 +9,9 @@ import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolver;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverFactory;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverOptions;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
-import uniolunisaar.adam.logic.util.AdamTools;
 
 @Test
-public class ReachabilityTest {
+public class ReachabilityTest extends EmptyTest {
 
 	@BeforeClass
     public void createFolder() {
@@ -76,19 +72,7 @@ public class ReachabilityTest {
 
 	private void test(String folder, String name, boolean result, int n, int b) throws Exception {
 		final String path = System.getProperty("examplesfolder") + File.separator + "reachability" + File.separator + folder + File.separator + name + ".apt";
-//		PetriNet pn = Tools.getPetriNet(path);
-//		QBFReachabilitySolver sol = new QBFReachabilitySolver(pn, new Reachability(), new QBFSolverOptions(n, b));
-		QbfSolver<? extends WinningCondition> sol = QbfSolverFactory.getInstance().getSolver(path, new QbfSolverOptions(n, b)); //todo MG: warum nicht so?
-		sol.existsWinningStrategy();
-		AdamTools.savePG2PDF("originalGame", sol.originalGame, false);
-		AdamTools.savePG2PDF("unfolding", sol.unfolding, false);
-		if (sol.existsWinningStrategy()) {
-			AdamTools.savePG2PDF("strategy", sol.getStrategy(), false);
-		}
-		Assert.assertEquals(sol.existsWinningStrategy(), result);
-		
-		if (sol.existsWinningStrategy()) {
-			assertTrue(QbfSolver.checkStrategy(sol.originalGame, sol.strategy));
-		}
+		QbfSolver<? extends WinningCondition> sol = QbfSolverFactory.getInstance().getSolver(path, new QbfSolverOptions(n, b));
+		nextTest(sol, n, b, result);
 	}
 }

@@ -55,7 +55,7 @@ public class ForallReachabilityTest extends EmptyTest {
 		oneTest("toyexamples/oneTokenMultiChains6", 10, 0, false);
 		oneTest("toyexamples/oneTokenMultiChains7", 6, 0, true);
 		oneTest("toyexamples/oneTokenMultiChains7", 10, 0, true);
-		oneTest("toyexamples/oneTokenMultiChains8", 6, 0, false);			// ONLY because I don't allow deadlocks after reach
+		oneTest("toyexamples/oneTokenMultiChains8", 6, 0, false);		// ONLY because I don't allow deadlocks after reach
 		oneTest("toyexamples/oneTokenMultiChains8", 10, 0, false);		// ONLY because I don't allow deadlocks after reach
 		oneTest("toyexamples/overallBad0", 6, 0, false);
 		oneTest("toyexamples/overallBad0", 10, 0, false);
@@ -80,9 +80,9 @@ public class ForallReachabilityTest extends EmptyTest {
 		oneTest("jhh/unfair", 10, 0, false);
 		oneTest("jhh/unfair", 20, 0, false);
 		oneTest("burglar/burglar", 10, 0, false);
-		oneTest("burglar/burglar", 10, 2, true);
+		oneTest("burglar/burglar", 10, 2, true);	// TODO unfolding + token flows
 		oneTest("burglar/burglar1", 10, 0, false);
-		oneTest("burglar/burglar1", 10, 2, true);
+		oneTest("burglar/burglar1", 10, 2, true);	// TODO unfolding + token flows
 		oneTest("burglar/burglar2", 10, 0, false);
 		oneTest("burglar/burglar2", 10, 2, false);
 		oneTest("burglar/burglarDirectlyWon", 10, 0, true);
@@ -91,9 +91,7 @@ public class ForallReachabilityTest extends EmptyTest {
 	
 	private void oneTest(String str, int n, int b, boolean result) throws Exception {
 		final String path = System.getProperty("examplesfolder") + "/forallreachability/" + str + ".apt";
-//		PetriNet pn = Tools.getPetriNet(path);
-//		QBFFlowChainSolver<?> sol = new QBFForallReachabilitySolver(new QBFSolvingObject(pn), new Reachability(), new QBFSolverOptions(n, b));
-		QbfSolver<? extends WinningCondition> sol = QbfSolverFactory.getInstance().getSolver(path, new QbfSolverOptions(n, b)); //todo MG: warum nicht so?
+		QbfSolver<? extends WinningCondition> sol = QbfSolverFactory.getInstance().getSolver(path, new QbfSolverOptions(n, b));
         nextTest(sol, n, b, result);
 	}
 }

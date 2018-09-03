@@ -15,7 +15,7 @@ import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 import uniolunisaar.adam.logic.util.AdamTools;
 
 @Test
-public class BuechiTest {
+public class BuechiTest extends EmptyTest {
 
     @BeforeClass
     public void setProperties() {
@@ -52,19 +52,7 @@ public class BuechiTest {
 
     private void test(String name, boolean result, int n, int b) throws Exception {
         final String path = System.getProperty("examplesfolder") + File.separator + "buechi" + File.separator + "toyExamples" + File.separator + name + ".apt";
-//        PetriNet pn = Tools.getPetriNet(path);
-//        QBFBuchiSolver sol = new QBFBuchiSolver(pn, new Buchi(), new QBFSolverOptions(n, b));
-		QbfSolver<? extends WinningCondition> sol = QbfSolverFactory.getInstance().getSolver(path, new QbfSolverOptions(n, b)); //todo MG: warum nicht so?
-        sol.existsWinningStrategy();
-        AdamTools.savePG2PDF("originalGame", sol.originalGame, false);
-        AdamTools.savePG2PDF("unfolding", sol.unfolding, false);
-        if (sol.existsWinningStrategy()) {
-            AdamTools.savePG2PDF("strategy", sol.getStrategy(), false);
-        }
-        Assert.assertEquals(sol.existsWinningStrategy(), result);
-        
-        if (sol.existsWinningStrategy()) {
-			assertTrue(QbfSolver.checkStrategy(sol.originalGame, sol.strategy));
-		}
+		QbfSolver<? extends WinningCondition> sol = QbfSolverFactory.getInstance().getSolver(path, new QbfSolverOptions(n, b));
+        nextTest(sol, n, b, result);
     }
 }
