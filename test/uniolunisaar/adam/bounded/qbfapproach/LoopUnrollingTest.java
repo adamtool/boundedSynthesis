@@ -2,7 +2,6 @@ package uniolunisaar.adam.bounded.qbfapproach;
 
 import org.testng.annotations.Test;
 
-import uniol.apt.adt.pn.PetriNet;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolver;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverFactory;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverOptions;
@@ -22,8 +21,8 @@ public class LoopUnrollingTest extends EmptyTest {
 	}
 	
 	private void oneTest(int problemSize, boolean newChain, int n, int b, boolean result) throws Exception {
-		PetriNet pn = LoopUnrolling.createESafetyVersion(problemSize, newChain, false);
-		QbfSolver<? extends WinningCondition> sol = QbfSolverFactory.getInstance().getSolver(new PetriGame(pn), false, new QbfSolverOptions(n, b));
+		PetriGame pn = LoopUnrolling.createESafetyVersion(problemSize, newChain, false);
+		QbfSolver<? extends WinningCondition> sol = QbfSolverFactory.getInstance().getSolver(pn, false, new QbfSolverOptions(n, b));
 		nextTest(sol, n, b, result);
 	}
 }
