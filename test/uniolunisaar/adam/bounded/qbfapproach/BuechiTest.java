@@ -1,10 +1,7 @@
 package uniolunisaar.adam.bounded.qbfapproach;
 
-import static org.testng.Assert.assertTrue;
-
 import java.io.File;
 
-import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -12,7 +9,6 @@ import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolver;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverFactory;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverOptions;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
-import uniolunisaar.adam.logic.util.AdamTools;
 
 @Test
 public class BuechiTest extends EmptyTest {

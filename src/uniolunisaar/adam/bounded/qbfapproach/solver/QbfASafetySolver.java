@@ -79,10 +79,7 @@ public class QbfASafetySolver extends QbfSolver<Safety> {
 
 	@Override
 	protected void writeQCIR() throws IOException {
-		// unfolding Petri game and storing original and unfolding
-		originalGame = new PetriGame(getSolvingObject().getGame());
 		Map<Place, Set<Transition>> systemHasToDecideForAtLeastOne = unfoldPG();
-		unfolding = new PetriGame(getSolvingObject().getGame());
 		
 		// TODO maybe remove bad places for McMillianUnfolder
 		

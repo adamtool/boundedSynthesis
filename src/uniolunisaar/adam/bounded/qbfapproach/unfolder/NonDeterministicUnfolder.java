@@ -147,7 +147,7 @@ public abstract class NonDeterministicUnfolder extends Unfolder {
 					}
 				}
 				
-                                Map<Transition, Set<Pair<Place, Place>>> map = pg.getFl();
+                Map<Transition, Set<Pair<Place, Place>>> map = pg.getFl();
 				for (Pair<Place, Place> fl : map.get(pre_transition)) {
 					Place first = fl.getFirst();
 					Place second = fl.getSecond();
@@ -176,7 +176,7 @@ public abstract class NonDeterministicUnfolder extends Unfolder {
 					pg.getGame().createFlow(newT, postPost);
 				}
 				
-                                Map<Transition, Set<Pair<Place, Place>>> map = pg.getFl();
+                Map<Transition, Set<Pair<Place, Place>>> map = pg.getFl();
 				for (Pair<Place, Place> fl : map.get(post_transition)) {
 					Place first = fl.getFirst();
 					Place second = fl.getSecond();
@@ -218,7 +218,7 @@ public abstract class NonDeterministicUnfolder extends Unfolder {
 						}
 					}
 					
-                                        Map<Transition, Set<Pair<Place, Place>>> map = pg.getFl();
+                    Map<Transition, Set<Pair<Place, Place>>> map = pg.getFl();
 					for (Pair<Place, Place> fl : map.get(loop)) {
 						Place first = fl.getFirst();
 						Place second = fl.getSecond();

@@ -20,6 +20,13 @@ import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Safety;
 
+/**
+ * not working try to have transitions explicit
+ * 
+ * @author JHH
+ *
+ */
+
 public class QbfSafetySolverTransitions extends QbfSolver<Safety> {
 	
 	// variable to store keys of calculated components for later use (special to this winning condition)

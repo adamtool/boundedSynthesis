@@ -4,14 +4,10 @@ package uniolunisaar.adam.bounded.qbfapproach;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import uniol.apt.adt.pn.PetriNet;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QbfASafetySolver;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolver;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverFactory;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverOptions;
-import uniolunisaar.adam.ds.winningconditions.Safety;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
-import uniolunisaar.adam.tools.Tools;
 
 @Test
 public class SafetyTest extends EmptyTest {

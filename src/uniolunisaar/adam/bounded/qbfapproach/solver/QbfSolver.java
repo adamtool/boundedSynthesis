@@ -27,9 +27,7 @@ import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFSolvingObject;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.ForNonDeterministicUnfolder;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.Unfolder;
-import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
-import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.solver.Solver;
@@ -63,10 +61,11 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 	public Boolean sat = null;
 	public Boolean error = null;
 
+	// storing QBF result for strategy generation
+	protected String outputQBFsolver;
+	
 	// keys
 	public Map<Integer, String> exists_transitions = new HashMap<>();
-
-	protected String outputQBFsolver = "";
 
 	// TODO maybe optional arguments
 	public static String linebreak = System.lineSeparator(); // Controller
@@ -83,8 +82,8 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 	private Map<Transition, Set<Place>> restCache = new HashMap<>(); // proven to be slightly useful in terms of performance
 	private Map<Transition, Set<Place>> preMinusPostCache = new HashMap<>();
 
-	public QBFSolvingObject<W> originalSolvingObject; // TODO use it?
-
+	// steps of solving
+	public QBFSolvingObject<W> originalSolvingObject;
 	public PetriGame originalGame;
 	public PetriGame unfolding;
 	public PetriGame strategy;
@@ -119,7 +118,7 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 	public QbfSolver(PetriGame game, W winCon, QbfSolverOptions so) throws SolvingException {
 		super(new QBFSolvingObject<>(game, winCon), so);
 		
-		//originalSolvingObject = getSolvingObject().getCopy(); //TODO why dont tokenflows work with copy constructor?
+		originalSolvingObject = getSolvingObject().getCopy();
 		
 		// initializing bounded parameters n and b
 		int n = so.getN();
@@ -837,30 +836,24 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 	}
 
 	protected Map<Place, Set<Transition>> unfoldPG() {
-		//originalGame = new PetriGame(getSolvingObject().getGame()); // TODO einkommentieren
-
+		originalGame = new PetriGame(getSolvingObject().getGame());
+		
 		ForNonDeterministicUnfolder unfolder = new ForNonDeterministicUnfolder(getSolvingObject(), null); // null forces unfolder to use b as bound for every place
+		// TODO McMillian Unfolder:
 		/*McMillianUnfolder unfolder = null;
 		try {
 			unfolder = new McMillianUnfolder(getSolvingObject(), null);
 		} catch (NotSupportedGameException e2) {
-			// TODO Auto-generated catch block
 			e2.printStackTrace();
 		}*/
         try {
             unfolder.prepareUnfolding();
-        } catch (UnboundedException | FileNotFoundException | NetNotSafeException | NoSuitableDistributionFoundException e1) {
+        } catch (SolvingException | UnboundedException | FileNotFoundException e1) {
             System.out.println("Error: The bounded unfolding of the game failed.");
             e1.printStackTrace();
         }
-        
-        //this.getSolvingObject() = unfolder.getSolvingObject();
-        //this.pn = unfolder.pn;
-        
-        //getWinningCondition().buffer(getSolvingObject().getGame());
 
-		//unfolding = new PetriGame(getSolvingObject().getGame());  // TODO einkommentieren
-
+		unfolding = new PetriGame(getSolvingObject().getGame());
 		return unfolder.systemHasToDecideForAtLeastOne;
 	}
 
@@ -992,7 +985,7 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 								// 0 is the last member
 								// System.out.println("Finished reading strategy.");
 								PGSimplifier.simplifyPG(getSolvingObject(), true, false);
-								// strategy = new PetriGame(getSolvingObject().getGame());
+								strategy = new PetriGame(getSolvingObject().getGame());
 								return getSolvingObject().getGame();
 							}
 						}
@@ -1001,7 +994,7 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 			}
 			// There were no decision points for the system, thus the previous loop did not leave the method
 			PGSimplifier.simplifyPG(getSolvingObject(), true, false);
-			// strategy = new PetriGame(getSolvingObject().getGame());
+			strategy = new PetriGame(getSolvingObject().getGame());
 			return getSolvingObject().getGame();
 		}
 		throw new NoStrategyExistentException();
