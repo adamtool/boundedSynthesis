@@ -48,7 +48,6 @@ public class BuechiTest extends EmptyTest {
 
     private void test(String name, boolean result, int n, int b) throws Exception {
         final String path = System.getProperty("examplesfolder") + File.separator + "buechi" + File.separator + "toyExamples" + File.separator + name + ".apt";
-		QbfSolver<? extends WinningCondition> sol = QbfSolverFactory.getInstance().getSolver(path, new QbfSolverOptions(n, b));
-        nextTest(sol, n, b, result);
+		testPath(path, n, b, result);
     }
 }

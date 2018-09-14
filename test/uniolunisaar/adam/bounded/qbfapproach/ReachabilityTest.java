@@ -5,11 +5,6 @@ import java.io.File;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolver;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverFactory;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverOptions;
-import uniolunisaar.adam.ds.winningconditions.WinningCondition;
-
 @Test
 public class ReachabilityTest extends EmptyTest {
 
@@ -72,7 +67,6 @@ public class ReachabilityTest extends EmptyTest {
 
 	private void test(String folder, String name, boolean result, int n, int b) throws Exception {
 		final String path = System.getProperty("examplesfolder") + File.separator + "reachability" + File.separator + folder + File.separator + name + ".apt";
-		QbfSolver<? extends WinningCondition> sol = QbfSolverFactory.getInstance().getSolver(path, new QbfSolverOptions(n, b));
-		nextTest(sol, n, b, result);
+		testPath(path, n, b, result);
 	}
 }

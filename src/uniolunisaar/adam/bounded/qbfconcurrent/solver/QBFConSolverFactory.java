@@ -32,9 +32,9 @@ public class QBFConSolverFactory extends SolverFactory<QBFConSolverOptions, QBFC
 	}
 
 	@Override
-	protected QBFConSolver<? extends WinningCondition> getASafetySolver(PetriGame game, Safety winCon,
+	protected QBFConSolverEnvDecision<? extends WinningCondition> getASafetySolver(PetriGame game, Safety winCon,
 			boolean skipTests, QBFConSolverOptions options) throws SolvingException {
-		return new QBFConSafetySolver(game, winCon, options);
+		return new QBFConSafetySolverEnvDecision(game, winCon, options);
 	}
 
 	@Override

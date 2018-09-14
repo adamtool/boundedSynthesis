@@ -30,10 +30,11 @@ import uniolunisaar.adam.ds.winningconditions.WinningCondition;
  * 
  * @author Niklas Metzger
  *
-
+ * 
  */
 
-public abstract class QBFConSolver<W extends WinningCondition> extends Solver<QBFSolvingObject<W>, QBFConSolverOptions> {
+public abstract class QBFConSolver<W extends WinningCondition>
+		extends Solver<QBFSolvingObject<W>, QBFConSolverOptions> {
 	// TODO maybe optional arguments
 	public static String linebreak = "\n\n"; // Controller
 	public static String additionalSystemName = "AS___"; // Controller
@@ -41,15 +42,15 @@ public abstract class QBFConSolver<W extends WinningCondition> extends Solver<QB
 	public static boolean deterministicStrat = true; // Controller
 
 	// Caches
-	private Map<Transition, Set<Place>> restCache = new HashMap<>();	
+	private Map<Transition, Set<Place>> restCache = new HashMap<>();
 	private Map<Transition, Set<Place>> preMinusPostCache = new HashMap<>();
-	
+
 	// steps of solving
 	public QBFSolvingObject<W> originalSolvingObject;
 	public PetriGame originalGame;
 	public PetriGame unfolding;
 	public PetriGame strategy;
-	
+
 	// solving
 	protected BufferedWriter writer;
 	protected int variablesCounter = 2; // 1 reserved for phi
@@ -61,18 +62,18 @@ public abstract class QBFConSolver<W extends WinningCondition> extends Solver<QB
 	protected int[] terminatingSubFormulas;
 	protected File file = null;
 	protected int numTransitions;
-	
-	protected List<Map<Integer,Integer>> enabledlist; // First setindex, then iteration index
-	protected Map<Transition, Integer> transitionmap; 
+
+	protected List<Map<Integer, Integer>> enabledlist; // First setindex, then iteration index
+	protected Map<Transition, Integer> transitionmap;
 	protected List<Set<Place>> postlist;
 	protected List<Set<Place>> prelist;
 	protected List<Set<Transition>> setlist;
 
 	protected QBFConSolver(PetriGame game, W winCon, QBFConSolverOptions so) throws SolvingException {
 		super(new QBFSolvingObject<>(game, winCon), so);
-		
+
 		originalSolvingObject = getSolvingObject().getCopy();
-		
+
 		// initializing bounded parameters n and b
 		int n = so.getN();
 		int b = so.getB();
@@ -165,31 +166,32 @@ public abstract class QBFConSolver<W extends WinningCondition> extends Solver<QB
 			}
 		}
 	}
+
 	/**
-	 * This method calculates cp-sets which are the basis of the true
-	 * concurrent flow.
+	 * This method calculates cp-sets which are the basis of the true concurrent
+	 * flow.
 	 */
-	public void calculateSets(){
+	public void calculateSets() {
 		this.setlist = new ArrayList<>();
 		this.postlist = new ArrayList<>();
 		this.prelist = new ArrayList<>();
 		this.transitionmap = new HashMap<>();
 		this.enabledlist = new ArrayList<>();
 		List<Transition> allTransitions = new ArrayList<>(getSolvingObject().getGame().getTransitions());
-		
-		while (!allTransitions.isEmpty()){
-			Transition start = allTransitions.get(allTransitions.size()-1);
+
+		while (!allTransitions.isEmpty()) {
+			Transition start = allTransitions.get(allTransitions.size() - 1);
 			allTransitions.remove(start);
 			Set<Transition> newSet = new HashSet<>();
 			newSet.add(start);
 			Set<Place> visited = new HashSet<>();
 			Set<Place> preset = new HashSet<>(start.getPreset());
 			Set<Place> newpreset = new HashSet<>();
-			while (!preset.isEmpty()){
+			while (!preset.isEmpty()) {
 				newpreset.clear();
-				for (Place p : preset){
+				for (Place p : preset) {
 					visited.add(p);
-					for (Transition t : p.getPostset()){
+					for (Transition t : p.getPostset()) {
 						allTransitions.remove(t);
 						newSet.add(t);
 						newpreset.addAll(t.getPreset());
@@ -201,29 +203,30 @@ public abstract class QBFConSolver<W extends WinningCondition> extends Solver<QB
 			this.setlist.add(newSet);
 			this.prelist.add(visited);
 			Set<Place> postset = new HashSet<>();
-			for (Transition t: newSet)
+			for (Transition t : newSet)
 				postset.addAll(t.getPostset());
 			this.postlist.add(postset);
-			
-			for (Transition t: setlist.get(setlist.size()-1)){
-				transitionmap.put(t, setlist.size()-1);
+
+			for (Transition t : setlist.get(setlist.size() - 1)) {
+				transitionmap.put(t, setlist.size() - 1);
 			}
-			for (int j = 0; j<setlist.size(); j++){
-				Map<Integer,Integer> newmap = new HashMap<>();
+			for (int j = 0; j < setlist.size(); j++) {
+				Map<Integer, Integer> newmap = new HashMap<>();
 				enabledlist.add(newmap);
 			}
 		}
-	for (Set<Transition> s : setlist){
-		System.out.println(s);
-		
-	}	
-	for (Set<Place> p : prelist){
-		System.out.println(p);
-	}	
+		for (Set<Transition> s : setlist) {
+			System.out.println(s);
+
+		}
+		for (Set<Place> p : prelist) {
+			System.out.println(p);
+		}
 	}
-	
+
 	/**
 	 * Get flow encodes the flow.
+	 * 
 	 * @return
 	 * @throws IOException
 	 */
@@ -240,7 +243,7 @@ public abstract class QBFConSolver<W extends WinningCondition> extends Solver<QB
 			fireOne.add(-someEnabled);
 			fireDecision.add(decision(i));
 			fireOne.add(fireOne(i));
-			
+
 			int number_decision = createUniqueID();
 			writer.write(number_decision + " = " + writeAnd(fireDecision));
 			int number_Fire_One = createUniqueID();
@@ -251,9 +254,10 @@ public abstract class QBFConSolver<W extends WinningCondition> extends Solver<QB
 		}
 		return flow;
 	}
-	
+
 	/**
 	 * Implements the Decision part of the formula.
+	 * 
 	 * @param i
 	 * @return
 	 * @throws IOException
@@ -285,14 +289,15 @@ public abstract class QBFConSolver<W extends WinningCondition> extends Solver<QB
 		writer.write(number + " = " + writeAnd(outer_and));
 		return number;
 	}
-	
+
 	/**
 	 * Fires one transition sequentially.
+	 * 
 	 * @param i
 	 * @return
 	 * @throws IOException
 	 */
-	public int fireOne(int i) throws IOException{
+	public int fireOne(int i) throws IOException {
 		Set<Integer> or = new HashSet<>();
 		for (int j = 0; j < getSolvingObject().getGame().getTransitions().size(); ++j) {
 			or.add(getOnlyOneTransition(transitions[j], i));
@@ -301,10 +306,10 @@ public abstract class QBFConSolver<W extends WinningCondition> extends Solver<QB
 		writer.write(number + " = " + writeOr(or));
 		return number;
 	}
-	
-	
+
 	/**
 	 * Fires a cp-set
+	 * 
 	 * @param i
 	 * @param setindex
 	 * @return
@@ -317,7 +322,7 @@ public abstract class QBFConSolver<W extends WinningCondition> extends Solver<QB
 			Set<Integer> and = new HashSet<>();
 			int strat;
 			for (Place p : t.getPreset()) {
-				//and.add(getVarNr(p.getId() + "." + i, true));
+				// and.add(getVarNr(p.getId() + "." + i, true));
 				strat = addSysStrategy(p, t);
 				if (strat != 0)
 					and.add(strat);
@@ -329,7 +334,7 @@ public abstract class QBFConSolver<W extends WinningCondition> extends Solver<QB
 			rest.addAll(postlist.get(setindex));
 			rest.removeAll(t.getPreset());
 			rest.removeAll(t.getPostset());
-		
+
 			for (Place p : rest) {
 				int p_i = getVarNr(p.getId() + "." + i, true);
 				int p_iSucc = getVarNr(p.getId() + "." + (i + 1), true);
@@ -339,7 +344,7 @@ public abstract class QBFConSolver<W extends WinningCondition> extends Solver<QB
 
 			Set<Place> preMinusPost = new HashSet<>(t.getPreset());
 			preMinusPost.removeAll(t.getPostset());
-		
+
 			for (Place p : preMinusPost) {
 				and.add(-getVarNr(p.getId() + "." + (i + 1), true));
 			}
@@ -355,30 +360,31 @@ public abstract class QBFConSolver<W extends WinningCondition> extends Solver<QB
 		writer.write(number_outer_and + " = " + writeAnd(outer_and));
 		return number_outer_and;
 	}
-	
+
 	/**
 	 * Implements dont_fire of the encoding.
+	 * 
 	 * @param i
 	 * @param setindex
 	 * @return
 	 * @throws IOException
 	 */
-	public int dontFireOneTransitionSet(int i, int setindex) throws IOException{
+	public int dontFireOneTransitionSet(int i, int setindex) throws IOException {
 		Set<Integer> outer_and = new HashSet<>();
-		for (Place p: prelist.get(setindex)){
+		for (Place p : prelist.get(setindex)) {
 			int p_i = (getVarNr(p.getId() + "." + i, true));
 			int p_iSucc = getVarNr(p.getId() + "." + (i + 1), true);
 			outer_and.add(writeImplication(p_i, p_iSucc));
 			if (p.getPreset().isEmpty())
 				outer_and.add(writeImplication(p_iSucc, p_i));
 		}
-		for (Place p: postlist.get(setindex)){
+		for (Place p : postlist.get(setindex)) {
 			Set<Integer> inner_or = new HashSet<>();
 			int p_i = (getVarNr(p.getId() + "." + i, true));
 			int p_iSucc = getVarNr(p.getId() + "." + (i + 1), true);
 			inner_or.add(writeImplication(-p_i, -p_iSucc));
-			for(Transition t: p.getPreset()){
-				if (!setlist.get(setindex).contains(t)){
+			for (Transition t : p.getPreset()) {
+				if (!setlist.get(setindex).contains(t)) {
 					inner_or.add(enabledlist.get(transitionmap.get(t)).get(i));
 				}
 			}
@@ -389,11 +395,12 @@ public abstract class QBFConSolver<W extends WinningCondition> extends Solver<QB
 		int number = createUniqueID();
 		writer.write(number + " = " + writeAnd(outer_and));
 		return number;
-		
+
 	}
 
 	/**
 	 * Encodes the existence of an enbled set.
+	 * 
 	 * @param i
 	 * @return
 	 * @throws IOException
@@ -403,51 +410,52 @@ public abstract class QBFConSolver<W extends WinningCondition> extends Solver<QB
 		for (int j = 0; j < setlist.size(); j++) {
 			int enabled = isEnabledSet(i, j);
 			or.add(enabled);
-			
+
 			enabledlist.get(j).put(i, enabled);
 		}
 		int number = createUniqueID();
 		writer.write(number + " = " + writeOr(or));
 		return number;
 	}
-	
+
 	/**
 	 * checks if the set 'setindex' is enabled
+	 * 
 	 * @param i
 	 * @param setindex
 	 * @return
 	 * @throws IOException
 	 */
-	public int isEnabledSet(int i, int setindex) throws IOException{
+	public int isEnabledSet(int i, int setindex) throws IOException {
 		Set<Integer> outerAnd = new HashSet<>();
 		Set<Integer> innerOr = new HashSet<>();
-		for (Place p: prelist.get(setindex)){
+		for (Place p : prelist.get(setindex)) {
 			outerAnd.add(getVarNr(p.getId() + "." + i, true));
 		}
-		for (Transition t: setlist.get(setindex)){
+		for (Transition t : setlist.get(setindex)) {
 			Set<Integer> inner_and = new HashSet<>();
-			for (Place p : t.getPreset()){
-				int strat = addSysStrategy(p,t);
-				if (strat != 0){
+			for (Place p : t.getPreset()) {
+				int strat = addSysStrategy(p, t);
+				if (strat != 0) {
 					inner_and.add(strat);
 				}
 			}
-			if (!inner_and.isEmpty()){
+			if (!inner_and.isEmpty()) {
 				int inner_and_number = createUniqueID();
 				writer.write(inner_and_number + " = " + writeAnd(inner_and));
 				innerOr.add(inner_and_number);
 			}
 		}
-		if (!innerOr.isEmpty()){
+		if (!innerOr.isEmpty()) {
 			int inner_or_number = createUniqueID();
 			writer.write(inner_or_number + " = " + writeOr(innerOr));
 			outerAnd.add(inner_or_number);
 		}
 		int outer_and_number = createUniqueID();
 		writer.write(outer_and_number + " = " + writeAnd(outerAnd));
-		return outer_and_number;	
+		return outer_and_number;
 	}
-	
+
 	public int getOnlyOneTransition(Transition t, int i) throws IOException {
 		int number = createUniqueID();
 		Set<Integer> and = new HashSet<>();
@@ -539,7 +547,8 @@ public abstract class QBFConSolver<W extends WinningCondition> extends Solver<QB
 			// Additional system places are not forced to behave
 			// deterministically, this is the faster variant (especially the
 			// larger the PG becomes)
-			if (!getSolvingObject().getGame().getEnvPlaces().contains(sys) && !sys.getId().startsWith(QBFConSolver.additionalSystemName)) {
+			if (!getSolvingObject().getGame().getEnvPlaces().contains(sys)
+					&& !sys.getId().startsWith(QBFConSolver.additionalSystemName)) {
 				if (sys.getPostset().size() > 1) {
 					sys_transitions = sys.getPostset().toArray(new Transition[0]);
 					for (int j = 0; j < sys_transitions.length; ++j) {

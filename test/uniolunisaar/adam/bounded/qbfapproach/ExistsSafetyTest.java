@@ -116,7 +116,6 @@ public class ExistsSafetyTest extends EmptyTest {
 
 	private void oneTest(String str, int n, int b, boolean result) throws Exception {
 		final String path = System.getProperty("examplesfolder") + "/existssafety/" + str + ".apt";
-		QbfSolver<? extends WinningCondition> sol = QbfSolverFactory.getInstance().getSolver(path, new QbfSolverOptions(n, b));
-		nextTest(sol, n, b, result);
+		testPath(path, n, b, result);
 	}
 }

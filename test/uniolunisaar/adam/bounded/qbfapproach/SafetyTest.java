@@ -4,11 +4,6 @@ package uniolunisaar.adam.bounded.qbfapproach;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolver;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverFactory;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverOptions;
-import uniolunisaar.adam.ds.winningconditions.WinningCondition;
-
 @Test
 public class SafetyTest extends EmptyTest {
 	
@@ -75,7 +70,6 @@ public class SafetyTest extends EmptyTest {
 	
 	private void oneTest(String str, int n, int b, boolean result) throws Exception {
 		final String path = System.getProperty("examplesfolder") + "/safety/" + str + ".apt";
-		QbfSolver<? extends WinningCondition> sol = QbfSolverFactory.getInstance().getSolver(path, new QbfSolverOptions(n, b));
-		nextTest(sol, n, b, result);
+		testPath(path, n, b, result);
 	}
 }

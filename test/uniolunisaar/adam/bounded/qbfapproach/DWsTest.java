@@ -1,21 +1,16 @@
 package uniolunisaar.adam.bounded.qbfapproach;
 
-import uniolunisaar.adam.bounded.qbfapproach.solver.QbfASafetySolver;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverOptions;
-import uniolunisaar.adam.generators.Clerks;
-
-import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.ds.winningconditions.Safety;
+import uniolunisaar.adam.generators.Clerks;
 
 /*
  * NO MEMORY REQUIRED TO SOLVE
  */
 
 @Test
-public class DWsTest { // Document Workflow / DW
+public class DWsTest extends EmptyTest { // Document Workflow / DW
 
 	// j = 4 -> UNSAT; j = 5 -> SAT
 	// ADAM bis 20
@@ -38,14 +33,12 @@ public class DWsTest { // Document Workflow / DW
 	}
 	
 	private void oneTestTrue(int problemSize, int n, int b) throws Exception {
-		PetriGame pn = Clerks.generateCP(problemSize, true, true);
-		QbfASafetySolver sol = new QbfASafetySolver(pn, new Safety(), new QbfSolverOptions(n, b));
-		Assert.assertTrue(sol.existsWinningStrategy());
+		PetriGame pg = Clerks.generateCP(problemSize, true, true);
+		testGame(pg, n, b, true);
 	}
 	
 	private void oneTestFalse(int problemSize, int n, int b) throws Exception {
-		PetriGame pn = Clerks.generateCP(problemSize, true, true);
-		QbfASafetySolver sol = new QbfASafetySolver(pn, new Safety(), new QbfSolverOptions(n, b));
-		Assert.assertFalse(sol.existsWinningStrategy());
+		PetriGame pg = Clerks.generateCP(problemSize, true, true);
+		testGame(pg, n, b, false);
 	}
 }

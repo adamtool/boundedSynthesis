@@ -1,17 +1,12 @@
 package uniolunisaar.adam.bounded.qbfapproach;
 
-import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import uniolunisaar.adam.bounded.qbfapproach.solver.QbfASafetySolver;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverOptions;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.ds.winningconditions.Safety;
 import uniolunisaar.adam.generators.EmergencyBreakdown;
-import uniolunisaar.adam.logic.util.AdamTools;
 
 @Test
-public class EBTest {
+public class EBTest extends EmptyTest {
 
 	// 1 1 10 2 timeout
 	// 1 1 11 2 timeout
@@ -30,14 +25,7 @@ public class EBTest {
 	}
 
 	private void oneTest(int ps1, int ps2, int n, int b) throws Exception {
-		PetriGame pn = EmergencyBreakdown.createSafetyVersion(ps1, ps2, false);
-		QbfASafetySolver sol = new QbfASafetySolver(pn,new Safety(),  new QbfSolverOptions(n, b));
-		sol.existsWinningStrategy(); // calculate first, then output games, and then check for correctness
-		AdamTools.savePG2PDF("originalGame", sol.originalGame, false);
-		AdamTools.savePG2PDF("unfolding", sol.unfolding, false);
-		if (sol.existsWinningStrategy()) {
-			AdamTools.savePG2PDF("strategy", sol.getStrategy(), false);
-		}
-		Assert.assertTrue(sol.existsWinningStrategy());
+		PetriGame pg = EmergencyBreakdown.createSafetyVersion(ps1, ps2, false);
+		testGame(pg, n, b, true);
 	}
 }
