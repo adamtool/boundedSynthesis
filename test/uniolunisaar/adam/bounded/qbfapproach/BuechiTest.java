@@ -5,11 +5,6 @@ import java.io.File;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolver;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverFactory;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverOptions;
-import uniolunisaar.adam.ds.winningconditions.WinningCondition;
-
 @Test
 public class BuechiTest extends EmptyTest {
 

@@ -297,12 +297,8 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 
 	@Override
 	protected boolean exWinStrat() {
-		ForNonDeterministicUnfolder unfolder = new ForNonDeterministicUnfolder(getSolvingObject(), null); // null forces
-																											// unfolder
-																											// to use b
-																											// as bound
-																											// for every
-																											// place
+		originalGame = new PetriGame(getSolvingObject().getGame());
+		ForNonDeterministicUnfolder unfolder = new ForNonDeterministicUnfolder(getSolvingObject(), null); // null forces to use b as bound for every place
 		// McMillianUnfolder unfolder = null;
 		/*
 		 * try { //int x = 3; //unfolder = new McMillianUnfolder(getSolvingObject(),
@@ -317,6 +313,8 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 			e1.printStackTrace();
 		}
 
+		unfolding = new PetriGame(getSolvingObject().getGame());
+		
 		/*
 		 * this.pg = unfolder.pg; this.pn = unfolder.pn;
 		 * 
@@ -523,12 +521,17 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 								// 0 is the last member
 								// System.out.println("Finished reading strategy.");
 								PGSimplifier.simplifyPG(getSolvingObject(), true, false);
+								strategy = new PetriGame(getSolvingObject().getGame());
 								return getSolvingObject().getGame();
 							}
 						}
 					}
 				}
 			}
+			// There were no decision points for the system, thus the previous loop did not leave the method
+			PGSimplifier.simplifyPG(getSolvingObject(), true, false);
+			strategy = new PetriGame(getSolvingObject().getGame());
+			return getSolvingObject().getGame();
 		}
 		throw new NoStrategyExistentException();
 	}

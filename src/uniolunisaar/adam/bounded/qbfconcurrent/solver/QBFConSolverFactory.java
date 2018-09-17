@@ -14,7 +14,7 @@ import uniolunisaar.adam.logic.solver.SolverFactory;
  *
  */
 
-public class QBFConSolverFactory extends SolverFactory<QBFConSolverOptions, QBFConSolver<? extends WinningCondition>> {
+public class QBFConSolverFactory extends SolverFactory<QBFConSolverOptions, QBFConSolverEnvDecision<? extends WinningCondition>> {
 
 	private static QBFConSolverFactory instance = null;
 
@@ -26,7 +26,7 @@ public class QBFConSolverFactory extends SolverFactory<QBFConSolverOptions, QBFC
 	}
 
 	@Override
-	protected QBFConSolver<? extends WinningCondition> getESafetySolver(PetriGame game, Safety winCon,
+	protected QBFConSolverEnvDecision<? extends WinningCondition> getESafetySolver(PetriGame game, Safety winCon,
 			boolean skipTests, QBFConSolverOptions options) throws SolvingException {
 		throw new RuntimeException("Method not yet implemented");
 	}
@@ -38,25 +38,25 @@ public class QBFConSolverFactory extends SolverFactory<QBFConSolverOptions, QBFC
 	}
 
 	@Override
-	protected QBFConSolver<? extends WinningCondition> getEReachabilitySolver(PetriGame game, Reachability winCon,
+	protected QBFConSolverEnvDecision<? extends WinningCondition> getEReachabilitySolver(PetriGame game, Reachability winCon,
 			boolean skipTests, QBFConSolverOptions options) throws SolvingException {
 		throw new RuntimeException("Method not yet implemented");
 	}
 
 	@Override
-	protected QBFConSolver<? extends WinningCondition> getAReachabilitySolver(PetriGame game, Reachability winCon,
+	protected QBFConSolverEnvDecision<? extends WinningCondition> getAReachabilitySolver(PetriGame game, Reachability winCon,
 			boolean skipTests, QBFConSolverOptions options) throws SolvingException {
 		throw new RuntimeException("Method not yet implemented");
 	}
 
 	@Override
-	protected QBFConSolver<? extends WinningCondition> getEBuchiSolver(PetriGame game, Buchi winCon, boolean skipTests,
+	protected QBFConSolverEnvDecision<? extends WinningCondition> getEBuchiSolver(PetriGame game, Buchi winCon, boolean skipTests,
 			QBFConSolverOptions options) throws SolvingException {
 		throw new RuntimeException("Method not yet implemented");
 	}
 
 	@Override
-	protected QBFConSolver<? extends WinningCondition> getABuchiSolver(PetriGame game, Buchi winCon, boolean skipTests,
+	protected QBFConSolverEnvDecision<? extends WinningCondition> getABuchiSolver(PetriGame game, Buchi winCon, boolean skipTests,
 			QBFConSolverOptions options) throws SolvingException {
 		throw new RuntimeException("Method not yet implemented");
 	}
