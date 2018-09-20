@@ -4,7 +4,7 @@ import static org.testng.Assert.assertTrue;
 
 import org.testng.Assert;
 
-import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolver;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QbfControl;
 import uniolunisaar.adam.bounded.qbfconcurrent.solver.QBFConSolverEnvDecision;
 import uniolunisaar.adam.bounded.qbfconcurrent.solver.QBFConSolverFactory;
 import uniolunisaar.adam.bounded.qbfconcurrent.solver.QBFConSolverOptions;
@@ -36,7 +36,7 @@ public abstract class EmptyTestEnvDec {
 		Assert.assertEquals(sol.existsWinningStrategy(), result);
 
 		if (sol.existsWinningStrategy()) {
-			assertTrue(QbfSolver.checkStrategy(sol.originalGame, sol.strategy));	// ORIGINAL: check validity of strategy if existent
+			assertTrue(QbfControl.checkStrategy(sol.originalGame, sol.strategy));	// ORIGINAL: check validity of strategy if existent
 		}
 	}
 }

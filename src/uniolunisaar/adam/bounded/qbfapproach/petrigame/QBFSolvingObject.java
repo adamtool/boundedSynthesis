@@ -91,7 +91,7 @@ public class QBFSolvingObject<W extends WinningCondition> extends SolvingObject<
     }
 
     public int getBoundedParameterNFromExtension() {
-        return (Integer) getGame().getExtension(AdamExtensions.n.name());
+        return (int) getGame().getExtension(AdamExtensions.n.name());
     }
 
     public boolean hasBoundedParameterNinExtension() {
@@ -99,7 +99,7 @@ public class QBFSolvingObject<W extends WinningCondition> extends SolvingObject<
     }
 
     public int getBoundedParameterBFromExtension() {
-        return (Integer) getGame().getExtension(AdamExtensions.b.name());
+        return (int) getGame().getExtension(AdamExtensions.b.name());
     }
 
     public boolean hasBoundedParameterBinExtension() {

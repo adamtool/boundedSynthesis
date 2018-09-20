@@ -59,7 +59,7 @@ public class QbfEBuchiSolver extends QbfSolver<Buchi> {
 				if (innerOr.isEmpty()) {
 					Pair<Boolean, Integer> pair = getVarNrWithResult("or()");
 					if (pair.getFirst()) {
-						writer.write(pair.getSecond() + " = or()" + QbfSolver.linebreak);
+						writer.write(pair.getSecond() + " = or()" + QbfControl.linebreak);
 					}
 					innerOrNumber = pair.getSecond();
 				} else {
@@ -100,7 +100,7 @@ public class QbfEBuchiSolver extends QbfSolver<Buchi> {
 
 		initializeVariablesForWriteQCIR();
 
-		writer.write("#QCIR-G14" + QbfSolver.replaceAfterWardsSpaces + QbfSolver.linebreak); // spaces left to add variable count in the end
+		writer.write("#QCIR-G14" + QbfControl.replaceAfterWardsSpaces + QbfControl.linebreak); // spaces left to add variable count in the end
 		addExists();
 		addForall();
 
@@ -124,9 +124,9 @@ public class QbfEBuchiSolver extends QbfSolver<Buchi> {
 		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 			seqImpliesWin[i] = createUniqueID();
 			if (i < getSolvingObject().getN()) {
-				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + QbfSolver.linebreak);
+				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + QbfControl.linebreak);
 			} else {
-				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + "," + u + ")" + QbfSolver.linebreak);		// adding unfair
+				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + "," + u + ")" + QbfControl.linebreak);		// adding unfair
 			}
 			phi.add(seqImpliesWin[i]);
 		}
@@ -160,7 +160,7 @@ public class QbfEBuchiSolver extends QbfSolver<Buchi> {
 
 		raf.close();
 
-		if (QbfSolver.debug) {
+		if (QbfControl.debug) {
 			FileUtils.copyFile(file, new File(getSolvingObject().getGame().getName() + ".qcir"));
 		}
 

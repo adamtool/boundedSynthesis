@@ -26,13 +26,11 @@ import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingE
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFSolvingObject;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.ForNonDeterministicUnfolder;
-import uniolunisaar.adam.bounded.qbfapproach.unfolder.Unfolder;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
 import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.solver.Solver;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
-import uniolunisaar.adam.logic.util.AdamTools;
 import uniolunisaar.adam.tools.AdamProperties;
 
 /**
@@ -67,17 +65,6 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 	// keys
 	public Map<Integer, String> exists_transitions = new HashMap<>();
 
-	// TODO maybe optional arguments
-	public static String linebreak = System.lineSeparator(); // Controller
-	public static String additionalSystemName = "AS___"; // Controller
-	public static String additionalSystemUniqueDivider = "_0_"; // Controller
-	public static String solver = "quabs"; // Controller
-	public static String replaceAfterWardsSpaces = "          "; // Controller
-	public static boolean deterministicStrat = true; // Controller
-	public static boolean debug = false;
-	public static boolean edacc = false;
-	public static boolean mcmillian = false; // Unfolder
-
 	// caches
 	private Map<Transition, Set<Place>> restCache = new HashMap<>(); // proven to be slightly useful in terms of performance
 	private Map<Transition, Set<Place>> preMinusPostCache = new HashMap<>();
@@ -99,21 +86,7 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 	protected Transition[] transitions;
 	protected int[] deadlockSubFormulas;
 	protected int[] terminatingSubFormulas;
-	protected File file = null;
-
-	public static boolean checkStrategy(PetriGame origNet, PetriGame strat) {
-		// some preparation
-		for (Place p : origNet.getPlaces()) {
-			origNet.setOrigID(p, Unfolder.getTruncatedId(p.getId()));
-		}
-		for (Place p : strat.getPlaces()) {
-			strat.setOrigID(p, Unfolder.getTruncatedId(p.getId()));
-		}
-		for (Transition t : strat.getTransitions()) {
-			t.setLabel(Unfolder.getTruncatedId(t.getId()));
-		}
-		return AdamTools.checkStrategy(origNet, strat);
-	}
+	protected File file;
 
 	public QbfSolver(PetriGame game, W winCon, QbfSolverOptions so) throws SolvingException {
 		super(new QBFSolvingObject<>(game, winCon), so);
@@ -375,7 +348,7 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 	}
 
 	protected void writeDeterministic() throws IOException {
-		if (deterministicStrat) {
+		if (QbfControl.deterministicStrat) {
 			String[] deterministic = getDeterministic();
 			for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 				if (!deterministic[i].matches("")) {
@@ -398,7 +371,7 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 		Transition[] sys_transitions;
 		for (Place sys : getSolvingObject().getGame().getPlaces()) {
 			// Additional system places are not forced to behave deterministically, this is the faster variant (especially the larger the PG becomes)
-			if (!getSolvingObject().getGame().isEnvironment(sys) && !sys.getId().startsWith(QbfSolver.additionalSystemName)) {
+			if (!getSolvingObject().getGame().isEnvironment(sys) && !sys.getId().startsWith(QbfControl.additionalSystemName)) {
 				if (sys.getPostset().size() > 1) {
 					sys_transitions = sys.getPostset().toArray(new Transition[0]);
 					for (int j = 0; j < sys_transitions.length; ++j) {
@@ -420,7 +393,7 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 			} else {
 				Pair<Boolean, Integer> result = getVarNrWithResult("and()");
 				if (result.getFirst()) {
-					writer.write(result.getSecond() + " = and()" + QbfSolver.linebreak);
+					writer.write(result.getSecond() + " = and()" + QbfControl.linebreak);
 				}
 				deterministic[i] = "";
 			}
@@ -464,7 +437,7 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 				Set<Integer> and = new HashSet<>();
 				for (Place p : getSolvingObject().getGame().getPlaces()) {
 					// additional system places cannot leave their places, they always loop
-					if (!p.getId().startsWith(additionalSystemName)) {
+					if (!p.getId().startsWith(QbfControl.additionalSystemName)) {
 						int p_i = getVarNr(p.getId() + "." + i, true);
 						int p_j = getVarNr(p.getId() + "." + j, true);
 						and.add(writeImplication(p_i, p_j));
@@ -487,7 +460,7 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 				Set<Integer> and = new HashSet<>();
 				for (Place p : getSolvingObject().getGame().getPlaces()) {
 					// additional system places cannot leave their places, they always loop
-					if (!p.getId().startsWith(additionalSystemName)) {
+					if (!p.getId().startsWith(QbfControl.additionalSystemName)) {
 						int p_i = getVarNr(p.getId() + "." + i, true);
 						Set<Integer> innerOr = new HashSet<>();
 						for (Place unfoldedP : unfoldingsOf(p)) {
@@ -530,7 +503,7 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 				Set<Integer> and = new HashSet<>();
 				for (Place p : getSolvingObject().getGame().getPlaces()) {
 					// additional system places cannot leave their places, they always loop
-					if (!p.getId().startsWith(additionalSystemName)) {
+					if (!p.getId().startsWith(QbfControl.additionalSystemName)) {
 						int p_i = getVarNr(p.getId() + "." + i, true);
 						int p_j = getVarNr(p.getId() + "." + j, true);
 						and.add(writeImplication(p_i, p_j));
@@ -547,7 +520,7 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 							if (sysDecision != 0) {
 								innerAnd.add(sysDecision);
 							}
-							if (!p.getId().startsWith(additionalSystemName)) {
+							if (!p.getId().startsWith(QbfControl.additionalSystemName)) {
 								for (Transition tt : p.getPostset()) {
 									innerAnd.add(-getOneTransition(tt, k));
 								}
@@ -577,7 +550,7 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 				Set<Integer> and = new HashSet<>();
 				for (Place p : getSolvingObject().getGame().getPlaces()) {
 					// additional system places cannot leave their places, they always loop
-					if (!p.getId().startsWith(additionalSystemName)) {
+					if (!p.getId().startsWith(QbfControl.additionalSystemName)) {
 						int p_i = getVarNr(p.getId() + "." + i, true);
 						int p_j = getVarNr(p.getId() + "." + j, true);
 						and.add(writeImplication(p_i, p_j));
@@ -587,7 +560,7 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 				Set<Integer> or = new HashSet<>();
 				for (Place p : getSolvingObject().getGame().getPlaces()) {
 					// additional system places are not responsible for unfair loops, exclude them
-					if (!p.getId().startsWith(additionalSystemName)) {
+					if (!p.getId().startsWith(QbfControl.additionalSystemName)) {
 						Set<Integer> outerAnd = new HashSet<>();
 						for (int k = i; k < j; ++k) {
 							outerAnd.add(getVarNr(p.getId() + "." + k, true));
@@ -635,7 +608,7 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 
 	protected int addSysStrategy(Place p, Transition t) {
 		if (!getSolvingObject().getGame().isEnvironment(p)) {
-			if (p.getId().startsWith(QbfSolver.additionalSystemName)) {
+			if (p.getId().startsWith(QbfControl.additionalSystemName)) {
 				return getVarNr(p.getId() + ".." + t.getId(), true);
 			} else {
 				return getVarNr(p.getId() + ".." + getTruncatedId(t.getId()), true);
@@ -649,7 +622,7 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 		Set<Integer> exists = new HashSet<>();
 		for (Place p : getSolvingObject().getGame().getPlaces()) {
 			if (!getSolvingObject().getGame().isEnvironment(p)) {
-				if (p.getId().startsWith(QbfSolver.additionalSystemName)) {
+				if (p.getId().startsWith(QbfControl.additionalSystemName)) {
 					for (Transition t : p.getPostset()) {
 						int number = createVariable(p.getId() + ".." + t.getId());
 						exists.add(number);
@@ -684,7 +657,7 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 			}
 		}
 		writer.write(writeForall(forall));
-		writer.write("output(1)" + QbfSolver.replaceAfterWardsSpaces + QbfSolver.linebreak);
+		writer.write("output(1)" + QbfControl.replaceAfterWardsSpaces + QbfControl.linebreak);
 	}
 
 	// Additional information from nondeterministic unfolding is utilized:
@@ -818,7 +791,7 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 			delim = ",";
 			sb.append(i);
 		}
-		sb.append(")" + QbfSolver.linebreak);
+		sb.append(")" + QbfControl.linebreak);
 		String result = sb.toString();
 		return result;
 	}
@@ -882,21 +855,21 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 
 			if (os.startsWith("Mac")) {
 				// pb = new ProcessBuilder("./" + solver + "_mac", "--partial-assignment", file.getAbsolutePath());
-				pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + solver + "_mac", "--partial-assignment"/* , "--preprocessing", "0" */, file.getAbsolutePath());
+				pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + QbfControl.solver + "_mac", "--partial-assignment"/* , "--preprocessing", "0" */, file.getAbsolutePath());
 			} else if (os.startsWith("Linux")) {
-				if (QbfSolver.edacc) {
+				if (QbfControl.edacc) {
                 	// for use with EDACC
-					pb = new ProcessBuilder("./" + solver + "_unix", "--partial-assignment", file.getAbsolutePath());
+					pb = new ProcessBuilder("./" + QbfControl.solver + "_unix", "--partial-assignment", file.getAbsolutePath());
 				} else {
                 	// for use with WEBSITE
-					pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + solver + "_unix", "--partial-assignment", file.getAbsolutePath());
+					pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + QbfControl.solver + "_unix", "--partial-assignment", file.getAbsolutePath());
 				}
 			} else {
 				System.out.println("You are using " + os + ".");
 				System.out.println("Your operation system is not supported.");
 				return false;
 			}
-			if (QbfSolver.debug) {
+			if (QbfControl.debug) {
 				System.out.println("A temporary file is saved to \"" + file.getAbsolutePath() + "\".");
 			}
 
@@ -955,7 +928,7 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 								if (in != -1) { // CTL has exists variables for path EF which mean not remove
 									String place = remove.substring(0, in);
 									String transition = remove.substring(in + 2, remove.length());
-									if (place.startsWith(QbfSolver.additionalSystemName)) {
+									if (place.startsWith(QbfControl.additionalSystemName)) {
 										// additional system place exactly removes transitions
 										// Transition might already be removed by recursion
 										Set<Transition> transitions = new HashSet<>(getSolvingObject().getGame().getTransitions());

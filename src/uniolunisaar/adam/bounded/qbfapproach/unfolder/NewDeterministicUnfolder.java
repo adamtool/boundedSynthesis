@@ -11,7 +11,7 @@ import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.analysis.exception.UnboundedException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFSolvingObject;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolver;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QbfControl;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
@@ -36,7 +36,7 @@ public class NewDeterministicUnfolder extends Unfolder {
 			}
 			Set<Place> places = new HashSet<>(pn.getPlaces());
 			for (Place p : places) {						// TODO only here a hashCode is important anymore
-				if (!p.getId().startsWith(QbfSolver.additionalSystemName)) {
+				if (!p.getId().startsWith(QbfControl.additionalSystemName)) {
 					LinkedList<Integer> list = orderOfUnfolding.get(getTruncatedId(p.getId()));
 					if (list.size() > 0 && list.getFirst() == i) {
 						if (unfoldConditionSatisfied(p) && !closed.contains(p.getId())) {	// TODO I removed additional weird !noUnfold() here
@@ -90,7 +90,7 @@ public class NewDeterministicUnfolder extends Unfolder {
 				}
 				if (copies.size() > 0) {
 					// create additional system place and place token
-					Place newSysPlace = pg.getGame().createPlace(QbfSolver.additionalSystemName + pre.getId() + QbfSolver.additionalSystemUniqueDivider + p.getId());
+					Place newSysPlace = pg.getGame().createPlace(QbfControl.additionalSystemName + pre.getId() + QbfControl.additionalSystemUniqueDivider + p.getId());
 					newSysPlace.setInitialToken(1);
 					systemHasToDecideForAtLeastOne.put(newSysPlace, copies);
 					// add arrows between tokens and transitions

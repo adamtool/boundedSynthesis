@@ -56,7 +56,7 @@ public abstract class QbfFlowChainSolver<W extends WinningCondition> extends Qbf
 			}
 		}
 		writer.write(writeForall(forall));
-		writer.write("output(1)" + QbfSolver.replaceAfterWardsSpaces + QbfSolver.linebreak);
+		writer.write("output(1)" + QbfControl.replaceAfterWardsSpaces + QbfControl.linebreak);
 		makeThreeValuedLogic();
 	}
 
@@ -68,15 +68,15 @@ public abstract class QbfFlowChainSolver<W extends WinningCondition> extends Qbf
 				bot = getVarNr(p.getId() + "." + i + "." + false, true);
 
 				id = createVariable(p.getId() + "." + i + "." + "objective");
-				writer.write(id + " = and(" + top + "," + "-" + bot + ")" + QbfSolver.linebreak);
+				writer.write(id + " = and(" + top + "," + "-" + bot + ")" + QbfControl.linebreak);
 				// System.out.println(p.getId() + "." + i + "." + "objective" + " -> " + "and(" + top + "," + "-" + bot + ")");
 
 				id = createVariable(p.getId() + "." + i + "." + "notobjective");
-				writer.write(id + " = and(" + "-" + top + "," + bot + ")" + QbfSolver.linebreak);
+				writer.write(id + " = and(" + "-" + top + "," + bot + ")" + QbfControl.linebreak);
 				// System.out.println(p.getId() + "." + i + "." + "notobjective" + " -> " + "and(" + -top + "," + bot + ")");
 
 				id = createVariable(p.getId() + "." + i + "." + "empty");
-				writer.write(id + " = and(" + "-" + top + "," + "-" + bot + ")" + QbfSolver.linebreak);
+				writer.write(id + " = and(" + "-" + top + "," + "-" + bot + ")" + QbfControl.linebreak);
 				// System.out.println(p.getId() + "." + i + "." + "empty" + " -> " + "and(" + -top + "," + -bot + ")");
 			}
 		}
@@ -87,7 +87,7 @@ public abstract class QbfFlowChainSolver<W extends WinningCondition> extends Qbf
 		Map<Transition, Set<Pair<Place, Place>>> map = getSolvingObject().getFl();
 		for (Pair<Place, Place> pair : map.get(t)) {
 			if (pair.getSecond().equals(p)) {
-				if (!p.getId().startsWith(QbfSolver.additionalSystemName)) {
+				if (!p.getId().startsWith(QbfControl.additionalSystemName)) {
 					result.add(pair.getFirst());
 				}
 			}
@@ -100,7 +100,7 @@ public abstract class QbfFlowChainSolver<W extends WinningCondition> extends Qbf
         Map<Transition, Set<Pair<Place, Place>>> map = getSolvingObject().getFl();
 		for (Pair<Place, Place> pair : map.get(t)) {
 			if (pair.getFirst().equals(p)) {
-				if (!p.getId().startsWith(QbfSolver.additionalSystemName)) {
+				if (!p.getId().startsWith(QbfControl.additionalSystemName)) {
 					result.add(pair.getSecond());
 				}
 			}
@@ -116,7 +116,7 @@ public abstract class QbfFlowChainSolver<W extends WinningCondition> extends Qbf
 				if (tfl.getPostset().contains(p) && tfl.isInitial()) {
 					Pair<Boolean, Integer> or = getVarNrWithResult("or()");
 					if (or.getFirst()) {
-						writer.write(or.getSecond() + " = or()" + QbfSolver.linebreak);
+						writer.write(or.getSecond() + " = or()" + QbfControl.linebreak);
 					}
 					return or.getSecond();
 				}
@@ -139,7 +139,7 @@ public abstract class QbfFlowChainSolver<W extends WinningCondition> extends Qbf
 				if (tfl.getPostset().contains(p) && tfl.isInitial()) {
 					Pair<Boolean, Integer> and = getVarNrWithResult("and()");
 					if (and.getFirst()) {
-						writer.write(and.getSecond() + " = and()" + QbfSolver.linebreak);
+						writer.write(and.getSecond() + " = and()" + QbfControl.linebreak);
 					}
 					return and.getSecond();
 				}
@@ -232,7 +232,7 @@ public abstract class QbfFlowChainSolver<W extends WinningCondition> extends Qbf
 			for (int j = i + 2; j <= getSolvingObject().getN(); ++j) {
 				outerAnd.clear();
 				for (Place p : getSolvingObject().getGame().getPlaces()) {
-					if (!p.getId().startsWith(additionalSystemName)) {
+					if (!p.getId().startsWith(QbfControl.additionalSystemName)) {
 						int p_i_safe = getVarNr(p.getId() + "." + i + "." + "objective", true);
 						int p_j_safe = getVarNr(p.getId() + "." + j + "." + "objective", true);
 						outerAnd.add(writeImplication(p_i_safe, p_j_safe));
@@ -256,7 +256,7 @@ public abstract class QbfFlowChainSolver<W extends WinningCondition> extends Qbf
 					for (int k = i; k < j; ++k) {
 						for (Place p : t.getPreset()) {
 							int id = createUniqueID();
-							writer.write(id + " = or(" + getVarNr(p.getId() + "." + k + "." + "objective", true) + "," + getVarNr(p.getId() + "." + k + "." + "notobjective", true) + ")" + QbfSolver.linebreak);
+							writer.write(id + " = or(" + getVarNr(p.getId() + "." + k + "." + "objective", true) + "," + getVarNr(p.getId() + "." + k + "." + "notobjective", true) + ")" + QbfControl.linebreak);
 							innerAnd.add(id);
 							int strategy = addSysStrategy(p, t);
 							if (strategy != 0) {
@@ -290,7 +290,7 @@ public abstract class QbfFlowChainSolver<W extends WinningCondition> extends Qbf
 				Set<Integer> and = new HashSet<>();
 				for (Place p : getSolvingObject().getGame().getPlaces()) {
 					// additional system places cannot leave their places, they always loop
-					if (!p.getId().startsWith(additionalSystemName)) {
+					if (!p.getId().startsWith(QbfControl.additionalSystemName)) {
 						int p_i_safe = getVarNr(p.getId() + "." + i + "." + "objective", true);
 						int p_j_safe = getVarNr(p.getId() + "." + j + "." + "objective", true);
 						and.add(writeImplication(p_i_safe, p_j_safe));
@@ -336,7 +336,7 @@ public abstract class QbfFlowChainSolver<W extends WinningCondition> extends Qbf
 		Set<Transition> result = new HashSet<>();
 		for (Transition t : getSolvingObject().getGame().getTransitions()) {
 			for (Place p : t.getPostset()) {
-				if (!p.getId().startsWith(QbfSolver.additionalSystemName)) {
+				if (!p.getId().startsWith(QbfControl.additionalSystemName)) {
 					if (getIncomingTokenFlow(t, p).isEmpty()) {
 						result.add(t);
 					}
@@ -350,7 +350,7 @@ public abstract class QbfFlowChainSolver<W extends WinningCondition> extends Qbf
 		Set<Transition> result = new HashSet<>();
 		for (Transition t : getSolvingObject().getGame().getTransitions()) {
 			for (Place p : t.getPreset()) {
-				if (!p.getId().startsWith(QbfSolver.additionalSystemName)) {
+				if (!p.getId().startsWith(QbfControl.additionalSystemName)) {
 					if (getOutgoingTokenFlow(p, t).isEmpty()) {
 						result.add(t);
 					}
@@ -378,7 +378,7 @@ public abstract class QbfFlowChainSolver<W extends WinningCondition> extends Qbf
 								if (in != -1) { // CTL has exists variables for path EF which mean not remove
 									String place = remove.substring(0, in);
 									String transition = remove.substring(in + 2, remove.length());
-									if (place.startsWith(QbfSolver.additionalSystemName)) {
+									if (place.startsWith(QbfControl.additionalSystemName)) {
 										// additional system place exactly removes transitions
 										// Transition might already be removed by recursion
 										Set<Transition> transitions = new HashSet<>(getSolvingObject().getGame().getTransitions());

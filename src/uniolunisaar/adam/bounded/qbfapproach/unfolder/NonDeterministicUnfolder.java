@@ -8,7 +8,8 @@ import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFSolvingObject;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolver;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QbfControl;
+import uniolunisaar.adam.ds.petrigame.TokenFlow;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 
 public abstract class NonDeterministicUnfolder extends Unfolder {
@@ -70,7 +71,7 @@ public abstract class NonDeterministicUnfolder extends Unfolder {
 					}
 					if (otherTransitions.size() > 0) {
 						// create additional system place and place token
-						Place newSysPlace = pg.getGame().createPlace(QbfSolver.additionalSystemName + t.getId() + QbfSolver.additionalSystemUniqueDivider + p.getId());
+						Place newSysPlace = pg.getGame().createPlace(QbfControl.additionalSystemName + t.getId() + QbfControl.additionalSystemUniqueDivider + p.getId());
 						newSysPlace.setInitialToken(1);
 						// add transition the unfolding is based on BEFORE requiring system to decide for at least one
 						otherTransitions.add(t);
@@ -91,7 +92,7 @@ public abstract class NonDeterministicUnfolder extends Unfolder {
 
 	private boolean containsAdditionalSystemPlace(Set<Place> preset) {
 		for (Place p : preset) {
-			if (p.getId().startsWith(QbfSolver.additionalSystemName)) {
+			if (p.getId().startsWith(QbfControl.additionalSystemName)) {
 				return true;
 			}
 		}

@@ -135,7 +135,7 @@ public class QbfESafetySolver extends QbfFlowChainSolver<Safety> {
 		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 			or.clear();
 			for (Place p : getSolvingObject().getGame().getPlaces()) {
-				if (!p.getId().startsWith(QbfSolver.additionalSystemName)) {
+				if (!p.getId().startsWith(QbfControl.additionalSystemName)) {
 					or.add(getVarNr(p.getId() + "." + i + "." + "notobjective", true));
 				}
 			}
@@ -209,7 +209,7 @@ public class QbfESafetySolver extends QbfFlowChainSolver<Safety> {
 			if (result[i].startsWith("and()")) {
 				Pair<Boolean, Integer> pair = getVarNrWithResult("and()");
 				if (pair.getFirst()) {
-					writer.write(pair.getSecond() + " = and()" + QbfSolver.linebreak);
+					writer.write(pair.getSecond() + " = and()" + QbfControl.linebreak);
 				}
 				simultan[i] = pair.getSecond();
 
@@ -229,7 +229,7 @@ public class QbfESafetySolver extends QbfFlowChainSolver<Safety> {
 				Set<Integer> and = new HashSet<>();
 				for (Place p : getSolvingObject().getGame().getPlaces()) {
 					// additional system places cannot leave their places, they always loop
-					if (!p.getId().startsWith(additionalSystemName)) {
+					if (!p.getId().startsWith(QbfControl.additionalSystemName)) {
 						int p_i_safe = getVarNr(p.getId() + "." + i + "." + "objective", true);
 						int p_j_safe = getVarNr(p.getId() + "." + j + "." + "objective", true);
 						and.add(writeImplication(p_i_safe, p_j_safe));
@@ -313,7 +313,7 @@ public class QbfESafetySolver extends QbfFlowChainSolver<Safety> {
 
 		initializeVariablesForWriteQCIR();
 
-		writer.write("#QCIR-G14          " + QbfSolver.linebreak); // spaces left to add variable count in the end
+		writer.write("#QCIR-G14          " + QbfControl.linebreak); // spaces left to add variable count in the end
 		addExists();
 		addForall();
 
@@ -348,9 +348,9 @@ public class QbfESafetySolver extends QbfFlowChainSolver<Safety> {
 		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 			seqImpliesWin[i] = createUniqueID();
 			if (i < getSolvingObject().getN()) {
-				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + QbfSolver.linebreak);
+				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + QbfControl.linebreak);
 			} else {
-				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + "," + u + ")" + QbfSolver.linebreak);		// adding unfair
+				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + "," + u + ")" + QbfControl.linebreak);		// adding unfair
 			}
 			phi.add(seqImpliesWin[i]);
 		}
@@ -359,7 +359,7 @@ public class QbfESafetySolver extends QbfFlowChainSolver<Safety> {
 		int number = createUniqueID();
 		writer.write(number + " = " + writeAnd(phi));
 		int valid = valid();
-		writer.write(createUniqueID() + " = or(-" + valid + "," + number + ")" + QbfSolver.linebreak);
+		writer.write(createUniqueID() + " = or(-" + valid + "," + number + ")" + QbfControl.linebreak);
 
 		// dont use valid()
 		// writer.write(createUniqueID() + " = " + writeAnd(phi));
@@ -392,7 +392,7 @@ public class QbfESafetySolver extends QbfFlowChainSolver<Safety> {
 
 		raf.close();
 
-		if (QbfSolver.debug) {
+		if (QbfControl.debug) {
 			FileUtils.copyFile(file, new File(getSolvingObject().getGame().getName() + ".qcir"));
 		}
 

@@ -66,7 +66,7 @@ public class QbfEReachabilitySolver extends QbfSolver<Reachability> {
 					// empty set of places to reach never lets system win
 					Pair<Boolean, Integer> result = getVarNrWithResult("or()");
 					if (result.getFirst()) {
-						writer.write(result.getSecond() + " = or()" + QbfSolver.linebreak);
+						writer.write(result.getSecond() + " = or()" + QbfControl.linebreak);
 					}
 					or.add(result.getSecond());
 				}
@@ -90,7 +90,7 @@ public class QbfEReachabilitySolver extends QbfSolver<Reachability> {
 				// empty set of places to reach never lets system win
 				Pair<Boolean, Integer> result = getVarNrWithResult("or()");
 				if (result.getFirst()) {
-					writer.write(result.getSecond() + " = or()" + QbfSolver.linebreak);
+					writer.write(result.getSecond() + " = or()" + QbfControl.linebreak);
 				}
 				or.add(result.getSecond());
 			}
@@ -108,7 +108,7 @@ public class QbfEReachabilitySolver extends QbfSolver<Reachability> {
 
 		initializeVariablesForWriteQCIR();
 
-		writer.write("#QCIR-G14" + QbfSolver.replaceAfterWardsSpaces + QbfSolver.linebreak); // spaces left to add variable count in the end
+		writer.write("#QCIR-G14" + QbfControl.replaceAfterWardsSpaces + QbfControl.linebreak); // spaces left to add variable count in the end
 		addExists();
 		addForall();
 
@@ -137,9 +137,9 @@ public class QbfEReachabilitySolver extends QbfSolver<Reachability> {
 		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 			seqImpliesWin[i] = createUniqueID();
 			if (i < getSolvingObject().getN()) {
-				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + QbfSolver.linebreak);
+				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + QbfControl.linebreak);
 			} else {
-				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + "," + u + ")" + QbfSolver.linebreak);		// adding unfair
+				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + "," + u + ")" + QbfControl.linebreak);		// adding unfair
 			}
 			phi.add(seqImpliesWin[i]);
 		}
@@ -173,7 +173,7 @@ public class QbfEReachabilitySolver extends QbfSolver<Reachability> {
 
 		raf.close();
 
-		if (QbfSolver.debug) {
+		if (QbfControl.debug) {
 			FileUtils.copyFile(file, new File(getSolvingObject().getGame().getName() + ".qcir"));
 		}
 

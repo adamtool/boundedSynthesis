@@ -10,7 +10,7 @@ import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Token;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolver;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QbfControl;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 
 /**
@@ -85,7 +85,7 @@ public class PGSimplifier {
 	private static void removeAS(QBFSolvingObject<? extends WinningCondition> pg) {
 		Set<Place> places = new HashSet<>(pg.getGame().getPlaces());
 		for (Place place : places) {
-			if (place.getId().startsWith(QbfSolver.additionalSystemName)) {
+			if (place.getId().startsWith(QbfControl.additionalSystemName)) {
 				Set<Transition> transitions = new HashSet<>(place.getPreset());
 				for (Transition transition : transitions) {
 					pg.getGame().removeFlow(place, transition);

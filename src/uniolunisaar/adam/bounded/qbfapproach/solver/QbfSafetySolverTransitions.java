@@ -88,7 +88,7 @@ public class QbfSafetySolverTransitions extends QbfSolver<Safety> {
 		}
 
 		writer.write(writeExists(exists));
-		writer.write("output(1)" + QbfSolver.replaceAfterWardsSpaces + QbfSolver.linebreak);
+		writer.write("output(1)" + QbfControl.replaceAfterWardsSpaces + QbfControl.linebreak);
 	}
 	
 	protected Map<Place, String[]> getGenerateToken() {
@@ -449,7 +449,7 @@ public class QbfSafetySolverTransitions extends QbfSolver<Safety> {
 		for (Place sys : getSolvingObject().getGame().getPlaces()) {
 			// Additional system places are not forced to behave deterministically, this is
 			// the faster variant (especially the larger the PG becomes)
-			if (!getSolvingObject().getGame().isEnvironment(sys) && !sys.getId().startsWith(QbfSolver.additionalSystemName)) {
+			if (!getSolvingObject().getGame().isEnvironment(sys) && !sys.getId().startsWith(QbfControl.additionalSystemName)) {
 				if (sys.getPostset().size() > 1) {
 					sys_transitions = sys.getPostset().toArray(new Transition[0]);
 					for (int j = 0; j < sys_transitions.length; ++j) {
@@ -473,7 +473,7 @@ public class QbfSafetySolverTransitions extends QbfSolver<Safety> {
 			} else {
 				Pair<Boolean, Integer> result = getVarNrWithResult("and()");
 				if (result.getFirst()) {
-					writer.write(result.getSecond() + " = and()" + QbfSolver.linebreak);
+					writer.write(result.getSecond() + " = and()" + QbfControl.linebreak);
 				}
 				deterministic[i] = "";
 			}
@@ -482,7 +482,7 @@ public class QbfSafetySolverTransitions extends QbfSolver<Safety> {
 	}
 	
 	protected void writeDeterministic() throws IOException {
-		if (deterministicStrat) {
+		if (QbfControl.deterministicStrat) {
 			String[] deterministic = getDeterministic();
 			for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 				if (!deterministic[i].matches("")) {
@@ -542,7 +542,7 @@ public class QbfSafetySolverTransitions extends QbfSolver<Safety> {
 	protected void writeQCIR() throws IOException {
 		Map<Place, Set<Transition>> systemHasToDecideForAtLeastOne = unfoldPG();
 
-		if (QbfSolver.mcmillian) {
+		if (QbfControl.mcmillian) {
 			Set<Place> oldBad = new HashSet<>(getSolvingObject().getWinCon().getBadPlaces());
 	        getWinningCondition().buffer(getSolvingObject().getGame());
 	        for (Place old : oldBad) {
@@ -553,7 +553,7 @@ public class QbfSafetySolverTransitions extends QbfSolver<Safety> {
         
 		initializeVariablesForWriteQCIR();
 
-		writer.write("#QCIR-G14" + QbfSolver.replaceAfterWardsSpaces + QbfSolver.linebreak); // spaces left to add variable count in the end
+		writer.write("#QCIR-G14" + QbfControl.replaceAfterWardsSpaces + QbfControl.linebreak); // spaces left to add variable count in the end
 		addExists();
 		addForall();
 		addPlaces();
@@ -602,7 +602,7 @@ public class QbfSafetySolverTransitions extends QbfSolver<Safety> {
 
 		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 			seqImpliesWin[i] = createUniqueID();
-			writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + QbfSolver.linebreak);
+			writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + QbfControl.linebreak);
 			phi.add(seqImpliesWin[i]);
 		}
 
@@ -636,7 +636,7 @@ public class QbfSafetySolverTransitions extends QbfSolver<Safety> {
 
 		raf.close();
 
-		if (QbfSolver.debug) {
+		if (QbfControl.debug) {
 			FileUtils.copyFile(file, new File(getSolvingObject().getGame().getName() + ".qcir"));
 		}
 

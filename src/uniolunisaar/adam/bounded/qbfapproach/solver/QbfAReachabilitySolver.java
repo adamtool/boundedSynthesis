@@ -135,7 +135,7 @@ public class QbfAReachabilitySolver extends QbfFlowChainSolver<Reachability> {
 		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 			and.clear();
 			for (Place p : getSolvingObject().getGame().getPlaces()) {
-				if (!p.getId().startsWith(QbfSolver.additionalSystemName)) {
+				if (!p.getId().startsWith(QbfControl.additionalSystemName)) {
 					and.add(-getVarNr(p.getId() + "." + i + "." + "notobjective", true));
 				}
 			}
@@ -160,7 +160,7 @@ public class QbfAReachabilitySolver extends QbfFlowChainSolver<Reachability> {
 			and.clear();
 			for (Transition t : getSolvingObject().getGame().getTransitions()) {
 				for (Place p : t.getPreset()) {
-					if (!p.getId().startsWith(additionalSystemName)) {
+					if (!p.getId().startsWith(QbfControl.additionalSystemName)) {
 						if (getOutgoingTokenFlow(p, t).isEmpty()) {
 							or.clear();
 							or.add(getVarNr(p.getId() + "." + i + "." + "objective", true));
@@ -186,7 +186,7 @@ public class QbfAReachabilitySolver extends QbfFlowChainSolver<Reachability> {
 				Set<Integer> and = new HashSet<>();
 				for (Place p : getSolvingObject().getGame().getPlaces()) {
 					// additional system places cannot leave their places, they always loop
-					if (!p.getId().startsWith(additionalSystemName)) {
+					if (!p.getId().startsWith(QbfControl.additionalSystemName)) {
 						int p_i_safe = getVarNr(p.getId() + "." + i + "." + "objective", true);
 						int p_j_safe = getVarNr(p.getId() + "." + j + "." + "objective", true);
 						and.add(writeImplication(p_i_safe, p_j_safe));
@@ -242,7 +242,7 @@ public class QbfAReachabilitySolver extends QbfFlowChainSolver<Reachability> {
 		for (int i = 2; i <= getSolvingObject().getN(); ++i) {
 			and.clear();
 			for (Place p : getSolvingObject().getGame().getPlaces()) {
-				if (!p.getId().startsWith(QbfSolver.additionalSystemName)) {
+				if (!p.getId().startsWith(QbfControl.additionalSystemName)) {
 					or.clear();
 					or.add(getVarNr(p.getId() + "." + i + "." + "empty", true));
 					or.add(getVarNr(p.getId() + "." + i + "." + "objective", true));
@@ -289,7 +289,7 @@ public class QbfAReachabilitySolver extends QbfFlowChainSolver<Reachability> {
 
 		initializeVariablesForWriteQCIR();
 
-		writer.write("#QCIR-G14          " + QbfSolver.linebreak); // spaces left to add variable count in the end
+		writer.write("#QCIR-G14          " + QbfControl.linebreak); // spaces left to add variable count in the end
 		addExists();
 		addForall();
 
@@ -324,9 +324,9 @@ public class QbfAReachabilitySolver extends QbfFlowChainSolver<Reachability> {
 		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 			seqImpliesWin[i] = createUniqueID();
 			if (i < getSolvingObject().getN()) {
-				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + QbfSolver.linebreak);
+				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + QbfControl.linebreak);
 			} else {
-				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + "," + u + ")" + QbfSolver.linebreak);		// adding unfair
+				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + "," + u + ")" + QbfControl.linebreak);		// adding unfair
 			}
 			phi.add(seqImpliesWin[i]);
 		}
@@ -368,7 +368,7 @@ public class QbfAReachabilitySolver extends QbfFlowChainSolver<Reachability> {
 
 		raf.close();
 
-		if (QbfSolver.debug) {
+		if (QbfControl.debug) {
 			FileUtils.copyFile(file, new File(getSolvingObject().getGame().getName() + ".qcir"));
 		}
 
