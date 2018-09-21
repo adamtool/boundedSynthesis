@@ -17,6 +17,7 @@ import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.analysis.exception.UnboundedException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.ForNonDeterministicUnfolder;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
@@ -135,7 +136,7 @@ public class QBFConSafetySolver extends QBFConSolver<Safety> {
 	}
 
 	private void writeDeterministic() throws IOException {
-		if (deterministicStrat) {
+		if (QbfControl.deterministicStrat) {
 			String[] deterministic = getDeterministic();
 			for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 				det[i] = createUniqueID();
@@ -183,7 +184,7 @@ public class QBFConSafetySolver extends QBFConSolver<Safety> {
 		Set<Integer> exists = new HashSet<>();
 		for (Place p : getSolvingObject().getGame().getPlaces()) {
 			if (!getSolvingObject().getGame().getEnvPlaces().contains(p)) {
-				if (p.getId().startsWith(QBFConSolver.additionalSystemName)) {
+				if (p.getId().startsWith(QbfControl.additionalSystemName)) {
 					for (Transition t : p.getPostset()) {
 						int number = createVariable(p.getId() + ".." + t.getId());
 						exists.add(number);
@@ -288,11 +289,10 @@ public class QBFConSafetySolver extends QBFConSolver<Safety> {
 				* getSolvingObject().getGame().getTransitions().size()];
 		int exitcode = -1;
 		try {
-			writer.write("#QCIR-G14          " + QBFConSolver.linebreak); // spaces left to add variable count in the
-																			// end
+			writer.write("#QCIR-G14          " + QbfControl.linebreak); // spaces left to add variable count in the  end
 			addExists();
 			addForall();
-			writer.write("output(1)" + QBFConSolver.linebreak); // 1 = \phi
+			writer.write("output(1)" + QbfControl.linebreak); // 1 = \phi
 
 			writeInitial();
 			writer.write("# End of Initial\n");
@@ -330,7 +330,7 @@ public class QBFConSafetySolver extends QBFConSolver<Safety> {
 			for (int i = 1; i <= getSolvingObject().getN() - 1; ++i) { // slightly optimized in the sense that winning
 																		// and loop are put together for n
 				seqImpliesWin[i] = createUniqueID();
-				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + QBFConSolver.linebreak);
+				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + QbfControl.linebreak);
 				phi.add(seqImpliesWin[i]);
 			}
 
@@ -342,7 +342,7 @@ public class QBFConSafetySolver extends QBFConSolver<Safety> {
 
 			seqImpliesWin[getSolvingObject().getN()] = createUniqueID();
 			writer.write(seqImpliesWin[getSolvingObject().getN()] + " = " + "or(-" + seq[getSolvingObject().getN()]
-					+ "," + wnandLoop + ")" + QBFConSolver.linebreak);
+					+ "," + wnandLoop + ")" + QbfControl.linebreak);
 			phi.add(seqImpliesWin[getSolvingObject().getN()]);
 
 			writer.write("1 = " + writeAnd(phi));
@@ -372,11 +372,11 @@ public class QBFConSafetySolver extends QBFConSolver<Safety> {
 			String os = System.getProperty("os.name");
 			if (os.startsWith("Mac")) {
 				System.out.println("Your operation system is supported.");
-				pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + solver + "_mac",
+				pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + QbfControl.solver + "_mac",
 						"--partial-assignment", file.getAbsolutePath());
 			} else if (os.startsWith("Linux")) {
 				System.out.println("Your operation system is supported.");
-				pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + solver + "_unix",
+				pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + QbfControl.solver + "_unix",
 						"--partial-assignment", file.getAbsolutePath());
 			} else {
 				System.out.println("Your operation system is not supported.");
@@ -439,7 +439,7 @@ public class QBFConSafetySolver extends QBFConSolver<Safety> {
 								if (in != -1) { // CTL has exists variables for path EF which mean not remove
 									String place = remove.substring(0, in);
 									String transition = remove.substring(in + 2, remove.length());
-									if (place.startsWith(QBFConSolver.additionalSystemName)) {
+									if (place.startsWith(QbfControl.additionalSystemName)) {
 										// additional system place exactly removes transitions
 										// Transition might already be removed by recursion
 										Set<Transition> transitions = new HashSet<>(

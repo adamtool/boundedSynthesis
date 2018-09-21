@@ -21,6 +21,7 @@ import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFSolvingObject;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QbfControl;
 import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.solver.Solver;
@@ -33,13 +34,7 @@ import uniolunisaar.adam.ds.winningconditions.WinningCondition;
  * 
  */
 
-public abstract class QBFConSolver<W extends WinningCondition>
-		extends Solver<QBFSolvingObject<W>, QBFConSolverOptions> {
-	// TODO maybe optional arguments
-	public static String linebreak = "\n\n"; // Controller
-	public static String additionalSystemName = "AS___"; // Controller
-	public static String solver = "quabs"; // Controller
-	public static boolean deterministicStrat = true; // Controller
+public abstract class QBFConSolver<W extends WinningCondition> extends Solver<QBFSolvingObject<W>, QBFConSolverOptions> {
 
 	// Caches
 	private Map<Transition, Set<Place>> restCache = new HashMap<>();
@@ -548,7 +543,7 @@ public abstract class QBFConSolver<W extends WinningCondition>
 			// deterministically, this is the faster variant (especially the
 			// larger the PG becomes)
 			if (!getSolvingObject().getGame().getEnvPlaces().contains(sys)
-					&& !sys.getId().startsWith(QBFConSolver.additionalSystemName)) {
+					&& !sys.getId().startsWith(QbfControl.additionalSystemName)) {
 				if (sys.getPostset().size() > 1) {
 					sys_transitions = sys.getPostset().toArray(new Transition[0]);
 					for (int j = 0; j < sys_transitions.length; ++j) {
@@ -625,7 +620,7 @@ public abstract class QBFConSolver<W extends WinningCondition>
 
 	public int addSysStrategy(Place p, Transition t) {
 		if (!getSolvingObject().getGame().getEnvPlaces().contains(p)) {
-			if (p.getId().startsWith(QBFConSolver.additionalSystemName)) {
+			if (p.getId().startsWith(QbfControl.additionalSystemName)) {
 				return getVarNr(p.getId() + ".." + t.getId(), true);
 			} else {
 				return getVarNr(p.getId() + ".." + getTruncatedId(t.getId()), true);
@@ -701,7 +696,7 @@ public abstract class QBFConSolver<W extends WinningCondition>
 			delim = ",";
 			sb.append(i);
 		}
-		sb.append(")" + QBFConSolver.linebreak);
+		sb.append(")" + QbfControl.linebreak);
 		String result = sb.toString();
 		return result;
 	}

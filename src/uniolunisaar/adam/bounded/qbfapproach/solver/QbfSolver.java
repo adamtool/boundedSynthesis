@@ -84,8 +84,8 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 	protected Map<Transition, Integer> transitionKeys = new HashMap<>();
 
 	protected Transition[] transitions;
-	protected int[] deadlockSubFormulas;
-	protected int[] terminatingSubFormulas;
+	protected int[] deadlockSubFormulas; // TODO make [][] as oneTransitionForumlas
+	protected int[] terminatingSubFormulas; // TODO make [][] as oneTransitionForumlas
 	protected File file;
 
 	public QbfSolver(PetriGame game, W winCon, QbfSolverOptions so) throws SolvingException {

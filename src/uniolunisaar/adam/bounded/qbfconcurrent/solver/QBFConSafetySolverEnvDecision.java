@@ -17,7 +17,7 @@ import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.analysis.exception.UnboundedException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolver;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.ForNonDeterministicUnfolder;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
@@ -54,8 +54,7 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 
 	private String outputCAQE = "";
 
-	public QBFConSafetySolverEnvDecision(PetriGame game, Safety winCon, QBFConSolverOptions so)
-			throws SolvingException {
+	public QBFConSafetySolverEnvDecision(PetriGame game, Safety winCon, QBFConSolverOptions so) throws SolvingException {
 		super(game, winCon, so);
 		fl = new int[getSolvingObject().getN() + 1];
 		bad = new int[getSolvingObject().getN() + 1];
@@ -144,7 +143,7 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 	}
 
 	private void writeDeterministic() throws IOException {
-		if (deterministicStrat) {
+		if (QbfControl.deterministicStrat) {
 			String[] deterministic = getDeterministic();
 			for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 				det[i] = createUniqueID();
@@ -192,7 +191,7 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 		Set<Integer> exists = new HashSet<>();
 		for (Place p : getSolvingObject().getGame().getPlaces()) {
 			if (!getSolvingObject().getGame().getEnvPlaces().contains(p)) {
-				if (p.getId().startsWith(QBFConSolver.additionalSystemName)) {
+				if (p.getId().startsWith(QbfControl.additionalSystemName)) {
 					for (Transition t : p.getPostset()) {
 						int number = createVariable(p.getId() + ".." + t.getId());
 						exists.add(number);
@@ -221,7 +220,7 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 		Set<Integer> forall = new HashSet<>();
 		for (Place p : getSolvingObject().getGame().getPlaces()) {
 			if (getSolvingObject().getGame().getEnvPlaces().contains(p)) {
-				if (p.getId().startsWith(QbfSolver.additionalSystemName)) {
+				if (p.getId().startsWith(QbfControl.additionalSystemName)) {
 					for (Transition t : p.getPostset()) {
 						for (int i = 0; i <= getSolvingObject().getN(); ++i) {
 							int number = createVariable(p.getId() + ".." + t.getId() + ".." + i);
@@ -271,8 +270,7 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 	// Additional information from nondeterministic unfolding is utilized:
 	// for each place a set of transitions is given of which at least one has to
 	// be activated by the strategy to be deadlock-avoiding
-	public int enumerateStratForNonDetUnfold(Map<Place, Set<Transition>> additionalInfoForNonDetUnfl)
-			throws IOException {
+	public int enumerateStratForNonDetUnfold(Map<Place, Set<Transition>> additionalInfoForNonDetUnfl) throws IOException {
 		if (additionalInfoForNonDetUnfl.keySet().isEmpty()) {
 			return -1;
 		}
@@ -332,11 +330,11 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 				* getSolvingObject().getGame().getTransitions().size()];
 		int exitcode = -1;
 		try {
-			writer.write("#QCIR-G14          " + QBFConSolver.linebreak); // spaces left to add variable count in the
+			writer.write("#QCIR-G14          " + QbfControl.linebreak); // spaces left to add variable count in the
 																			// end
 			addExists();
 			addForall();
-			writer.write("output(1)" + QBFConSolver.linebreak); // 1 = \phi
+			writer.write("output(1)" + QbfControl.linebreak); // 1 = \phi
 			writeDetEnv();
 			writeInitial();
 			writer.write("# End of Initial\n");
@@ -366,16 +364,14 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 			// ensure deterministic decision.
 			// It is required that these decide for exactly one transition which
 			// is directly encoded into the problem.
-			int index_for_non_det_unfolding_info = enumerateStratForNonDetUnfold(
-					unfolder.systemHasToDecideForAtLeastOne);
+			int index_for_non_det_unfolding_info = enumerateStratForNonDetUnfold(unfolder.systemHasToDecideForAtLeastOne);
 			if (index_for_non_det_unfolding_info != -1) {
 				phi.add(index_for_non_det_unfolding_info);
 			}
 
-			for (int i = 1; i <= getSolvingObject().getN() - 1; ++i) { // slightly optimized in the sense that winning
-																		// and loop are put together for n
+			for (int i = 1; i <= getSolvingObject().getN() - 1; ++i) { // slightly optimized in the sense that winning and loop are put together for n
 				seqImpliesWin[i] = createUniqueID();
-				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + QBFConSolver.linebreak);
+				writer.write(seqImpliesWin[i] + " = " + "or(-" + seq[i] + "," + win[i] + ")" + QbfControl.linebreak);
 				phi.add(seqImpliesWin[i]);
 			}
 			// phi.add(detenv); // Add new detenv encoding
@@ -388,13 +384,12 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 
 			seqImpliesWin[getSolvingObject().getN()] = createUniqueID();
 			writer.write(seqImpliesWin[getSolvingObject().getN()] + " = " + "or(-" + seq[getSolvingObject().getN()]
-					+ "," + wnandLoop + ")" + QBFConSolver.linebreak);
+					+ "," + wnandLoop + ")" + QbfControl.linebreak);
 			phi.add(seqImpliesWin[getSolvingObject().getN()]);
 			int phi_number = createUniqueID();
 			writer.write(phi_number + " = " + writeAnd(phi));
 			if (!getSolvingObject().getGame().getEnvPlaces().isEmpty())
-				writer.write("1 = " + "and(" + writeImplication(detenv, phi_number) + ")"); // detenv is the high order
-																							// implication attribute
+				writer.write("1 = " + "and(" + writeImplication(detenv, phi_number) + ")"); // detenv is the high order implication attribute
 			else
 				writer.write("1 = and(" + phi_number + ")");
 			writer.close();
@@ -415,7 +410,9 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 			}
 
 			// generating qcir benchmarks
-			FileUtils.copyFile(file, new File(getSolvingObject().getGame().getName() + ".qcir"));
+			if (QbfControl.debug) {
+				FileUtils.copyFile(file, new File(getSolvingObject().getGame().getName() + ".qcir"));
+			}
 
 			ProcessBuilder pb = null;
 			// Run solver on problem
@@ -423,11 +420,11 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 			String os = System.getProperty("os.name");
 			if (os.startsWith("Mac")) {
 				System.out.println("Your operation system is supported.");
-				pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + solver + "_mac",
+				pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + QbfControl.solver + "_mac",
 						"--partial-assignment", file.getAbsolutePath());
 			} else if (os.startsWith("Linux")) {
 				System.out.println("Your operation system is supported.");
-				pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + solver + "_unix",
+				pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + QbfControl.solver + "_unix",
 						"--partial-assignment", file.getAbsolutePath());
 			} else {
 				System.out.println("Your operation system is not supported.");
@@ -490,7 +487,7 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 								if (in != -1) { // CTL has exists variables for path EF which mean not remove
 									String place = remove.substring(0, in);
 									String transition = remove.substring(in + 2, remove.length());
-									if (place.startsWith(QBFConSolver.additionalSystemName)) {
+									if (place.startsWith(QbfControl.additionalSystemName)) {
 										// additional system place exactly removes transitions
 										// Transition might already be removed by recursion
 										Set<Transition> transitions = new HashSet<>(
