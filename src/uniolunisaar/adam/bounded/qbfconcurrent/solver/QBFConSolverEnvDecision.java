@@ -54,11 +54,9 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 	protected File file = null;
 	protected int numTransitions;
 
-	protected List<Map<Integer, Integer>> enabledlist; // First setindex, then iteration index
-	protected Map<Transition, Integer> transitionmap;
-	protected List<Set<Place>> postlist; // Only direct neighbours
-	protected List<Set<Place>> prelist; // As in true concurrent case without linear env decision
-	protected List<Set<Transition>> setlist; // TODO change this list to "new" cp sets
+	protected List<Map<Integer,Integer>> enabledlist; // First setindex, then iteration index
+	protected Map<Transition, Integer> transitionmap; 
+	protected List<Transition> setlist; //TODO change this list to "new" cp sets
 
 	protected QBFConSolverEnvDecision(PetriGame game, W winCon, QBFConSolverOptions so) throws SolvingException {
 		super(game, winCon, so);
@@ -192,82 +190,33 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 	 */
 	public void calculateSets() {
 		this.setlist = new ArrayList<>();
-		this.postlist = new ArrayList<>();
-		this.prelist = new ArrayList<>();
 		this.transitionmap = new HashMap<>();
 		this.enabledlist = new ArrayList<>();
 		List<Transition> allTransitions = new ArrayList<>(getSolvingObject().getGame().getTransitions());
-
 		while (!allTransitions.isEmpty()) {
 			Transition start = allTransitions.get(allTransitions.size() - 1);
 			allTransitions.remove(start);
-			Set<Transition> newSet = new HashSet<>();
-			newSet.add(start);
-			Set<Place> preset = new HashSet<>(start.getPreset());
-			for (Place p : preset) {
-				newSet.addAll(p.getPostset());
-			}
-			newSet.remove(start);
-			this.setlist.add(newSet);// All neighbours exclusive current transition
-			this.prelist.add(preset);
-			Set<Place> postset = new HashSet<>();
-			for (Transition t : newSet)
-				postset.addAll(t.getPostset());
-			this.postlist.add(postset);
+			this.setlist.add(start);// All neighbours exclusive current
 			transitionmap.put(start, setlist.size() - 1);
 		}
 		for (int j = 0; j < setlist.size(); j++) {
 			Map<Integer, Integer> newmap = new HashMap<>();
 			enabledlist.add(newmap);
 		}
-		for (Set<Transition> s : setlist) {
-			System.out.println(s);
-
-		}
-		for (Set<Place> p : prelist) {
-			System.out.println(p);
-		}
 	}
 	
-	// TODO only for debugging purposes
-	public int getEnabled (Transition t, int i) throws IOException {
-		Set<Integer> and = new HashSet<>();
-		for (Place pre : t.getPreset()) {
-			and.add(getVarNr(pre.getId() + "." + i, true));
-			if (getSolvingObject().getGame().getEnvPlaces().contains(pre)) {
-				// ENV place
-				and.add(getVarNr(pre.getId() + "**" + getTruncatedId(t.getId()) + "**" + i, true));
-			} else {
-				// SYS place
-				and.add(getVarNr(pre.getId() + ".." + getTruncatedId(t.getId()), true));
-			}
-		}
-		int and_number = createUniqueID();
-		writer.write(and_number + " = " + writeAnd(and));
-		return and_number;
-	}
-	
-	// TODO only for debugging purposes
-	// Jesko's working version
 	public String[] getFlow() throws IOException {
+		calculateSets();
 		String[] flow = new String[getSolvingObject().getN() + 1];
 		Set<Integer> and = new HashSet<>();
 		for (int i = 1; i < getSolvingObject().getN(); i++) {
 			and.clear();
+			computeEnabledTransitions(i);
 			// fire all enabled transitions
-			for (Transition t : getSolvingObject().getGame().getTransitions()) {
+			for (Transition t : transitions) {
 				Set<Integer> or = new HashSet<>();
-				for (Place pre : t.getPreset()) {
-					or.add(-getVarNr(pre.getId() + "." + i, true));
-					if (getSolvingObject().getGame().getEnvPlaces().contains(pre)) {
-						// ENV place
-						or.add(-getVarNr(pre.getId() + "**" + getTruncatedId(t.getId()) + "**" + i, true));
-					} else {
-						// SYS place
-						or.add(-getVarNr(pre.getId() + ".." + getTruncatedId(t.getId()), true));
-					}
-				}
-				or.add(getOnlyOneTransition(t, i));
+				or.add(-enabledlist.get(transitionmap.get(t)).get(i));
+				or.add(fireOneTransition(i,transitionmap.get(t)));
 				int or_number = createUniqueID();
 				writer.write(or_number + " = " + writeOr(or));
 				and.add(or_number);
@@ -276,10 +225,10 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 			for (Place p : getSolvingObject().getGame().getPlaces()) {
 				Set<Integer> inner_and = new HashSet<>();
 				for (Transition t : p.getPostset()) {
-					inner_and.add(-getEnabled(t, i));
+					inner_and.add(-enabledlist.get(transitionmap.get(t)).get(i));
 				}
 				for (Transition t : p.getPreset()) {
-					inner_and.add(-getEnabled(t, i));
+					inner_and.add(-enabledlist.get(transitionmap.get(t)).get(i));
 				}
 				int inner_and_number = createUniqueID();
 				writer.write(inner_and_number + " = " + writeAnd(inner_and));
@@ -298,242 +247,47 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 		}
 		return flow;
 	}
-
+	
 	/**
-	 * Get flow encodes the flow. No need for fallthrough needed (hopefully)
-	 * 
+	 * Fires one transition.
+	 * @param i
+	 * @param setindex
 	 * @return
 	 * @throws IOException
 	 */
-	public String[] getFlowTRUECONCURRENT() throws IOException {
-		calculateSets();
-		String[] flow = new String[getSolvingObject().getN() + 1];
-		Set<Integer> or = new HashSet<>();
-		for (int i = 1; i < getSolvingObject().getN(); i++) { //leq or less??
-
-			or.clear();
-			int someEnabled = oneSetEnabled(i);
-			Set<Integer> fireDecision = new HashSet<>();
-			// fireDecision.add(someEnabled); // probabily need this for termination?
-			fireDecision.add(decision(i));
-			int number_decision = createUniqueID();
-			writer.write(number_decision + " = " + writeAnd(fireDecision));
-			// int number_Fire_One = createUniqueID();
-			// writer.write(number_Fire_One + " = " + writeAnd(fireOne));
-			or.add(number_decision);
-			flow[i] = writeOr(or);
+	public int fireOneTransition(int i, int setindex) throws IOException {
+		writer.write("# STARTED fire iteration " + i + " transition " + setlist.get(setindex) + "\n" );
+		Transition t = setlist.get(setindex);
+		int number = createUniqueID();
+		Set<Integer> and = new HashSet<>();
+		for (Place p : t.getPostset()) {
+			and.add(getVarNr(p.getId() + "." + (i + 1), true));
 		}
-		return flow;
-	}
-	
-	
-	// TODO only for debugging purposes
-	public String[] getFlowSEQUENTIAL() throws IOException {
-		String[] flow = new String[getSolvingObject().getN() + 1];
-		Set<Integer> or = new HashSet<>();
-		for (int i = 1; i < getSolvingObject().getN(); ++i) {
-			or.clear();
-			for (int j = 0; j < getSolvingObject().getGame().getTransitions().size(); ++j) {
-				// or.add(flowSubFormulas[pn.getTransitions().size() * (i - 1) + j]);
-				or.add(getOneTransition(transitions[j], i));
-			}
-			flow[i] = writeOr(or);
+		Set<Place> preMinusPost = new HashSet<>(t.getPreset());
+		preMinusPost.removeAll(t.getPostset());
+
+		for (Place p : preMinusPost) {
+			and.add(-getVarNr(p.getId() + "." + (i + 1), true));
 		}
-		return flow;
-	}
-	
-	// TODO only for debugging purposes
-	protected int getOneTransition(Transition t, int i) throws IOException {
-			Set<Integer> and = new HashSet<>();
-			int strat;
-			for (Place p : t.getPreset()) {
-				and.add(getVarNr(p.getId() + "." + i, true));
-				strat = addSysStrategy(p, t);
-				if (strat != 0) {
-					and.add(strat);
-				}
-				if (getSolvingObject().getGame().getEnvPlaces().contains(p)) {
-					and.add(getVarNr(p.getId() + "**" + t.getId() + "**" + i, true));
-				}
-			}
-			for (Place p : t.getPostset()) {
-				and.add(getVarNr(p.getId() + "." + (i + 1), true));
-			}
-			// Slight performance gain by using these caches
-			Set<Place> rest = restCache.get(t);
-			if (rest == null) {
-				rest = new HashSet<>(getSolvingObject().getGame().getPlaces());
-				rest.removeAll(t.getPreset());
-				rest.removeAll(t.getPostset());
-				restCache.put(t, rest);
-			}
+		writer.write(number + " = " + writeAnd(and));
 
-			for (Place p : rest) {
-				int p_i = getVarNr(p.getId() + "." + i, true);
-				int p_iSucc = getVarNr(p.getId() + "." + (i + 1), true);
-				and.add(writeImplication(p_i, p_iSucc));
-				and.add(writeImplication(p_iSucc, p_i));
-			}
-
-			Set<Place> preMinusPost = preMinusPostCache.get(t);
-			if (preMinusPost == null) {
-				preMinusPost = new HashSet<>(t.getPreset());
-				preMinusPost.removeAll(t.getPostset());
-				preMinusPostCache.put(t, preMinusPost);
-			}
-			for (Place p : preMinusPost) {
-				and.add(-getVarNr(p.getId() + "." + (i + 1), true));
-			}
-			int number = createUniqueID();
-			writer.write(number + " = " + writeAnd(and));
-			return number;
+		writer.write("# ENDED fire iteration " + i + " transition " + setlist.get(setindex) + "\n" );
+		return number;
 	}
 
 	/**
-	 * Implements the Decision part of the formula.
-	 * 
+	 * writes the enabled encodings
 	 * @param i
 	 * @return
 	 * @throws IOException
 	 */
-	public int decision(int i) throws IOException {
-		Set<Integer> outer_and = new HashSet<>();
+	public void computeEnabledTransitions(int i) throws IOException {
 		for (int j = 0; j < setlist.size(); j++) {
-			Set<Integer> inner_or = new HashSet<>();
-			Set<Integer> inner_and_fire = new HashSet<>();
-			Set<Integer> inner_and_dont_fire = new HashSet<>();
-
-			int is_enabled = enabledlist.get(j).get(i);
-			inner_and_fire.add(is_enabled);
-			inner_and_dont_fire.add(-is_enabled);
-			inner_and_fire.add(fireOneTransitionSet(i, j));
-			inner_and_dont_fire.add(dontFireOneTransitionSet(i, j));
-
-			int number_fire = createUniqueID();
-			int number_dont_fire = createUniqueID();
-			writer.write(number_fire + " = " + writeAnd(inner_and_fire));
-			writer.write(number_dont_fire + " = " + writeAnd(inner_and_dont_fire));
-			inner_or.add(number_fire);
-			inner_or.add(number_dont_fire);
-			int number_inner_or = createUniqueID();
-			writer.write(number_inner_or + " = " + writeOr(inner_or));
-			outer_and.add(number_inner_or);
+			int enabled = isEnabledSet(i, j);			
+			enabledlist.get(j).put(i, enabled);
 		}
-		int number = createUniqueID();
-		writer.write(number + " = " + writeAnd(outer_and));
-		return number;
 	}
 
-	/**
-	 * Fires one transition sequentially.
-	 * 
-	 * @param i
-	 * @return
-	 * @throws IOException
-	 */
-	public int fireOne(int i) throws IOException {
-		Set<Integer> or = new HashSet<>();
-		for (int j = 0; j < getSolvingObject().getGame().getTransitions().size(); ++j) {
-			or.add(getOnlyOneTransition(transitions[j], i));
-		}
-		int number = createUniqueID();
-		writer.write(number + " = " + writeOr(or));
-		return number;
-	}
-
-	/**
-	 * Fires a cp-set
-	 * 
-	 * @param i
-	 * @param setindex
-	 * @return
-	 * @throws IOException
-	 */
-	public int fireOneTransitionSet(int i, int setindex) throws IOException {
-		Set<Integer> outer_or = new HashSet<>();
-		for (Transition t : setlist.get(setindex)) {
-			int number = createUniqueID();
-			Set<Integer> and = new HashSet<>();
-			int strat;
-			for (Place p : t.getPreset()) {
-				// and.add(getVarNr(p.getId() + "." + i, true));
-				strat = addSysStrategy(p, t);
-				if (strat != 0)
-					and.add(strat);
-				strat = addEnvStrategy(p, t, i);
-				if (strat != 0)
-					and.add(strat); // move this to enabled???
-			}
-			for (Place p : t.getPostset()) {
-				and.add(getVarNr(p.getId() + "." + (i + 1), true));
-			}
-			Set<Place> rest = new HashSet<>(prelist.get(setindex));
-			rest.addAll(postlist.get(setindex));
-			rest.removeAll(t.getPreset());
-			rest.removeAll(t.getPostset());
-
-			for (Place p : rest) {
-				int p_i = getVarNr(p.getId() + "." + i, true);
-				int p_iSucc = getVarNr(p.getId() + "." + (i + 1), true);
-				and.add(writeImplication(p_i, p_iSucc));
-				and.add(writeImplication(p_iSucc, p_i));
-			}
-
-			Set<Place> preMinusPost = new HashSet<>(t.getPreset());
-			preMinusPost.removeAll(t.getPostset());
-
-			for (Place p : preMinusPost) {
-				and.add(-getVarNr(p.getId() + "." + (i + 1), true));
-			}
-			writer.write(number + " = " + writeAnd(and));
-			outer_or.add(number);
-		}
-		int number_outer = createUniqueID();
-		writer.write(number_outer + " = " + writeOr(outer_or));
-		Set<Integer> outer_and = new HashSet<>();
-		outer_and.add(number_outer);
-		outer_and.add(enabledlist.get(setindex).get(i));
-		int number_outer_and = createUniqueID();
-		writer.write(number_outer_and + " = " + writeAnd(outer_and));
-		return number_outer_and;
-	}
-
-	/**
-	 * Implements dont_fire of the encoding.
-	 * 
-	 * @param i
-	 * @param setindex
-	 * @return
-	 * @throws IOException
-	 */
-	public int dontFireOneTransitionSet(int i, int setindex) throws IOException {
-		Set<Integer> outer_and = new HashSet<>();
-		for (Place p : prelist.get(setindex)) {
-			int p_i = (getVarNr(p.getId() + "." + i, true));
-			int p_iSucc = getVarNr(p.getId() + "." + (i + 1), true);
-			outer_and.add(writeImplication(p_i, p_iSucc));
-			if (p.getPreset().isEmpty())
-				outer_and.add(writeImplication(p_iSucc, p_i));
-		}
-		for (Place p : postlist.get(setindex)) {
-			Set<Integer> inner_or = new HashSet<>();
-			int p_i = (getVarNr(p.getId() + "." + i, true));
-			int p_iSucc = getVarNr(p.getId() + "." + (i + 1), true);
-			inner_or.add(writeImplication(-p_i, -p_iSucc));
-			for (Transition t : p.getPreset()) {
-				if (!setlist.get(setindex).contains(t)) {
-					inner_or.add(enabledlist.get(transitionmap.get(t)).get(i));
-				}
-			}
-			int number_or = createUniqueID();
-			writer.write(number_or + " = " + writeOr(inner_or));
-			outer_and.add(number_or);
-		}
-		int number = createUniqueID();
-		writer.write(number + " = " + writeAnd(outer_and));
-		return number;
-
-	}
 
 	/**
 	 * Encodes the existence of an enbled set.
@@ -557,88 +311,36 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 
 	/**
 	 * checks if the set 'setindex' is enabled
-	 * 
 	 * @param i
 	 * @param setindex
 	 * @return
 	 * @throws IOException
 	 */
-	public int isEnabledSet(int i, int setindex) throws IOException {
+	public int isEnabledSet(int i, int setindex) throws IOException{
+		writer.write("# STARTED is enabled for iteration " + i + " and transition " + setlist.get(setindex) + "\n");
 		Set<Integer> outerAnd = new HashSet<>();
-		Set<Integer> innerOr = new HashSet<>();
-		Set<Integer> env_or = new HashSet<>();
 		int strat;
-		for (Place p : prelist.get(setindex)) {
-			int p_number = getVarNr(p.getId() + "." + i, true);
+		int outer_and_number = createUniqueID();
+		for (Place p: setlist.get(setindex).getPreset()){
 			outerAnd.add(getVarNr(p.getId() + "." + i, true));
 		}
-		for (Transition t : setlist.get(setindex)) {
-			Set<Integer> inner_and = new HashSet<>();
-			for (Place p : t.getPreset()) {
-				strat = addSysStrategy(p, t);
-				if (strat != 0) {
-					inner_and.add(strat);
-				}
+		Transition t = setlist.get(setindex);
+		for (Place p : t.getPreset()) {
+			strat = addSysStrategy(p, t);
+			if (strat != 0) {
+				outerAnd.add(strat);
 			}
-			if (!inner_and.isEmpty()) {
-				int inner_and_number = createUniqueID();
-				writer.write(inner_and_number + " = " + writeAnd(inner_and));
-				innerOr.add(inner_and_number);
-			}
+			strat = addEnvStrategy(p, t, i);
+			if (strat != 0)
+				outerAnd.add(strat);
 		}
-		if (!innerOr.isEmpty()) {
-			int inner_or_number = createUniqueID();
-			writer.write(inner_or_number + " = " + writeOr(innerOr));
-			outerAnd.add(inner_or_number);
-		}
-		int outer_and_number = createUniqueID();
+		
 		writer.write(outer_and_number + " = " + writeAnd(outerAnd));
+		
+		writer.write("# ENDED is enabled for iteration " + i + " and set " + setindex + "\n");
 		return outer_and_number;
 	}
 
-	public int getOnlyOneTransition(Transition t, int i) throws IOException {
-		int number = createUniqueID();
-		Set<Integer> and = new HashSet<>();
-		int strat;
-		int envStrat;
-		for (Place p : t.getPreset()) {
-			and.add(getVarNr(p.getId() + "." + i, true));
-			strat = addSysStrategy(p, t);
-			if (strat != 0)
-				and.add(strat);
-			envStrat = addEnvStrategy(p, t, i);
-			if (envStrat != 0)
-				and.add(envStrat);
-		}
-		for (Place p : t.getPostset()) {
-			and.add(getVarNr(p.getId() + "." + (i + 1), true));
-		}
-		Set<Place> rest = restCache.get(t);
-		if (rest == null) {
-			rest = new HashSet<>(getSolvingObject().getGame().getPlaces());
-			rest.removeAll(t.getPreset());
-			rest.removeAll(t.getPostset());
-			restCache.put(t, rest);
-		}
-		for (Place p : rest) {
-			int p_i = getVarNr(p.getId() + "." + i, true);
-			int p_iSucc = getVarNr(p.getId() + "." + (i + 1), true);
-			and.add(writeImplication(p_i, p_iSucc));
-			and.add(writeImplication(p_iSucc, p_i));
-		}
-
-		Set<Place> preMinusPost = preMinusPostCache.get(t);
-		if (preMinusPost == null) {
-			preMinusPost = new HashSet<>(t.getPreset());
-			preMinusPost.removeAll(t.getPostset());
-			preMinusPostCache.put(t, preMinusPost);
-		}
-		for (Place p : preMinusPost) {
-			and.add(-getVarNr(p.getId() + "." + (i + 1), true));
-		}
-		writer.write(number + " = " + writeAnd(and));
-		return number;
-	}
 
 	public String[] getTerminating() throws IOException {
 		writeTerminatingSubFormulas(1, getSolvingObject().getN());

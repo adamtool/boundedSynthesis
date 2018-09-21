@@ -173,7 +173,6 @@ public abstract class QBFConSolver<W extends WinningCondition> extends Solver<QB
 		this.transitionmap = new HashMap<>();
 		this.enabledlist = new ArrayList<>();
 		List<Transition> allTransitions = new ArrayList<>(getSolvingObject().getGame().getTransitions());
-
 		while (!allTransitions.isEmpty()) {
 			Transition start = allTransitions.get(allTransitions.size() - 1);
 			allTransitions.remove(start);

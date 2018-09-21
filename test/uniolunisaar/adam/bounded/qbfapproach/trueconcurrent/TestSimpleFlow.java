@@ -4,7 +4,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 @Test
-public class NiklasTest extends EmptyTestEnvDec {
+public class TestSimpleFlow extends EmptyTestEnvDec {
 	
 	@BeforeClass
     public void setProperties() {
@@ -15,9 +15,7 @@ public class NiklasTest extends EmptyTestEnvDec {
 	
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testNiklas() throws Exception {
-		oneTest("jhh/myexample000", 5, 0, false);
-		//oneTest("jhh/myexample00", 5, 0, false);
-		//oneTest("jhh/myexample0", 5, 0, false);
+		oneTest("nm/minimal", 3, 0, true);
 	}
 	
 	private void oneTest(String str, int n, int b, boolean result) throws Exception {
