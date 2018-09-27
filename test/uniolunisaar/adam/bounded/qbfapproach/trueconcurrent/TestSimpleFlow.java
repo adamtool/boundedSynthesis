@@ -15,9 +15,9 @@ public class TestSimpleFlow extends EmptyTestEnvDec {
 	
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testNiklas() throws Exception {
-		oneTest("nm/minimal", 3, 0, false);
-		oneTest("nm/trueconcurrent",3,0,true);
-		oneTest("nm/nounfolding",5,2,true);
+		oneTest("nm/minimal", 5, 2	, false);
+		//oneTest("nm/trueconcurrent",3,0,true);
+		//oneTest("nm/nounfolding",5,2,true);
 		//oneTest("nm/oneunfolding",5,2,true);
 		}
 	

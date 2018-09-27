@@ -56,8 +56,7 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 
 	protected List<Map<Integer,Integer>> enabledlist; // First setindex, then iteration index
 	protected Map<Transition, Integer> transitionmap; 
-	protected List<Transition> setlist; //TODO change this list to "new" cp sets
-
+	protected List<Transition> setlist; 
 	protected QBFConSolverEnvDecision(PetriGame game, W winCon, QBFConSolverOptions so) throws SolvingException {
 		super(game, winCon, so);
 		getSolvingObject().setN(so.getN());
@@ -112,10 +111,12 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 				for (Transition t : p.getPostset()) {
 					post_transitions.addAll(p.getPostset());
 					post_transitions.remove(t);
+					int check_truncated = addEnvStrategy(p,t,i);
 					for (Transition t_prime : post_transitions) {
-						inner_and.add(-addEnvStrategy(p, t_prime, i));
+						if (addEnvStrategy(p,t_prime,i) != check_truncated)
+							inner_and.add(-addEnvStrategy(p, t_prime, i));
 					}
-					inner_and.add(addEnvStrategy(p, t, i));
+					inner_and.add(check_truncated);
 					int inner_and_var = createUniqueID();
 					writer.write("# START detenv for transition: " + t + " iteration: " + i + "\n");
 					writer.write(inner_and_var + " = " + writeAnd(inner_and));
@@ -286,27 +287,6 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 			int enabled = isEnabledSet(i, j);			
 			enabledlist.get(j).put(i, enabled);
 		}
-	}
-
-
-	/**
-	 * Encodes the existence of an enbled set.
-	 * 
-	 * @param i
-	 * @return
-	 * @throws IOException
-	 */
-	public int oneSetEnabled(int i) throws IOException {
-		Set<Integer> or = new HashSet<>();
-		for (int j = 0; j < setlist.size(); j++) {
-			int enabled = isEnabledSet(i, j);
-			or.add(enabled);
-
-			enabledlist.get(j).put(i, enabled);
-		}
-		int number = createUniqueID();
-		writer.write(number + " = " + writeOr(or));
-		return number;
 	}
 
 	/**
@@ -484,10 +464,10 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 
 	public int addEnvStrategy(Place p, Transition t, int i) {
 		if (getSolvingObject().getGame().getEnvPlaces().contains(p)) {
-			if (p.getId().startsWith(QbfControl.additionalSystemName)) {
+			if (p.getId().startsWith(QbfControl.additionalSystemName)) {//TODO unnötiger Fall
 				return getVarNr(p.getId() + "**" + t.getId() + "**" + i, true);
 			} else {
-				return getVarNr(p.getId() + "**" + getTruncatedId(t.getId()) + "**" + i, true);
+					return getVarNr(p.getId() + "**" + getTruncatedId(t.getId()) + "**" + i, true);
 			}
 		} else {
 			return 0;

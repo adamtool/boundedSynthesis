@@ -16,6 +16,7 @@ import org.apache.commons.io.FileUtils;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.analysis.exception.UnboundedException;
+import uniol.apt.io.renderer.RenderException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.ForNonDeterministicUnfolder;
@@ -25,6 +26,7 @@ import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Safety;
+import uniolunisaar.adam.logic.util.AdamTools;
 import uniolunisaar.adam.tools.AdamProperties;
 
 public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safety> {
@@ -216,11 +218,11 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 		writer.write(writeExists(exists));
 	}
 
-	public void addForallEnv() throws IOException {
+	public void addForallEnv() throws IOException { 
 		Set<Integer> forall = new HashSet<>();
 		for (Place p : getSolvingObject().getGame().getPlaces()) {
 			if (getSolvingObject().getGame().getEnvPlaces().contains(p)) {
-				if (p.getId().startsWith(QbfControl.additionalSystemName)) {
+				if (p.getId().startsWith(QbfControl.additionalSystemName)) {//TODO unnötiger Fall
 					for (Transition t : p.getPostset()) {
 						for (int i = 0; i <= getSolvingObject().getN(); ++i) {
 							int number = createVariable(p.getId() + ".." + t.getId() + ".." + i);
@@ -252,6 +254,8 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 
 	protected void addForall() throws IOException {
 		Set<Integer> forall = new HashSet<>();
+		System.out.println(getSolvingObject().getGame().getPlaces());
+		System.out.println(getSolvingObject().getGame().getTransitions());
 		for (Place p : getSolvingObject().getGame().getPlaces()) {
 			for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 				int number = createVariable(p.getId() + "." + i);
@@ -312,7 +316,7 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 		}
 
 		unfolding = new PetriGame(getSolvingObject().getGame());
-		
+	
 		/*
 		 * this.pg = unfolder.pg; this.pn = unfolder.pn;
 		 * 
@@ -365,6 +369,7 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 			// It is required that these decide for exactly one transition which
 			// is directly encoded into the problem.
 			int index_for_non_det_unfolding_info = enumerateStratForNonDetUnfold(unfolder.systemHasToDecideForAtLeastOne);
+			
 			if (index_for_non_det_unfolding_info != -1) {
 				phi.add(index_for_non_det_unfolding_info);
 			}
