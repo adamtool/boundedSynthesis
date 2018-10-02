@@ -211,7 +211,7 @@ public abstract class Unfolder {
 	}
 	
 	private boolean checkTransitionPair(Transition t1, Transition t2) {
-		// both transition originate from same system place and another env place is part, respectively
+		// both transitions originate from same system place and another env place is part, respectively
 		for (Place p1 : t1.getPreset()) {
 			if (!pg.getGame().getEnvPlaces().contains(p1)) {
 				// system
