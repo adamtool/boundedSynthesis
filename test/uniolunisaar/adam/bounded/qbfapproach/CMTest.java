@@ -3,7 +3,7 @@ package uniolunisaar.adam.bounded.qbfapproach;
 import org.testng.annotations.Test;
 
 import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.generators.Workflow;
+import uniolunisaar.adam.generators.games.Workflow;
 
 @Test
 public class CMTest extends EmptyTest { // Concurrent Machines / WF

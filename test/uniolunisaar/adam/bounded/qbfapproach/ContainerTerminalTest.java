@@ -23,7 +23,7 @@ import uniolunisaar.adam.ds.exceptions.NotSupportedGameException;
 import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
-import uniolunisaar.adam.generators.ContainerTerminal;
+import uniolunisaar.adam.generators.games.ContainerTerminal;
 import uniolunisaar.adam.logic.util.AdamTools;
 import uniolunisaar.adam.tools.Logger;
 

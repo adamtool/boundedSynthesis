@@ -3,7 +3,7 @@ package uniolunisaar.adam.bounded.qbfapproach;
 import org.testng.annotations.Test;
 
 import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.generators.SelfOrganizingRobots;
+import uniolunisaar.adam.generators.games.SelfOrganizingRobots;
 
 @Test
 public class SRTest extends EmptyTest {

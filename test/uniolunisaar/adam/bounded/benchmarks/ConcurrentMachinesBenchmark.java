@@ -3,7 +3,7 @@ package uniolunisaar.adam.bounded.benchmarks;
 import org.testng.annotations.Test;
 
 import uniol.apt.adt.pn.PetriNet;
-import uniolunisaar.adam.generators.Workflow;
+import uniolunisaar.adam.generators.games.Workflow;
 import uniolunisaar.adam.tools.Tools;
 
 //@Test
