@@ -99,7 +99,7 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 		Set<Integer> and = new HashSet<>();
 		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 			and.clear();
-			and.add(in);
+			and.add(in);	
 			for (int j = 1; j <= i - 1; ++j) {
 				// and.add(-dl[j]); // performance evaluation showed that leaving this out makes
 				// program faster as it is redundant
@@ -239,11 +239,13 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 								int number = createVariable(p.getId() + "**" + truncatedID + "**" + i);
 								forall.add(number);
 							}
+							
+							}
 						}
 					}
 				}
 			}
-		}
+		
 
 		if (!forall.isEmpty()) {
 			writer.write("#Forall env\n");
@@ -254,8 +256,6 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 
 	protected void addForall() throws IOException {
 		Set<Integer> forall = new HashSet<>();
-		System.out.println(getSolvingObject().getGame().getPlaces());
-		System.out.println(getSolvingObject().getGame().getTransitions());
 		for (Place p : getSolvingObject().getGame().getPlaces()) {
 			for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 				int number = createVariable(p.getId() + "." + i);
@@ -316,8 +316,7 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 		}
 
 		unfolding = new PetriGame(getSolvingObject().getGame());
-	
-		/*
+		/* ONLY for MCMillianUnfolder
 		 * this.pg = unfolder.pg; this.pn = unfolder.pn;
 		 * 
 		 * Set<Place> oldBad = new HashSet<>(getWinningCondition().getBadPlaces());
@@ -394,7 +393,7 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 			int phi_number = createUniqueID();
 			writer.write(phi_number + " = " + writeAnd(phi));
 			if (!getSolvingObject().getGame().getEnvPlaces().isEmpty())
-				writer.write("1 = " + "and(" + writeImplication(detenv, phi_number) + ")"); // detenv is the high order implication attribute
+				writer.write("1 = " + "and(" + writeImplication(detenv, phi_number) + ")"); // initial is the high order implication attribute
 			else
 				writer.write("1 = and(" + phi_number + ")");
 			writer.close();
@@ -484,9 +483,9 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 						if (!parts[i].equals("V")) {
 							int num = Integer.parseInt(parts[i]);
 							if (num > 0) {
-								System.out.println("ALLOW " + num);
+								//System.out.println("ALLOW " + num);
 							} else if (num < 0) {
-								System.out.println("DISALLOW " + num * (-1));
+								//System.out.println("DISALLOW " + num * (-1));
 								String remove = exists_transitions.get(num * (-1));
 								int in = remove.indexOf("..");
 								if (in != -1) { // CTL has exists variables for path EF which mean not remove

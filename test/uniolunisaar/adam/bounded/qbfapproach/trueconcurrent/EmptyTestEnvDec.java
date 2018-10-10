@@ -7,6 +7,7 @@ import uniolunisaar.adam.bounded.qbfconcurrent.solver.QBFConSolverEnvDecision;
 import uniolunisaar.adam.bounded.qbfconcurrent.solver.QBFConSolverFactory;
 import uniolunisaar.adam.bounded.qbfconcurrent.solver.QBFConSolverOptions;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
+import uniolunisaar.adam.ds.solver.Solver;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 import uniolunisaar.adam.logic.util.AdamTools;
 
@@ -22,10 +23,10 @@ public abstract class EmptyTestEnvDec {
 		testSolver(sol, n, b, result);
 	}
  
-	protected void testSolver (QBFConSolverEnvDecision<?> sol, int n, int b, boolean result) throws Exception {
+	protected void testSolver (QBFConSolverEnvDecision<?extends WinningCondition> sol, int n, int b, boolean result) throws Exception {
         sol.existsWinningStrategy();	// calculate first, then output games, and then check for correctness
 		
-		AdamTools.savePG2PDF("originalGame", sol.originalGame, false);
+	AdamTools.savePG2PDF("originalGame", sol.originalGame, false);
 		AdamTools.savePG2PDF("unfolding", sol.unfolding, false);
 		if (sol.existsWinningStrategy()) {
 			AdamTools.savePG2PDF("strategy", sol.getStrategy(), false);

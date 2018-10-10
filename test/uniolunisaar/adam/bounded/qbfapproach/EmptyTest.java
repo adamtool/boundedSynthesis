@@ -2,31 +2,38 @@ package uniolunisaar.adam.bounded.qbfapproach;
 
 import org.testng.Assert;
 
-import uniolunisaar.adam.bounded.qbfapproach.solver.QbfControl;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolver;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverFactory;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverOptions;
+import uniolunisaar.adam.bounded.qbfconcurrent.solver.QBFConSolverFactory;
+import uniolunisaar.adam.bounded.qbfconcurrent.solver.QBFConSolverOptions;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.ds.winningconditions.WinningCondition;
+import uniolunisaar.adam.ds.solver.Solver;
 import uniolunisaar.adam.logic.util.AdamTools;
 
+
 public abstract class EmptyTest {
-	
+
+	private boolean trueconcurrent = false;
+
 	protected void testPath (String path, int n, int b, boolean result) throws Exception {
-		QbfSolver<? extends WinningCondition> sol = QbfSolverFactory.getInstance().getSolver(path, new QbfSolverOptions(n, b));
-		testSolver(sol, n, b, result);
+		if (trueconcurrent)
+			testSolver(QBFConSolverFactory.getInstance().getSolver(path, new QBFConSolverOptions(n, b)),n,b,result);
+		else
+			testSolver(QbfSolverFactory.getInstance().getSolver(path, new QbfSolverOptions(n, b)),n,b,result);
 	}
 	
 	protected void testGame (PetriGame pg, int n, int b, boolean result) throws Exception {
-		QbfSolver<? extends WinningCondition> sol = QbfSolverFactory.getInstance().getSolver(pg, false, new QbfSolverOptions(n, b));
-		testSolver(sol, n, b, result);
+		if (trueconcurrent)
+			testSolver(QBFConSolverFactory.getInstance().getSolver(pg, false, new QBFConSolverOptions(n, b)),n,b,result);
+		else
+			testSolver(QbfSolverFactory.getInstance().getSolver(pg, false, new QbfSolverOptions(n, b)),n,b,result);
+
 	}
  
-	protected void testSolver (QbfSolver<?> sol, int n, int b, boolean result) throws Exception {
+	protected void testSolver (Solver<?,?> sol, int n, int b, boolean result) throws Exception {
         sol.existsWinningStrategy();	// calculate first, then output games, and then check for correctness
-		
-		AdamTools.savePG2PDF("originalGame", sol.originalGame, false);
-		AdamTools.savePG2PDF("unfolding", sol.unfolding, false);
+		//AdamTools.savePG2PDF("originalGame", sol.originalGame, false);
+		//AdamTools.savePG2PDF("unfolding", sol.unfolding, false);
 		if (sol.existsWinningStrategy()) {
 			AdamTools.savePG2PDF("strategy", sol.getStrategy(), false);
 		}
@@ -34,7 +41,7 @@ public abstract class EmptyTest {
 		Assert.assertEquals(sol.existsWinningStrategy(), result);
 
 		if (sol.existsWinningStrategy()) {
-			assert(QbfControl.checkStrategy(sol.originalGame, sol.strategy));	// ORIGINAL: check validity of strategy if existent
+			//assertTrue(QbfControl.checkStrategy(sol.originalGame, sol.strategy));	// ORIGINAL: check validity of strategy if existent
 		}
 	}
 }

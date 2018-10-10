@@ -233,7 +233,6 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 				}
 				int inner_and_number = createUniqueID();
 				writer.write(inner_and_number + " = " + writeAnd(inner_and));
-				
 				int impl = writeImplication(getVarNr(p.getId() + "." + i, true), getVarNr(p.getId() + "." + (i + 1), true));
 				int retu = writeImplication(getVarNr(p.getId() + "." + (i + 1), true), getVarNr(p.getId() + "." + i, true));
 				Set<Integer> iff = new HashSet<>();
@@ -241,7 +240,6 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 				iff.add(retu);
 				int iff_number = createUniqueID();
 				writer.write(iff_number + " = " + writeAnd(iff));
-				
 				and.add(writeImplication(inner_and_number, iff_number));
 			}
 			flow[i] = writeAnd(and);
@@ -266,12 +264,10 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 		}
 		Set<Place> preMinusPost = new HashSet<>(t.getPreset());
 		preMinusPost.removeAll(t.getPostset());
-
 		for (Place p : preMinusPost) {
 			and.add(-getVarNr(p.getId() + "." + (i + 1), true));
 		}
 		writer.write(number + " = " + writeAnd(and));
-
 		writer.write("# ENDED fire iteration " + i + " transition " + setlist.get(setindex) + "\n" );
 		return number;
 	}
@@ -467,7 +463,7 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 			if (p.getId().startsWith(QbfControl.additionalSystemName)) {//TODO unnötiger Fall
 				return getVarNr(p.getId() + "**" + t.getId() + "**" + i, true);
 			} else {
-					return getVarNr(p.getId() + "**" + getTruncatedId(t.getId()) + "**" + i, true);
+				return getVarNr(p.getId() + "**" + getTruncatedId(t.getId()) + "**" + i, true);
 			}
 		} else {
 			return 0;
