@@ -107,7 +107,7 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 		Set<Integer> inner_and = new HashSet<>();
 		writer.write("#Start det env\n");
 		for (Place p : getSolvingObject().getGame().getEnvPlaces()) {
-			for (int i = 0; i <= getSolvingObject().getN(); i++) {
+			for (int i = 1; i <= getSolvingObject().getN(); i++) {
 				for (Transition t : p.getPostset()) {
 					post_transitions.addAll(p.getPostset());
 					post_transitions.remove(t);
@@ -417,7 +417,7 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 	public String getLoopIJ() throws IOException {
 		Set<Integer> or = new HashSet<>();
 		for (int i = 1; i < getSolvingObject().getN(); ++i) {
-			for (int j = i + 2; j <= getSolvingObject().getN(); ++j) {
+			for (int j = i + 1; j <= getSolvingObject().getN(); ++j) {
 				Set<Integer> and = new HashSet<>();
 				for (Place p : getSolvingObject().getGame().getPlaces()) {
 					int p_i = getVarNr(p.getId() + "." + i, true);

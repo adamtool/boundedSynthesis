@@ -20,6 +20,9 @@ import uniol.apt.io.renderer.RenderException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.ForNonDeterministicUnfolder;
+import uniolunisaar.adam.bounded.qbfapproach.unfolder.NewDeterministicUnfolder;
+import uniolunisaar.adam.bounded.qbfapproach.unfolder.OldDeterministicUnfolder;
+import uniolunisaar.adam.bounded.qbfapproach.unfolder.TheDeterministicUnfolder;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
@@ -218,56 +221,51 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 		writer.write(writeExists(exists));
 	}
 
-	public void addForallEnv() throws IOException { 
+
+	protected void addForall() throws IOException {
 		Set<Integer> forall = new HashSet<>();
+		int numplaces = 0;
+		for (Place p : getSolvingObject().getGame().getPlaces()) {
+			System.out.println(p);
+			for (int i = 1; i <= getSolvingObject().getN(); ++i) {
+				int number = createVariable(p.getId() + "." + i);
+				// System.out.println(p.getId() + "." + i + " : number: " +
+				// number);
+				forall.add(number);
+				// System.out.println(number + " = " + p.getId() + "." + i);
+				forall_places.put(number, p.getId() /* + "." + i */);
+				numplaces++;
+			}
+		}
+		System.out.println("Plätzenummer : " + numplaces);
+
+		System.out.println(getSolvingObject().getN());
 		for (Place p : getSolvingObject().getGame().getPlaces()) {
 			if (getSolvingObject().getGame().getEnvPlaces().contains(p)) {
-				if (p.getId().startsWith(QbfControl.additionalSystemName)) {//TODO unnötiger Fall
-					for (Transition t : p.getPostset()) {
-						for (int i = 0; i <= getSolvingObject().getN(); ++i) {
-							int number = createVariable(p.getId() + ".." + t.getId() + ".." + i);
+				Set<String> truncatedIDs = new HashSet<>();
+				int groesse = 0;
+				for (Transition t : p.getPostset()) {
+					String truncatedID = getTruncatedId(t.getId());
+					if (!truncatedIDs.contains(truncatedID)) {
+						truncatedIDs.add(truncatedID);
+						for (int i = 1; i <= getSolvingObject().getN(); ++i) {
+							int number = createVariable(p.getId() + "**" + truncatedID + "**" + i);
 							forall.add(number);
-						}
-					}
-				} else {
-					Set<String> truncatedIDs = new HashSet<>();
-					for (Transition t : p.getPostset()) {
-						String truncatedID = getTruncatedId(t.getId());
-						if (!truncatedIDs.contains(truncatedID)) {
-							truncatedIDs.add(truncatedID);
-							for (int i = 0; i <= getSolvingObject().getN(); ++i) {
-								int number = createVariable(p.getId() + "**" + truncatedID + "**" + i);
-								forall.add(number);
-							}
-							
-							}
+							groesse++;
 						}
 					}
 				}
-			}
-		
+				System.out.println(p.toString() + " Groesse: " + groesse);
+				groesse = 0;
 
+			}
+		}
 		if (!forall.isEmpty()) {
 			writer.write("#Forall env\n");
 			writer.write(writeForall(forall));
 
 		}
-	}
-
-	protected void addForall() throws IOException {
-		Set<Integer> forall = new HashSet<>();
-		for (Place p : getSolvingObject().getGame().getPlaces()) {
-			for (int i = 1; i <= getSolvingObject().getN(); ++i) {
-				int number = createVariable(p.getId() + "." + i);
-				// System.out.println(p.getId() + "." + i + " : number: " + number);
-				forall.add(number);
-				// System.out.println(number + " = " + p.getId() + "." + i);
-				forall_places.put(number, p.getId() /* + "." + i */);
-			}
-		}
 		// System.out.println(forall);
-		writer.write(writeForall(forall));
-		addForallEnv();
 
 	}
 
@@ -301,6 +299,9 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 	protected boolean exWinStrat() {
 		originalGame = new PetriGame(getSolvingObject().getGame());
 		ForNonDeterministicUnfolder unfolder = new ForNonDeterministicUnfolder(getSolvingObject(), null); // null forces to use b as bound for every place
+		//NewDeterministicUnfolder unfolder = new NewDeterministicUnfolder(getSolvingObject(), null); // null forces to use b as bound for every place
+		//OldDeterministicUnfolder unfolder = new OldDeterministicUnfolder(getSolvingObject(), null); // null forces to use b as bound for every place
+		
 		// McMillianUnfolder unfolder = null;
 		/*
 		 * try { //int x = 3; //unfolder = new McMillianUnfolder(getSolvingObject(),
