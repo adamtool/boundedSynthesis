@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -34,26 +35,29 @@ public abstract class Unfolder {
 	// how much unfolding of places was done and how much can still be done
 	protected Map<String, Integer> current = new HashMap<>();
 	protected Map<String, Integer> limit = null;
-	
+
 	// NewDeterministicUnfolder also uses this
-	public Map<Place, Set<Transition>> systemHasToDecideForAtLeastOne = new HashMap<>(); // Map for QCIRbuilder to include additional information
-	
+	public Map<Place, Set<Transition>> systemHasToDecideForAtLeastOne = new HashMap<>(); // Map for QCIRbuilder to
+																							// include additional
+																							// information
+
 	// Counter to make copied transitions unique, places use numbers from current
 	protected Map<String, Integer> copycounter_map = new HashMap<>();
-	
+
 	protected Set<String> closed = new HashSet<>();
-	
+
 	public Unfolder(QBFSolvingObject<? extends WinningCondition> petriGame, Map<String, Integer> max) {
 		this.pg = petriGame;
 		this.pn = pg.getGame();
 		this.limit = max;
 	}
 
-	public void prepareUnfolding() throws NetNotSafeException, NoSuitableDistributionFoundException, UnboundedException, FileNotFoundException {
+	public void prepareUnfolding() throws NetNotSafeException, NoSuitableDistributionFoundException, UnboundedException,
+			FileNotFoundException {
 		for (Place p : pn.getPlaces()) {
 			current.put(p.getId(), 1);
 		}
-		
+
 		if (limit != null) {
 			for (Place p : pn.getPlaces()) {
 				if (limit.get(p.getId()) == null) {
@@ -69,12 +73,13 @@ public abstract class Unfolder {
 		createUnfolding();
 	}
 
-	protected abstract void createUnfolding() throws NetNotSafeException, NoSuitableDistributionFoundException, UnboundedException, FileNotFoundException;
+	protected abstract void createUnfolding()
+			throws NetNotSafeException, NoSuitableDistributionFoundException, UnboundedException, FileNotFoundException;
 
 	protected Map<String, LinkedList<Integer>> calculateOrderOfUnfoldingBasedOnGameSimulation() {
 		Map<String, LinkedList<Integer>> orderOfUnfolding = new HashMap<>();
 		Marking initial = pn.getInitialMarking();
-		
+
 		for (Place p : pn.getPlaces()) {
 			LinkedList<Integer> list = new LinkedList<>();
 			orderOfUnfolding.put(p.getId(), list);
@@ -84,16 +89,19 @@ public abstract class Unfolder {
 		Set<Marking> closed = new HashSet<>();
 		Pair<Marking, Integer> p;
 		int i;
+		List<Transition> transitions = sorted(pn.getTransitions());
 		while ((p = queue.poll()) != null) {
 			Marking m = p.getFirst();
 			i = p.getSecond();
 			closed.add(m);
-			for (Transition t : pn.getTransitions()) {
+			for (Transition t : transitions) {
 				if (t.isFireable(m)) {
 					Marking next = t.fire(m);
 					if (!closed.contains(next)) {
-						// local SYS transition (i.e. pre- and postset <= 1) cannot produce history, but they CAN TRANSPORT history
-						if (t.getPreset().size() > 1 || pg.getGame().getEnvTransitions().contains(t) || transportHistory(t, orderOfUnfolding)) {
+						// local SYS transition (i.e. pre- and postset <= 1) cannot produce history, but
+						// they CAN TRANSPORT history
+						if (t.getPreset().size() > 1 || pg.getGame().getEnvTransitions().contains(t)
+								|| transportHistory(t, orderOfUnfolding)) {
 							for (Place place : t.getPostset()) {
 								// only unfold places with outgoing transitions
 								if (place.getPostset().size() > 0) {
@@ -110,7 +118,7 @@ public abstract class Unfolder {
 		}
 		return orderOfUnfolding;
 	}
-	
+
 	private boolean transportHistory(Transition t, Map<String, LinkedList<Integer>> orderOfUnfolding) {
 		if (t.getPreset().size() == 1) {
 			Place p = t.getPreset().toArray(new Place[0])[0];
@@ -120,8 +128,8 @@ public abstract class Unfolder {
 		}
 		return false;
 	}
-	
-	protected Set<Transition> getOriginalPreset (Place p) {
+
+	protected Set<Transition> getOriginalPreset(Place p) {
 		Set<Transition> originalPreset = new HashSet<>();
 		for (Transition t : p.getPreset()) {
 			if (t.getId().equals(getTruncatedId(t.getId()))) {
@@ -130,13 +138,15 @@ public abstract class Unfolder {
 		}
 		return originalPreset;
 	}
-	
+
 	protected void addTransitionsToOriginalPreset(Place p, Set<Transition> p_originalPreset) {
 		// TODO additional test 1 & 2 look similar and probably can be combined
 
 		// **** ADDITIONAL ADD TEST 1 ****
-		// erkennt wenn lokale Transitionen Historie transportieren da sie unfoldet wurden:
-		// wenn die selbe LOKALE transition (gleiche truncated ID) von 2 unterschiedlichen
+		// erkennt wenn lokale Transitionen Historie transportieren da sie unfoldet
+		// wurden:
+		// wenn die selbe LOKALE transition (gleiche truncated ID) von 2
+		// unterschiedlichen
 		// UNFOLDETEN plätzen kommt (gleiche truncated ID), dann doch unfold, wenn
 		// partner noch nicht geaddet (EGAL ob env oder sys)
 		// second iteration says that this works as intended
@@ -146,7 +156,8 @@ public abstract class Unfolder {
 					if (getTruncatedId(t1.getId()).equals(getTruncatedId(t2.getId()))) { // LOKALER partner
 						if (t1.getPreset().size() == 1 && t2.getPreset().size() == 1 && // local transition
 								t2.getPostset().size() == 1 && t2.getPostset().size() == 1) {
-							if (!t1.getPreset().toArray()[0].equals(t2.getPreset().toArray()[0])) {// from DIFFERENT places
+							if (!t1.getPreset().toArray()[0].equals(t2.getPreset().toArray()[0])) {// from DIFFERENT
+																									// places
 								p_originalPreset.add(t1);
 								break;
 							}
@@ -180,7 +191,8 @@ public abstract class Unfolder {
 		}
 
 		// **** ADDITIONAL ADD TEST 3 ****
-		// soll erkennen wenn sync-Transitionen (mit Einschränkung zum nicht unendlich often Feuern)
+		// soll erkennen wenn sync-Transitionen (mit Einschränkung zum nicht unendlich
+		// often Feuern)
 		// Historie transportieren, test basiert auf original transition
 		// scheint evtl den Sinn von originalPreset zu neglecten
 		for (Transition t : p.getPreset()) {
@@ -209,9 +221,10 @@ public abstract class Unfolder {
 			}
 		}
 	}
-	
+
 	private boolean checkTransitionPair(Transition t1, Transition t2) {
-		// both transitions originate from same system place and another env place is part, respectively
+		// both transitions originate from same system place and another env place is
+		// part, respectively
 		for (Place p1 : t1.getPreset()) {
 			if (!pg.getGame().getEnvPlaces().contains(p1)) {
 				// system
@@ -238,14 +251,15 @@ public abstract class Unfolder {
 		}
 		return true;
 	}
-	
+
 	protected boolean unfoldConditionSatisfied(Place p) {
 		boolean boundNotReached = getCurrentValue(p) < getLimitValue(p);
-		boolean preset = p.getPreset().size() >= 2 || (p.getPreset().size() == 1 && p.getInitialToken().getValue() == 1);
+		boolean preset = p.getPreset().size() >= 2
+				|| (p.getPreset().size() == 1 && p.getInitialToken().getValue() == 1);
 		boolean postset = p.getPostset().size() >= 1;
 		return boundNotReached && postset && preset;
 	}
-	
+
 	protected void increaseCurrentValue(Place p) {
 		String id = getTruncatedId(p.getId());
 		current.put(id, current.get(id) + 1);
@@ -271,7 +285,7 @@ public abstract class Unfolder {
 		}
 		return newT;
 	}
-	
+
 	// only used in deterministic unfolder, don't care about flow chains until now
 	protected Place copyPlace(Place p) {
 		String id = getTruncatedId(p.getId());
@@ -297,7 +311,7 @@ public abstract class Unfolder {
 		}
 		return ret;
 	}
-	
+
 	protected void copyEnv(Place newP, Place p) {
 		for (Pair<String, Object> pair : p.getExtensions()) {
 			newP.putExtension(pair.getFirst(), pair.getSecond());
@@ -344,5 +358,19 @@ public abstract class Unfolder {
 				return false;
 		}
 		return result;
+	}
+
+	// TODO hack to make deterministic
+	private List<Transition> sorted(Set<Transition> places) {
+		List<Transition> ret = new LinkedList<>();
+		List<String> strings = new LinkedList<>();
+		for (Transition p : places) {
+			strings.add(p.getId());
+		}
+		java.util.Collections.sort(strings);
+		for (String s : strings) {
+			ret.add(pg.getGame().getTransition(s));
+		}
+		return ret;
 	}
 }
