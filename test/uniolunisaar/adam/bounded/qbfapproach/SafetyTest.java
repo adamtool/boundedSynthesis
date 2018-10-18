@@ -20,7 +20,15 @@ public class SafetyTest extends EmptyTest {
 		//oneTest("container/container", 10, 2, true);	// TODO search for bounds
 		//oneTest("notConcurrencyPreservingTests/toMakeCP", 20, 2, false);	// TODO nets are unsafe, making them safe defeats their purpose
 		//oneTest("notConcurrencyPreservingTests/madeCP", 20, 2, true);		// TODO nets are unsafe, making them safe defeats their purpose
-		oneTest("ndet/nondet_motivationForSchedulingChange", 20, 0, false);
+		oneTest("ndet/nondet_s3", 10, 0, false);
+		oneTest("ndet/nondet_s3", 10, 2, true);
+		oneTest("ndet/nondet_s3_noStrat", 15, 2, false);
+		oneTest("ndet/nondet_unnecessarily_noStrat", 15, 3, false);
+		oneTest("ndet/nondet_withBad", 12, 2, false);
+		oneTest("ndet/nondet_jhh1", 20, 0, false);
+		oneTest("ndet/nondet_jhh2", 20, 0, true);
+		oneTest("ndet/nondet_jhh3", 20, 0, false);
+		oneTest("ndet/nondet_motivationForSchedulingChange", 5, 0, false);
 		oneTest("jhh/myexample1", 10, 0, false);
 		oneTest("jhh/myexample1", 10, 2, false);
 		oneTest("jhh/myexample2", 10, 0, true);
@@ -53,14 +61,6 @@ public class SafetyTest extends EmptyTest {
 		oneTest("firstExamplePaper/firstExamplePaper_extended", 10, 10, false);
 		oneTest("ma_vsp/vsp_1_withBadPlaces", 2, 0, false);
 		oneTest("ma_vsp/vsp_1_withBadPlaces", 3, 0, true);
-		oneTest("ndet/nondet_s3", 10, 0, false);
-		oneTest("ndet/nondet_s3", 10, 2, true);
-		oneTest("ndet/nondet_s3_noStrat", 15, 2, false);
-		oneTest("ndet/nondet_unnecessarily_noStrat", 15, 3, false);
-		oneTest("ndet/nondet_withBad", 12, 2, false);
-		oneTest("ndet/nondet_jhh1", 20, 0, false);
-		oneTest("ndet/nondet_jhh2", 20, 0, true);
-		oneTest("ndet/nondet_jhh3", 20, 0, false);
 		oneTest("testingNets/envSkipsSys", 15, 3, false);
 		/*oneTest("nm/sendingprotocol", 6, 2, true);
 		oneTest("nm/sendingprotocol", 5, 2, false);
