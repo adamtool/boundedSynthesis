@@ -16,8 +16,8 @@ public class DWTest extends EmptyTest { // Document Workflow / DW
 
         int j = 8; // j = 7 -> UNSAT; j = 8 -> SAT
         for (int i = 1; i <= 5; ++i) {
-            oneTestTrue(i, j, 0);
-            oneTestFalse(i, j - 1, 0);
+            oneTestTrue(i, j-1, 0); //tc: j-1 seq: j
+            oneTestFalse(i, j - 2, 0); //tc: j-2 seq: j-1
             j += 2;
         }
     }

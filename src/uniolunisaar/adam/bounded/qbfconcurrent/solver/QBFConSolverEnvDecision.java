@@ -106,29 +106,33 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 		Set<Integer> inner_or = new HashSet<>();
 		Set<Integer> inner_and = new HashSet<>();
 		writer.write("#Start det env\n");
-		for (Place p : getSolvingObject().getGame().getEnvPlaces()) {
-			for (int i = 1; i <= getSolvingObject().getN(); i++) {
-				for (Transition t : p.getPostset()) {
-					post_transitions.addAll(p.getPostset());
-					post_transitions.remove(t);
-					int check_truncated = addEnvStrategy(p,t,i);
-					for (Transition t_prime : post_transitions) {
-						if (addEnvStrategy(p,t_prime,i) != check_truncated)
-							inner_and.add(-addEnvStrategy(p, t_prime, i));
+		for (Place p : getSolvingObject().getGame().getEnvPlaces()) {			
+			if (!p.getPostset().isEmpty()) {	
+				System.out.println(p.getId());
+
+				for (int i = 1; i <= getSolvingObject().getN(); i++) {
+					for (Transition t : p.getPostset()) {
+						post_transitions.addAll(p.getPostset());
+						post_transitions.remove(t);
+						int check_truncated = addEnvStrategy(p, t, i);
+						for (Transition t_prime : post_transitions) {
+							if (addEnvStrategy(p, t_prime, i) != check_truncated)
+								inner_and.add(-addEnvStrategy(p, t_prime, i));
+						}
+						inner_and.add(check_truncated);
+						int inner_and_var = createUniqueID();
+						writer.write("# START detenv for transition: " + t + " iteration: " + i + "\n");
+						writer.write(inner_and_var + " = " + writeAnd(inner_and));
+						writer.write("# END detenv for transition: " + t + " iteration: " + i + "\n");
+						inner_or.add(inner_and_var);
+						inner_and.clear();
+						post_transitions.clear();
 					}
-					inner_and.add(check_truncated);
-					int inner_and_var = createUniqueID();
-					writer.write("# START detenv for transition: " + t + " iteration: " + i + "\n");
-					writer.write(inner_and_var + " = " + writeAnd(inner_and));
-					writer.write("# END detenv for transition: " + t + " iteration: " + i+ "\n");
-					inner_or.add(inner_and_var);
-					inner_and.clear();
-					post_transitions.clear();
+					int inner_or_var = createUniqueID();
+					writer.write(inner_or_var + " = " + writeOr(inner_or));
+					outer_and.add(inner_or_var);
+					inner_or.clear();
 				}
-				int inner_or_var = createUniqueID();
-				writer.write(inner_or_var + " = " + writeOr(inner_or));
-				outer_and.add(inner_or_var);
-				inner_or.clear();
 			}
 		}
 		writer.write("#last line of det env\n");

@@ -18,7 +18,7 @@ public class DWsTest extends EmptyTest { // Document Workflow / DW
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testDWs() throws Exception {
 		runTest(true, 5, 5);
-		runTest(false, 5, 4);
+		runTest(false, 5, 4);  
 	}
 
 	private void runTest (boolean tf, int max, int n) throws Exception {

@@ -1,7 +1,10 @@
 package uniolunisaar.adam.bounded.qbfapproach;
 
+import static org.testng.Assert.assertTrue;
+
 import org.testng.Assert;
 
+import uniolunisaar.adam.bounded.qbfapproach.solver.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverFactory;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverOptions;
 import uniolunisaar.adam.bounded.qbfconcurrent.solver.QBFConSolverFactory;
@@ -13,7 +16,7 @@ import uniolunisaar.adam.logic.util.AdamTools;
 
 public abstract class EmptyTest {
 
-	private boolean trueconcurrent = false;
+	private boolean trueconcurrent = true;
 
 	protected void testPath (String path, int n, int b, boolean result) throws Exception {
 		if (trueconcurrent)
@@ -41,7 +44,7 @@ public abstract class EmptyTest {
 		Assert.assertEquals(sol.existsWinningStrategy(), result);
 
 		if (sol.existsWinningStrategy()) {
-			//assertTrue(QbfControl.checkStrategy(sol.originalGame, sol.strategy));	// ORIGINAL: check validity of strategy if existent
+			//assertTrue(QbfControl.checkStrategy(sol.getGame(), sol.getStrategy()));	// ORIGINAL: check validity of strategy if existent
 		}
 	}
 }

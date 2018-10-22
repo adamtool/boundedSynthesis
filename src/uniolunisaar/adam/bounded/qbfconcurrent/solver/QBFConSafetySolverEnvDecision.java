@@ -224,9 +224,7 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 
 	protected void addForall() throws IOException {
 		Set<Integer> forall = new HashSet<>();
-		int numplaces = 0;
 		for (Place p : getSolvingObject().getGame().getPlaces()) {
-			System.out.println(p);
 			for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 				int number = createVariable(p.getId() + "." + i);
 				// System.out.println(p.getId() + "." + i + " : number: " +
@@ -234,16 +232,11 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 				forall.add(number);
 				// System.out.println(number + " = " + p.getId() + "." + i);
 				forall_places.put(number, p.getId() /* + "." + i */);
-				numplaces++;
 			}
 		}
-		System.out.println("Plätzenummer : " + numplaces);
-
-		System.out.println(getSolvingObject().getN());
 		for (Place p : getSolvingObject().getGame().getPlaces()) {
 			if (getSolvingObject().getGame().getEnvPlaces().contains(p)) {
 				Set<String> truncatedIDs = new HashSet<>();
-				int groesse = 0;
 				for (Transition t : p.getPostset()) {
 					String truncatedID = getTruncatedId(t.getId());
 					if (!truncatedIDs.contains(truncatedID)) {
@@ -251,12 +244,9 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 						for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 							int number = createVariable(p.getId() + "**" + truncatedID + "**" + i);
 							forall.add(number);
-							groesse++;
 						}
 					}
 				}
-				System.out.println(p.toString() + " Groesse: " + groesse);
-				groesse = 0;
 
 			}
 		}
