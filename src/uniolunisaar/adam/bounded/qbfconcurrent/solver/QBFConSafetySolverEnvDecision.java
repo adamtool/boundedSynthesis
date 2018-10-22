@@ -16,20 +16,15 @@ import org.apache.commons.io.FileUtils;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.analysis.exception.UnboundedException;
-import uniol.apt.io.renderer.RenderException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.ForNonDeterministicUnfolder;
-import uniolunisaar.adam.bounded.qbfapproach.unfolder.NewDeterministicUnfolder;
-import uniolunisaar.adam.bounded.qbfapproach.unfolder.OldDeterministicUnfolder;
-import uniolunisaar.adam.bounded.qbfapproach.unfolder.TheDeterministicUnfolder;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Safety;
-import uniolunisaar.adam.logic.util.AdamTools;
 import uniolunisaar.adam.tools.AdamProperties;
 
 public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safety> {
@@ -522,7 +517,7 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 							} else {
 								// 0 is the last member
 								// System.out.println("Finished reading strategy.");
-								PGSimplifier.simplifyPG(getSolvingObject(), true, false);
+								PGSimplifier.simplifyPGtrueConcurrent(getSolvingObject(), true, false);
 								strategy = new PetriGame(getSolvingObject().getGame());
 								return getSolvingObject().getGame();
 							}
@@ -531,7 +526,7 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 				}
 			}
 			// There were no decision points for the system, thus the previous loop did not leave the method
-			PGSimplifier.simplifyPG(getSolvingObject(), true, false);
+			PGSimplifier.simplifyPGtrueConcurrent(getSolvingObject(), true, false);
 			strategy = new PetriGame(getSolvingObject().getGame());
 			return getSolvingObject().getGame();
 		}
