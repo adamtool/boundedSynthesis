@@ -39,7 +39,7 @@ public class QBFSolvingObject<W extends WinningCondition> extends SolvingObject<
         super(new PetriGame(obj.getGame()), obj.getWinCon().getCopy());
         this.n = obj.n;
         this.b = obj.b;
-        // todo: JESKO add how the flows should be copied or if you still need them after the reconstructuring.
+        // todo: JESKO add how the flows should be copied or if you still need them after the restructuring.
     }
 
     // Before removing a transition, always check that it has not already been removed, because a single missing place suffices.

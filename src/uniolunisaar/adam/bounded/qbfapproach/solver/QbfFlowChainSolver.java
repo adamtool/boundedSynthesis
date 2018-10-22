@@ -281,6 +281,8 @@ public abstract class QbfFlowChainSolver<W extends WinningCondition> extends Qbf
 		}
 		return writeOr(outerOr);
 	}
+	
+	// TODO why did/does it say here j = i + 2 at other getLoopIJ
 
 	@Override
 	protected String getLoopIJ() throws IOException {

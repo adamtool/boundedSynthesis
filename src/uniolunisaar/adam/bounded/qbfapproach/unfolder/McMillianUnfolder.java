@@ -53,15 +53,13 @@ public class McMillianUnfolder extends Unfolder {
 					newP.putExtension(pair.getFirst(), pair.getSecond());
 				}
 			} else if (initial.getToken(p).getValue() > 1) {
-				// throw error exception -> not safe
-				System.out.println("ERROR");
+				throw new NetNotSafeException(p.getId(), "initial");
 			}
 		}
 	}
 
 	@Override
-	public void createUnfolding() throws NetNotSafeException, NoSuitableDistributionFoundException, UnboundedException,
-			FileNotFoundException {
+	public void createUnfolding() throws NetNotSafeException, NoSuitableDistributionFoundException, UnboundedException, FileNotFoundException {
 		Set<Pair<Transition, Set<Place>>> possibleExtensions = possibleExtensions();
 		while (true) {
 			Pair<Transition, Set<Place>> extension = possibleExtensions.iterator().next();

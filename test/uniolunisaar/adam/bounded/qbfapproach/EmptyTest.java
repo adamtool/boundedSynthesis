@@ -34,9 +34,9 @@ public abstract class EmptyTest {
 	}
  
 	protected void testSolver (Solver<?,?> sol, int n, int b, boolean result) throws Exception {
+		AdamTools.savePG2PDF("originalGame", sol.getGame(), false);
         sol.existsWinningStrategy();	// calculate first, then output games, and then check for correctness
-		//AdamTools.savePG2PDF("originalGame", sol.originalGame, false);
-		//AdamTools.savePG2PDF("unfolding", sol.unfolding, false);
+		AdamTools.savePG2PDF("unfolding", sol.getGame(), false);
 		if (sol.existsWinningStrategy()) {
 			AdamTools.savePG2PDF("strategy", sol.getStrategy(), false);
 		}

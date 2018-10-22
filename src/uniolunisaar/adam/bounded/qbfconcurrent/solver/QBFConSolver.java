@@ -585,6 +585,8 @@ public abstract class QBFConSolver<W extends WinningCondition> extends Solver<QB
 		return number;
 	}
 
+	// TODO why did/does it say here j = i + 2
+	
 	public String getLoopIJ() throws IOException {
 		Set<Integer> or = new HashSet<>();
 		for (int i = 1; i < getSolvingObject().getN(); ++i) {

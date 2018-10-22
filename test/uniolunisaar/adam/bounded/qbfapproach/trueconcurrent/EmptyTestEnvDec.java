@@ -7,7 +7,6 @@ import uniolunisaar.adam.bounded.qbfconcurrent.solver.QBFConSolverEnvDecision;
 import uniolunisaar.adam.bounded.qbfconcurrent.solver.QBFConSolverFactory;
 import uniolunisaar.adam.bounded.qbfconcurrent.solver.QBFConSolverOptions;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.ds.solver.Solver;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 import uniolunisaar.adam.logic.util.AdamTools;
 

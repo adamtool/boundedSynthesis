@@ -14,6 +14,8 @@ import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 /**
  * quick and dirty
  * 
+ * 
+ * 
  * @author Jesko Hecking-Harbusch
  *
  */

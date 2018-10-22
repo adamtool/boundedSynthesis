@@ -429,6 +429,8 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 		l = createUniqueID();
 		writer.write(l + " = " + loop);
 	}
+	
+	// TODO why did/does it say here j = i + 2 at other getLoopIJ
 
 	protected String getLoopIJ() throws IOException {
 		Set<Integer> or = new HashSet<>();
