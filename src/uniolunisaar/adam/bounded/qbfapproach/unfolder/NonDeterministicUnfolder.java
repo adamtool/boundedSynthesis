@@ -55,7 +55,7 @@ public abstract class NonDeterministicUnfolder extends Unfolder {
 		for (Place p : placesWithCopiedTransitions) {
 			// with (S3) encoded in exists necessary for all places
 			Transition[] transitions = p.getPostset().toArray(new Transition[0]);
-
+			
 			Set<Pair<String, Set<Place>>> truncatedIDsAndPreset = new HashSet<>(); // truncated IDs of transitions
 			// outgoing transitions for match according to truncated id
 			for (int i = 0; i < transitions.length; ++i) {

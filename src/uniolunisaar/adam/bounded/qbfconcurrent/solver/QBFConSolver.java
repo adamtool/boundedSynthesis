@@ -34,6 +34,7 @@ import uniolunisaar.adam.ds.winningconditions.WinningCondition;
  * 
  */
 
+@Deprecated
 public abstract class QBFConSolver<W extends WinningCondition> extends Solver<QBFSolvingObject<W>, QBFConSolverOptions> {
 
 	// Caches

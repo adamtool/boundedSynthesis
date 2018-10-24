@@ -4,7 +4,6 @@ import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -89,12 +88,11 @@ public abstract class Unfolder {
 		Set<Marking> closed = new HashSet<>();
 		Pair<Marking, Integer> p;
 		int i;
-		List<Transition> transitions = sorted(pn.getTransitions());
 		while ((p = queue.poll()) != null) {
 			Marking m = p.getFirst();
 			i = p.getSecond();
 			closed.add(m);
-			for (Transition t : transitions) {
+			for (Transition t : pn.getTransitions()) {
 				if (t.isFireable(m)) {
 					Marking next = t.fire(m);
 					if (!closed.contains(next)) {
@@ -358,19 +356,5 @@ public abstract class Unfolder {
 				return false;
 		}
 		return result;
-	}
-
-	// TODO hack to make deterministic
-	private List<Transition> sorted(Set<Transition> places) {
-		List<Transition> ret = new LinkedList<>();
-		List<String> strings = new LinkedList<>();
-		for (Transition p : places) {
-			strings.add(p.getId());
-		}
-		java.util.Collections.sort(strings);
-		for (String s : strings) {
-			ret.add(pg.getGame().getTransition(s));
-		}
-		return ret;
 	}
 }

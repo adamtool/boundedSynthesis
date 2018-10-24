@@ -23,6 +23,7 @@ import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFSolvingObject;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QbfControl;
 import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
+import uniolunisaar.adam.ds.solver.Solver;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 
 /**
@@ -31,11 +32,7 @@ import uniolunisaar.adam.ds.winningconditions.WinningCondition;
  *
  */
 
-public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extends QBFConSolver<W> {
-
-	// Caches
-	private Map<Transition, Set<Place>> restCache = new HashMap<>();
-	private Map<Transition, Set<Place>> preMinusPostCache = new HashMap<>();
+public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extends Solver<QBFSolvingObject<W>, QBFConSolverOptions> {
 
 	// steps of solving
 	public QBFSolvingObject<W> originalSolvingObject;
@@ -56,9 +53,11 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 
 	protected List<Map<Integer,Integer>> enabledlist; // First setindex, then iteration index
 	protected Map<Transition, Integer> transitionmap; 
-	protected List<Transition> setlist; 
+	protected List<Transition> setlist;
+	
 	protected QBFConSolverEnvDecision(PetriGame game, W winCon, QBFConSolverOptions so) throws SolvingException {
-		super(game, winCon, so);
+		super(new QBFSolvingObject<>(game, winCon), so);
+		//super(game, winCon, so);
 		getSolvingObject().setN(so.getN());
 		getSolvingObject().setB(so.getB());
 		transitions = new Transition[getSolvingObject().getGame().getTransitions().size()];

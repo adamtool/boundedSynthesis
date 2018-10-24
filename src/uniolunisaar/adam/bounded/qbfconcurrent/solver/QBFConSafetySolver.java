@@ -27,6 +27,7 @@ import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Safety;
 import uniolunisaar.adam.tools.AdamProperties;
 
+@Deprecated
 public class QBFConSafetySolver extends QBFConSolver<Safety> {
 
 	// variable to store keys of calculated components for later use
