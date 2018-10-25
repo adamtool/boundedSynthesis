@@ -330,6 +330,7 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 			writeDeadlock();
 			writer.write("# End of Deadlock\n");
 			writeFlow();
+			writer.write("# End of Flow\n");
 			writeSequence();
 			writer.write("# start of no bad marking\n");
 			writeNoBadMarking();

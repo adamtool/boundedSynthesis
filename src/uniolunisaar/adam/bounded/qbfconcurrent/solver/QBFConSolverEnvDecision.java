@@ -364,8 +364,7 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 		}
 	}
 
-	public String[] getDeterministic() throws IOException { // faster than naive
-															// implementation
+	public String[] getDeterministic() throws IOException { // faster than naive implementation
 		List<Set<Integer>> and = new ArrayList<>(getSolvingObject().getN() + 1);
 		and.add(null); // first element is never accessed
 		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
@@ -425,19 +424,6 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 		Set<Integer> or = new HashSet<>();
 		for (int i = 1; i < getSolvingObject().getN(); ++i) {
 			for (int j = i + 1; j <= getSolvingObject().getN(); ++j) {
-				Set<Integer> and = new HashSet<>();
-				for (Place p : getSolvingObject().getGame().getPlaces()) {
-					int p_i = getVarNr(p.getId() + "." + i, true);
-					int p_j = getVarNr(p.getId() + "." + j, true);
-					and.add(writeImplication(p_i, p_j));
-					and.add(writeImplication(p_j, p_i));
-				}
-				int andNumber = createUniqueID();
-				writer.write(andNumber + " = " + writeAnd(and));
-				or.add(andNumber);
-			}
-			if (i == getSolvingObject().getN() - 1) {
-				int j = getSolvingObject().getN();
 				Set<Integer> and = new HashSet<>();
 				for (Place p : getSolvingObject().getGame().getPlaces()) {
 					int p_i = getVarNr(p.getId() + "." + i, true);
