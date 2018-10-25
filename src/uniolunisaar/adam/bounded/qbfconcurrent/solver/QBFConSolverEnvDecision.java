@@ -102,20 +102,23 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 	public String getDetEnv() throws IOException {
 		Set<Integer> outer_and = new HashSet<>();
 		Set<Transition> post_transitions = new HashSet<>();
+		Set<Transition> truncatedPostSet = new HashSet<>();
 		Set<Integer> inner_or = new HashSet<>();
 		Set<Integer> inner_and = new HashSet<>();
 		writer.write("#Start det env\n");
 		for (Place p : getSolvingObject().getGame().getEnvPlaces()) {			
 			if (!p.getPostset().isEmpty()) {	
-				System.out.println(p.getId());
-
+				// only iterate over truncated ID once
+				for (Transition t : p.getPostset()) {
+					truncatedPostSet.add(getSolvingObject().getGame().getTransition(getTruncatedId(t.getId())));
+				}
 				for (int i = 1; i <= getSolvingObject().getN(); i++) {
-					for (Transition t : p.getPostset()) {
-						post_transitions.addAll(p.getPostset());
+					for (Transition t : truncatedPostSet) {
+						post_transitions.addAll(truncatedPostSet);
 						post_transitions.remove(t);
 						int check_truncated = addEnvStrategy(p, t, i);
 						for (Transition t_prime : post_transitions) {
-							if (addEnvStrategy(p, t_prime, i) != check_truncated)
+							//if (addEnvStrategy(p, t_prime, i) != check_truncated) // TODO unnecessary because now only iterate over truncated IDs?
 								inner_and.add(-addEnvStrategy(p, t_prime, i));
 						}
 						inner_and.add(check_truncated);
@@ -132,6 +135,7 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 					outer_and.add(inner_or_var);
 					inner_or.clear();
 				}
+				truncatedPostSet.clear();
 			}
 		}
 		writer.write("#last line of det env\n");
