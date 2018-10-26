@@ -245,6 +245,16 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 
 			}
 		}
+		//Add environment stalling for all transtition including env transitions
+		//Truncated transitions behave equally
+		Set<String> testSet = new HashSet<>();
+		for (Transition t : getSolvingObject().getGame().getTransitions()){
+			String truncatedID = getTruncatedId(t.getId());
+			if (!testSet.contains(truncatedID)){
+				testSet.add(truncatedID);
+				forall.add(createVariable(truncatedID + "**" + "stall"));//Make this pretty again
+			}	
+		}
 		if (!forall.isEmpty()) {
 			writer.write("#Forall env\n");
 			writer.write(writeForall(forall));
@@ -252,6 +262,20 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 		}
 		// System.out.println(forall);
 
+	}
+	
+	protected void addForallEnvStall() throws IOException{
+		Set<Integer> forall = new HashSet<>();
+		Set<String> testSet = new HashSet<>();
+
+		for (Transition t : getSolvingObject().getGame().getTransitions()){
+			String truncatedID = getTruncatedId(t.getId());
+			if (!testSet.contains(truncatedID)){
+				testSet.add(truncatedID);
+				forall.add(createVariable(truncatedID + "**" + "stall"));//Make this pretty again
+			}
+			
+		}
 	}
 
 	// Additional information from nondeterministic unfolding is utilized:
@@ -463,6 +487,7 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 	@Override
 	protected PetriGame calculateStrategy() throws NoStrategyExistentException {
 		if (existsWinningStrategy()) {
+			System.out.println("Calculate strategy");
 			for (String outputCAQE_line : outputCAQE.split("\n")) {
 				if (outputCAQE_line.startsWith("V")) {
 					String[] parts = outputCAQE_line.split(" ");

@@ -317,7 +317,7 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 			if (strat != 0)
 				outerAnd.add(strat);
 		}
-		
+		outerAnd.add(addEnvStall(t));
 		writer.write(outer_and_number + " = " + writeAnd(outerAnd));
 		
 		writer.write("# ENDED is enabled for iteration " + i + " and set " + setindex + "\n");
@@ -461,6 +461,10 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 		} else {
 			return 0;
 		}
+	}
+	
+	public int addEnvStall(Transition t){
+		return getVarNr((getTruncatedId(t.getId()) + "**" + "stall"), true);
 	}
 
 	public int getVarNr(String id, boolean extraCheck) {

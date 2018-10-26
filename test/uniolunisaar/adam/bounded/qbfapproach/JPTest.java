@@ -25,7 +25,6 @@ public class JPTest extends EmptyTest { // Job Processing
 
 	private void oneTest(int a, int n, int b, boolean result) throws Exception {
 		PetriGame pg = ManufactorySystem.generate(a, true, true, true);
-		AdamTools.savePG2PDF("originalGame", pg, false);
 		testGame(pg, n, b, result);
 	}
 }
