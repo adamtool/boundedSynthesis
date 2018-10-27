@@ -857,14 +857,14 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 
 			if (os.startsWith("Mac")) {
 				// pb = new ProcessBuilder("./" + solver + "_mac", "--partial-assignment", file.getAbsolutePath());
-				pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + QbfControl.solver + "_mac", "--partial-assignment"/* , "--preprocessing", "0" */, file.getAbsolutePath());
+				pb = new ProcessBuilder(AdamProperties.getInstance().getProperty(AdamProperties.LIBRARY_FOLDER)+ File.separator + QbfControl.solver + "_mac", "--partial-assignment"/* , "--preprocessing", "0" */, file.getAbsolutePath());
 			} else if (os.startsWith("Linux")) {
 				if (QbfControl.edacc) {
                 	// for use with EDACC
 					pb = new ProcessBuilder("./" + QbfControl.solver + "_unix", "--partial-assignment", file.getAbsolutePath());
 				} else {
                 	// for use with WEBSITE
-					pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + QbfControl.solver + "_unix", "--partial-assignment", file.getAbsolutePath());
+					pb = new ProcessBuilder(AdamProperties.getInstance().getProperty(AdamProperties.LIBRARY_FOLDER) + File.separator + QbfControl.solver + "_unix", "--partial-assignment", file.getAbsolutePath());
 				}
 			} else {
 				System.out.println("You are using " + os + ".");

@@ -420,11 +420,11 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 			String os = System.getProperty("os.name");
 			if (os.startsWith("Mac")) {
 				System.out.println("Your operation system is supported.");
-				pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + QbfControl.solver + "_mac",
+				pb = new ProcessBuilder(AdamProperties.getInstance().getProperty(AdamProperties.LIBRARY_FOLDER) + File.separator + QbfControl.solver + "_mac",
 						"--partial-assignment", file.getAbsolutePath());
 			} else if (os.startsWith("Linux")) {
 				System.out.println("Your operation system is supported.");
-				pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + QbfControl.solver + "_unix",
+				pb = new ProcessBuilder(AdamProperties.getInstance().getProperty(AdamProperties.LIBRARY_FOLDER) + File.separator + QbfControl.solver + "_unix",
 						"--partial-assignment", file.getAbsolutePath());
 			} else {
 				System.out.println("Your operation system is not supported.");
