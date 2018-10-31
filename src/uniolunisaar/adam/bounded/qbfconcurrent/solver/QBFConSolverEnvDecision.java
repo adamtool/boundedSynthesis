@@ -141,6 +141,37 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 		writer.write("#last line of det env\n");
 		return writeAnd(outer_and);
 	}
+	
+	public String getDetAdditionalSys() throws IOException {
+		//No check for single post transition, bc additional system place always has at least 2 post transition
+		Set<Integer> outer_and = new HashSet<>();
+		Set<Integer> inner_and = new HashSet<>();
+		Set<Integer> inner_or = new HashSet<>();
+		for (Place addsys : getSolvingObject().getGame().getPlaces()){
+			inner_or.clear();
+			if (!getSolvingObject().getGame().getEnvPlaces().contains(addsys)
+				&& addsys.getId().startsWith(QbfControl.additionalSystemName)) {
+				for (Transition t : addsys.getPostset()){
+					inner_and.clear();
+					inner_and.add(addSysStrategy(addsys, t));
+					for (Transition t_prime : addsys.getPostset()){
+						if (!t.getId().equals(t_prime.getId()))
+							inner_and.add(-addSysStrategy(addsys,t_prime));
+					}
+					int inner_and_id = createUniqueID();
+					writer.write(inner_and_id + " = " + writeAnd(inner_and));
+					inner_or.add(inner_and_id);
+					}
+				int inner_or_id = createUniqueID();
+				writer.write("# Additional system place srong det: " + addsys.getId() + " \n");
+				writer.write(inner_or_id + " = " + writeOr(inner_or));
+				outer_and.add(inner_or_id);
+			
+				}
+			}
+		return writeAnd(outer_and);
+	}
+	
 
 	public String getInitial() {
 		Marking initialMarking = getSolvingObject().getGame().getInitialMarking();
@@ -168,6 +199,8 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 		}
 		return deadlock;
 	}
+	
+	
 
 	private void writeDeadlockSubFormulas(int s, int e) throws IOException {
 		Transition t;
@@ -373,12 +406,11 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 		Transition t1, t2;
 		Transition[] sys_transitions;
 		for (Place sys : getSolvingObject().getGame().getPlaces()) {
-			// Additional system places are not forced to behave
-			// deterministically, this is the faster variant (especially the
-			// larger the PG becomes)
+			// Additional system places ARE FORCED to behave deterministically in getDetAdditionalSys, not here
+			// since the true concurrent flow fired every enabled transition
 			if (!getSolvingObject().getGame().getEnvPlaces().contains(sys)
-					&& !sys.getId().startsWith(QbfControl.additionalSystemName)) {
-				if (sys.getPostset().size() > 1) {
+				&& !sys.getId().startsWith(QbfControl.additionalSystemName)) {
+					if (sys.getPostset().size() > 1) {
 					sys_transitions = sys.getPostset().toArray(new Transition[0]);
 					for (int j = 0; j < sys_transitions.length; ++j) {
 						t1 = sys_transitions[j];
