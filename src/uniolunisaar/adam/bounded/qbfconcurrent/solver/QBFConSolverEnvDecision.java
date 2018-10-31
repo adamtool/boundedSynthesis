@@ -105,7 +105,6 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 		Set<Transition> truncatedPostSet = new HashSet<>();
 		Set<Integer> inner_or = new HashSet<>();
 		Set<Integer> inner_and = new HashSet<>();
-		writer.write("#Start det env\n");
 		for (Place p : getSolvingObject().getGame().getEnvPlaces()) {			
 			if (!p.getPostset().isEmpty()) {	
 				// only iterate over truncated ID once
@@ -123,9 +122,7 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 						}
 						inner_and.add(check_truncated);
 						int inner_and_var = createUniqueID();
-						writer.write("# START detenv for transition: " + t + " iteration: " + i + "\n");
 						writer.write(inner_and_var + " = " + writeAnd(inner_and));
-						writer.write("# END detenv for transition: " + t + " iteration: " + i + "\n");
 						inner_or.add(inner_and_var);
 						inner_and.clear();
 						post_transitions.clear();
@@ -138,7 +135,6 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 				truncatedPostSet.clear();
 			}
 		}
-		writer.write("#last line of det env\n");
 		return writeAnd(outer_and);
 	}
 	
@@ -163,7 +159,6 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 					inner_or.add(inner_and_id);
 					}
 				int inner_or_id = createUniqueID();
-				writer.write("# Additional system place srong det: " + addsys.getId() + " \n");
 				writer.write(inner_or_id + " = " + writeOr(inner_or));
 				outer_and.add(inner_or_id);
 			
@@ -295,7 +290,6 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 	 * @throws IOException
 	 */
 	public int fireOneTransition(int i, int setindex) throws IOException {
-		writer.write("# STARTED fire iteration " + i + " transition " + setlist.get(setindex) + "\n" );
 		Transition t = setlist.get(setindex);
 		int number = createUniqueID();
 		Set<Integer> and = new HashSet<>();
@@ -308,7 +302,6 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 			and.add(-getVarNr(p.getId() + "." + (i + 1), true));
 		}
 		writer.write(number + " = " + writeAnd(and));
-		writer.write("# ENDED fire iteration " + i + " transition " + setlist.get(setindex) + "\n" );
 		return number;
 	}
 
@@ -333,7 +326,6 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 	 * @throws IOException
 	 */
 	public int isEnabledSet(int i, int setindex) throws IOException{
-		writer.write("# STARTED is enabled for iteration " + i + " and transition " + setlist.get(setindex) + "\n");
 		Set<Integer> outerAnd = new HashSet<>();
 		int strat;
 		int outer_and_number = createUniqueID();
@@ -353,7 +345,6 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 		outerAnd.add(addEnvStall(t));
 		writer.write(outer_and_number + " = " + writeAnd(outerAnd));
 		
-		writer.write("# ENDED is enabled for iteration " + i + " and set " + setindex + "\n");
 		return outer_and_number;
 	}
 

@@ -75,9 +75,11 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 			writer.write(detenv + " = " + getDetEnv());
 	}
 	
-	
+	/**
+	 * Strong determinism for additional System places, since nondeterminism can never be legal for additional system places
+	 * @throws IOException
+	 */
 	private void writeStrongDet() throws IOException{
-		writer.write("# START OF STRONG DET\n");
 		boolean existAddSysPlaces = false;
 		for (Place p:getSolvingObject().getGame().getPlaces()){
 			if (p.getId().startsWith(QbfControl.additionalSystemName) && !getSolvingObject().getGame().getEnvPlaces().contains(p)){
@@ -89,7 +91,6 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 			detAdditionalSys = createUniqueID();
 			writer.write(detAdditionalSys + " = " + getDetAdditionalSys());
 			}
-		writer.write("# END OF STRONG DET\n");
 	}
 
 	private void writeInitial() throws IOException {
@@ -415,27 +416,20 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 			Set<Integer> wnandLoopSet = new HashSet<>();
 			wnandLoopSet.add(l);
 			wnandLoopSet.add(win[getSolvingObject().getN()]);
-			writer.write("# Win and Loop below\n");
 			writer.write(wnandLoop + " = " + writeAnd(wnandLoopSet));
-
 			seqImpliesWin[getSolvingObject().getN()] = createUniqueID();
 			writer.write(seqImpliesWin[getSolvingObject().getN()] + " = " + "or(-" + seq[getSolvingObject().getN()]
 					+ "," + wnandLoop + ")" + QbfControl.linebreak);
 			phi.add(seqImpliesWin[getSolvingObject().getN()]);
 			int phi_number = createUniqueID();
 			writer.write(phi_number + " = " + writeAnd(phi));
-			if (!getSolvingObject().getGame().getEnvPlaces().isEmpty() && (detAdditionalSys != 0)){ //with strongdet
+			if (!getSolvingObject().getGame().getEnvPlaces().isEmpty() && (detAdditionalSys != 0)) //with strongdet
 				writer.write("1 = " + "and(" + detAdditionalSys + "," + writeImplication(detenv, phi_number) + ")");
-			System.out.println("CASE ONE");
-			}
-			else if  (!getSolvingObject().getGame().getEnvPlaces().isEmpty()){ //without strongdet (no additional system places)
+			else if (!getSolvingObject().getGame().getEnvPlaces().isEmpty()) //without strongdet (no additional system places)
 				writer.write("1 = " + "and(" + writeImplication(detenv, phi_number) + ")"); 
-				System.out.println("CASE TWO");}
-			else{  //no env places
+			else //no env places
 				writer.write("1 = and(" + phi_number + ")"); 
-				System.out.println("CASE THREE");
-			}
-				writer.close();
+			writer.close();
 
 			// Total number of gates is only calculated during encoding and added to the
 			// file afterwards
