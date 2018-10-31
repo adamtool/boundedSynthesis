@@ -19,6 +19,7 @@ import uniol.apt.adt.pn.Marking;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
+import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFSolvingObject;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QbfControl;
 import uniolunisaar.adam.ds.exceptions.SolvingException;
@@ -58,15 +59,30 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 	protected QBFConSolverEnvDecision(PetriGame game, W winCon, QBFConSolverOptions so) throws SolvingException {
 		super(new QBFSolvingObject<>(game, winCon), so);
 		//super(game, winCon, so);
-		getSolvingObject().setN(so.getN());
-		getSolvingObject().setB(so.getB());
+		int n = so.getN();
+		int b = so.getB();
+		if (n == -1) {
+			if (getSolvingObject().hasBoundedParameterNinExtension()) {
+				n = getSolvingObject().getBoundedParameterNFromExtension();
+			}
+		}
+		if (b == -1) {
+			if (getSolvingObject().hasBoundedParameterBinExtension()) {
+				b = getSolvingObject().getBoundedParameterBFromExtension();
+			}
+		}
+		if (n == -1 || b == -1) {
+			throw new BoundedParameterMissingException(n, b);
+		}
+		getSolvingObject().setN(n);
+		getSolvingObject().setB(b);
 		transitions = new Transition[getSolvingObject().getGame().getTransitions().size()];
 		int counter = 0;
 		numTransitions = getSolvingObject().getGame().getTransitions().size();
 		for (Transition t : getSolvingObject().getGame().getTransitions()) {
 			transitions[counter++] = t;
 		}
-
+		
 		// Create random file in tmp directory which is deleted after solving it
 		String prefix = "";
 		final Random rand = new Random();
