@@ -35,16 +35,18 @@ public abstract class EmptyTest {
  
 	protected void testSolver (Solver<?,?> sol, int n, int b, boolean result) throws Exception {
 		AdamTools.savePG2PDF("originalGame", sol.getGame(), false);
+		PetriGame originalGame = sol.getGame();
         sol.existsWinningStrategy();	// calculate first, then output games, and then check for correctness
 		AdamTools.savePG2PDF("unfolding", sol.getGame(), false);
 		if (sol.existsWinningStrategy()) {
 			AdamTools.savePG2PDF("strategy", sol.getStrategy(), false);
 		}
 		
-		Assert.assertEquals(sol.existsWinningStrategy(), result);
-
 		if (sol.existsWinningStrategy()) {
-			//assertTrue(QbfControl.checkStrategy(sol.getGame(), sol.getStrategy()));	// ORIGINAL: check validity of strategy if existent
+			// TODO not compatible with some kinds of unfoldings -> JPTest
+			//assertTrue(QbfControl.checkStrategy(originalGame, sol.getStrategy()));	// ORIGINAL: check validity of strategy if existent
 		}
+		
+		Assert.assertEquals(sol.existsWinningStrategy(), result);
 	}
 }
