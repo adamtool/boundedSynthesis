@@ -15,7 +15,7 @@ public class QbfControl {
 	public static String solver = "quabs"; // Controller
 	public static String replaceAfterWardsSpaces = "          "; // Controller
 	public static boolean deterministicStrat = true; // Controller
-	public static boolean debug = true;
+	public static boolean debug = false;
 	public static boolean edacc = false;
 	public static boolean mcmillian = false; // Unfolder
 	
