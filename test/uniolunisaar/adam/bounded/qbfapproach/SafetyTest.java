@@ -32,29 +32,9 @@ public class SafetyTest extends EmptyTest {
 	
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testForallSafety() throws Exception {
-		Set<String> ingress = new HashSet<>();
-		ingress.add("sw0");
-		List<Update> updateList = new ArrayList<>();
-		updateList.add(new SwitchUpdate("sw8", "sw7", "sw5"));
-		updateList.add(new SwitchUpdate("sw9", "sw10", "sw8"));
-		updateList.add(new SwitchUpdate("sw0", "sw1", "sw2"));
-		SequentialUpdate update = new SequentialUpdate(updateList);
-		TopologyToPN ttp = new TopologyToPN(new File("examples/AbilenePN.txt"), ingress, update);
+		TopologyToPN ttp = new TopologyToPN(new File("examples/modelchecking/sdn/AbilenePN.txt"));
 		PetriGame pn = ttp.generatePetriNet();
-		//initial configuration for forwarding
-		pn.getPlace("sw0fwdTosw1").setInitialToken(1);
-		pn.getPlace("sw1fwdTosw10").setInitialToken(1);
-		pn.getPlace("sw10fwdTosw7").setInitialToken(1);
-		pn.getPlace("sw7fwdTosw6").setInitialToken(1);
-		pn.getPlace("sw6fwdTosw4").setInitialToken(1);
-		pn.getPlace("sw4fwdTosw5").setInitialToken(1);
-		
-		//initial configuration for updating
-		pn.getPlace("sw8fwdTosw7").setInitialToken(1);
-		pn.getPlace("sw9fwdTosw10").setInitialToken(1);
-		
-		pn.getPlace("sw2fwdTosw9").setInitialToken(1);
-		
+		String goal = ttp.setUpdate(pn);
 		AdamTools.savePG2PDF("test", pn, false);
 		AdamTools.saveAPT("example", pn, false);
 		
@@ -62,8 +42,7 @@ public class SafetyTest extends EmptyTest {
 		//oneTest("container/container", 10, 2, true);	// TODO search for bounds
 		//oneTest("notConcurrencyPreservingTests/toMakeCP", 20, 2, false);	// TODO nets are unsafe, making them safe defeats their purpose
 		//oneTest("notConcurrencyPreservingTests/madeCP", 20, 2, true);		// TODO nets are unsafe, making them safe defeats their purpose
-		oneTest("jhh/twoIndependentProcesses", 7, 0, true);
-		//oneTest("ndet/nondet_s3", 10, 0, false);
+		oneTest("ndet/nondet_s3", 10, 0, false);
 		/*oneTest("ndet/nondet_s3", 10, 2, true);
 		oneTest("ndet/nondet_s3_noStrat", 15, 2, false);
 		oneTest("ndet/nondet_unnecessarily_noStrat", 15, 3, false);
