@@ -453,21 +453,27 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 
 			ProcessBuilder pb = null;
 			// Run solver on problem
-			System.out.println("You are using " + System.getProperty("os.name") + ".");
+			
 			String os = System.getProperty("os.name");
 			if (os.startsWith("Mac")) {
-				System.out.println("Your operation system is supported.");
-				pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + QbfControl.solver + "_mac",
-						"--partial-assignment", file.getAbsolutePath());
+				// pb = new ProcessBuilder("./" + solver + "_mac", "--partial-assignment", file.getAbsolutePath());
+				pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + QbfControl.solver + "_mac", "--partial-assignment"/* , "--preprocessing", "0" */, file.getAbsolutePath());
 			} else if (os.startsWith("Linux")) {
-				System.out.println("Your operation system is supported.");
-				pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + QbfControl.solver + "_unix",
-						"--partial-assignment", file.getAbsolutePath());
+				if (QbfControl.edacc) {
+                	// for use with EDACC
+					pb = new ProcessBuilder("./" + QbfControl.solver + "_unix", "--partial-assignment", file.getAbsolutePath());
+				} else {
+                	// for use with WEBSITE
+					pb = new ProcessBuilder(AdamProperties.getInstance().getLibFolder() + File.separator + QbfControl.solver + "_unix", "--partial-assignment", file.getAbsolutePath());
+				}
 			} else {
+				System.out.println("You are using " + os + ".");
 				System.out.println("Your operation system is not supported.");
 				return false;
 			}
-			System.out.println("A temporary file is saved to \"" + file.getAbsolutePath() + "\".");
+			if (QbfControl.debug) {
+				System.out.println("A temporary file is saved to \"" + file.getAbsolutePath() + "\".");
+			}
 
 			Process pr = pb.start();
 			// Read caqe's output
