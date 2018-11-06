@@ -8,7 +8,7 @@ import org.testng.annotations.Test;
 
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.logic.util.AdamTools;
-import uniolunisaar.adam.sdnencoding.TopologyToPN;
+import uniolunisaar.adam.logic.util.sdnencoding.TopologyToPN;
 
 @Test
 public class SafetyTest extends EmptyTest {
