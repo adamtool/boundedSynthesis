@@ -2,20 +2,13 @@ package uniolunisaar.adam.bounded.qbfapproach;
 
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.logic.util.AdamTools;
-import uniolunisaar.adam.sdnencoding.SequentialUpdate;
-import uniolunisaar.adam.sdnencoding.SwitchUpdate;
 import uniolunisaar.adam.sdnencoding.TopologyToPN;
-import uniolunisaar.adam.sdnencoding.Update;
 
 @Test
 public class SafetyTest extends EmptyTest {
@@ -32,9 +25,9 @@ public class SafetyTest extends EmptyTest {
 	
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testForallSafety() throws Exception {
-		TopologyToPN ttp = new TopologyToPN(new File("examples/modelchecking/sdn/AbilenePN.txt"));
+		TopologyToPN ttp = new TopologyToPN(new File("examples/modelchecking/sdn/Abilene.txt"));
 		PetriGame pn = ttp.generatePetriNet();
-		String goal = ttp.setUpdate(pn);
+		ttp.setUpdate(pn);
 		AdamTools.savePG2PDF("test", pn, false);
 		AdamTools.saveAPT("example", pn, false);
 		
