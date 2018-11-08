@@ -127,7 +127,7 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 				for (Transition t : p.getPostset()) {
 					truncatedPostSet.add(getSolvingObject().getGame().getTransition(getTruncatedId(t.getId())));
 				}
-				for (int i = 1; i <= getSolvingObject().getN(); i++) {
+				for (int i = 1; i <= 1; i++) {//getSolvingObject().getN() //TODO
 					for (Transition t : truncatedPostSet) {
 						post_transitions.addAll(truncatedPostSet);
 						post_transitions.remove(t);
@@ -354,7 +354,7 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 			if (strat != 0) {
 				outerAnd.add(strat);
 			}
-			strat = addEnvStrategy(p, t, i);
+			strat = addEnvStrategy(p, t, 1); //TODO i
 			if (strat != 0)
 				outerAnd.add(strat);
 		}
