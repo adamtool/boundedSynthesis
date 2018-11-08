@@ -16,7 +16,7 @@ public class QbfControl {
 	public static String replaceAfterWardsSpaces = "          "; // Controller
 	public static boolean deterministicStrat = true; // Controller
 	public static boolean debug = false;
-	public static boolean edacc = false;
+	public static boolean edacc = true;
 	public static boolean mcmillian = false; // Unfolder
 	
 	// Check winning strategy for validity

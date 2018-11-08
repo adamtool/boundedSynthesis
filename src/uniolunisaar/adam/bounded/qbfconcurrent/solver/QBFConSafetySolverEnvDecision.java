@@ -257,7 +257,7 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 					String truncatedID = getTruncatedId(t.getId());
 					if (!truncatedIDs.contains(truncatedID)) {
 						truncatedIDs.add(truncatedID);
-						for (int i = 1; i <= getSolvingObject().getN(); ++i) {
+						for (int i = 1; i <= 1; ++i) { //getSolvingObject().getN() //TODO
 							int number = createVariable(p.getId() + "**" + truncatedID + "**" + i);
 							forall.add(number);
 						}
@@ -364,6 +364,7 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 				* getSolvingObject().getGame().getTransitions().size()];
 		int exitcode = -1;
 		try {
+			System.out.println("n = " + getSolvingObject().getN() +  "b = " + getSolvingObject().getB());
 			writer.write("#QCIR-G14          " + QbfControl.linebreak); // spaces left to add variable count in the
 																			// end
 			addExists();
