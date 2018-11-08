@@ -364,7 +364,6 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 				* getSolvingObject().getGame().getTransitions().size()];
 		int exitcode = -1;
 		try {
-			System.out.println("n = " + getSolvingObject().getN() +  "b = " + getSolvingObject().getB());
 			writer.write("#QCIR-G14          " + QbfControl.linebreak); // spaces left to add variable count in the
 																			// end
 			addExists();
