@@ -38,8 +38,9 @@ public abstract class EmptyTest {
 		PetriGame originalGame = sol.getGame();
         sol.existsWinningStrategy();	// calculate first, then output games, and then check for correctness
 		AdamTools.savePG2PDF("unfolding", sol.getGame(), false);
+		AdamTools.saveAPT("unfolding",sol.getGame(), false);
 		if (sol.existsWinningStrategy()) {
-			AdamTools.savePG2PDF("strategy", sol.getStrategy(), false);
+			//AdamTools.savePG2PDF("strategy", sol.getStrategy(), false);
 		}
 		
 		if (sol.existsWinningStrategy()) {
