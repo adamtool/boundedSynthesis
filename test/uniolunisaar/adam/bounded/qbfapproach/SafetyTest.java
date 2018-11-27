@@ -41,7 +41,7 @@ public class SafetyTest extends EmptyTest {
 		oneTest("jhh/myexample4", 10, 2, false);
 		oneTest("jhh/myexample5", 20, 0, true);
 		oneTest("jhh/myexample7", 4, 0, true);
-		oneTest("jhh/myexample7", 3, 0, false);		// alredy true for TRUECONCURRENT
+		oneTest("jhh/myexample7", 3, 0, false);		// already true for TRUECONCURRENT
 		oneTest("ndet/nondet", 5, 2, false);
 		//oneTest("burglar/burglar", 7, 3, true);
 		//oneTest("burglar/burglar", 6, 2, false);
@@ -52,7 +52,7 @@ public class SafetyTest extends EmptyTest {
 		oneTest("constructedExampleWithoutLoop/constructedExampleWithoutLoop", 3, 0, false);
 		oneTest("constructedExampleWithoutLoop/constructedExampleWithoutLoop", 4, 0, true);
 		oneTest("container/container", 20, 0, false);
-		oneTest("deadlock/missDeadlock", 3, 0, false);		// alredy true for TRUECONCURRENT
+		oneTest("deadlock/missDeadlock", 3, 0, false);		// already true for TRUECONCURRENT
 		oneTest("deadlock/missDeadlock", 4, 0, true);
 		oneTest("firstExamplePaper/firstExamplePaper", 10, 2, false);
 		oneTest("firstExamplePaper/firstExamplePaper", 4, 3, false);

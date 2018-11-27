@@ -25,11 +25,8 @@ import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFSolvingObject;
-import uniolunisaar.adam.bounded.qbfapproach.unfolder.FiniteDeterministicUnfolder;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.ForNonDeterministicUnfolder;
-import uniolunisaar.adam.bounded.qbfapproach.unfolder.McMillianUnfolder;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
-import uniolunisaar.adam.ds.exceptions.NotSupportedGameException;
 import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.solver.Solver;
@@ -83,12 +80,12 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 	protected int variablesCounter = 1;
 	protected Map<String, Integer> numbersForVariables = new HashMap<>(); // map for storing keys and the corresponding value
 
-	protected int[][] oneTransitionFormulas;
+	protected int[][] oneTransitionFormulas; // (Transition, 1..n) -> fireTransitionID
 	protected Map<Transition, Integer> transitionKeys = new HashMap<>();
 
 	protected Transition[] transitions;
-	protected int[] deadlockSubFormulas; // TODO make [][] as oneTransitionForumlas
-	protected int[] terminatingSubFormulas; // TODO make [][] as oneTransitionForumlas
+	protected int[][] deadlockSubFormulas; // (Transition, 1..n) -> deadlockID
+	protected int[][] terminatingSubFormulas; // (Transition, 1..n) -> terminatingID
 	protected File file;
 
 	public QbfSolver(PetriGame game, W winCon, QbfSolverOptions so) throws SolvingException {
@@ -177,8 +174,8 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 		Set<Integer> and = new HashSet<>();
 		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 			and.clear();
-			for (int j = 0; j < getSolvingObject().getGame().getTransitions().size(); ++j) {
-				and.add(deadlockSubFormulas[getSolvingObject().getGame().getTransitions().size() * (i - 1) + j]);
+			for (Transition t : getSolvingObject().getGame().getTransitions()) {
+				and.add(deadlockSubFormulas[transitionKeys.get(t)][i]);
 			}
 			deadlock[i] = writeAnd(and);
 		}
@@ -186,13 +183,11 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 	}
 
 	protected void writeDeadlockSubFormulas(int s, int e) throws IOException {
-		Transition t;
 		Set<Integer> or = new HashSet<>();
 		int number;
 		int strat;
 		for (int i = s; i <= e; ++i) {
-			for (int j = 0; j < getSolvingObject().getGame().getTransitions().size(); ++j) {
-				t = transitions[j];
+			for (Transition t : getSolvingObject().getGame().getTransitions()) {
 				or.clear();
 				for (Place p : t.getPreset()) {
 					or.add(-getVarNr(p.getId() + "." + i, true)); // "p.i"
@@ -203,7 +198,7 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 				}
 				number = createUniqueID();
 				writer.write(number + " = " + writeOr(or));
-				deadlockSubFormulas[getSolvingObject().getGame().getTransitions().size() * (i - 1) + j] = number;
+				deadlockSubFormulas[transitionKeys.get(t)][i] = number;
 			}
 		}
 	}
@@ -224,8 +219,8 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 			if (getSolvingObject().getGame().getTransitions().size() >= 1) {
 				and.clear();
-				for (int j = 0; j < getSolvingObject().getGame().getTransitions().size(); ++j) {
-					and.add(terminatingSubFormulas[getSolvingObject().getGame().getTransitions().size() * (i - 1) + j]);
+				for (Transition t : getSolvingObject().getGame().getTransitions()) {
+					and.add(terminatingSubFormulas[transitionKeys.get(t)][i]);
 				}
 				terminating[i] = writeAnd(and);
 			}
@@ -236,11 +231,9 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 	protected void writeTerminatingSubFormulas(int s, int e) throws IOException {
 		Set<Integer> or = new HashSet<>();
 		Set<Place> pre;
-		Transition t;
 		int key;
 		for (int i = s; i <= e; ++i) {
-			for (int j = 0; j < getSolvingObject().getGame().getTransitions().size(); ++j) {
-				t = transitions[j];
+			for (Transition t : getSolvingObject().getGame().getTransitions()) {
 				pre = t.getPreset();
 				or.clear();
 				for (Place p : pre) {
@@ -248,7 +241,7 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 				}
 				key = createUniqueID();
 				writer.write(key + " = " + writeOr(or));
-				terminatingSubFormulas[getSolvingObject().getGame().getTransitions().size() * (i - 1) + j] = key;
+				terminatingSubFormulas[transitionKeys.get(t)][i] = key;
 			}
 		}
 	}
@@ -432,8 +425,6 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 		l = createUniqueID();
 		writer.write(l + " = " + loop);
 	}
-	
-	// TODO why did/does it say here j = i + 2 at other getLoopIJ
 
 	protected String getLoopIJ() throws IOException {
 		Set<Integer> or = new HashSet<>();
@@ -839,13 +830,15 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 
 	protected void initializeVariablesForWriteQCIR() {
 		transitions = getSolvingObject().getGame().getTransitions().toArray(new Transition[0]);
-		deadlockSubFormulas = new int[(getSolvingObject().getN() + 1) * getSolvingObject().getGame().getTransitions().size()];
-		terminatingSubFormulas = new int[(getSolvingObject().getN() + 1) * getSolvingObject().getGame().getTransitions().size()];
-
-		oneTransitionFormulas = new int[getSolvingObject().getGame().getTransitions().size()][getSolvingObject().getN() + 1];
 		for (int i = 0; i < transitions.length; ++i) {
 			transitionKeys.put(transitions[i], i);
 		}
+		
+		int numberOfTransitions = getSolvingObject().getGame().getTransitions().size();
+		int n = getSolvingObject().getN();
+		deadlockSubFormulas = new int[numberOfTransitions][n + 1];
+		terminatingSubFormulas = new int[numberOfTransitions][n + 1];
+		oneTransitionFormulas = new int[numberOfTransitions][n + 1];
 	}
 
 	protected abstract void writeQCIR() throws IOException;

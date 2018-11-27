@@ -156,13 +156,11 @@ public abstract class QbfFlowChainSolver<W extends WinningCondition> extends Qbf
 
 	@Override
 	protected void writeDeadlockSubFormulas(int s, int e) throws IOException {
-		Transition t;
 		Set<Integer> or = new HashSet<>();
 		int number;
 		int strat;
 		for (int i = s; i <= e; ++i) {
-			for (int j = 0; j < getSolvingObject().getGame().getTransitions().size(); ++j) {
-				t = transitions[j];
+			for (Transition t : getSolvingObject().getGame().getTransitions()) {
 				or.clear();
 				for (Place p : t.getPreset()) {
 					or.add(getVarNr(p.getId() + "." + i + "." + "empty", true)); // "p.i.empty"
@@ -173,7 +171,7 @@ public abstract class QbfFlowChainSolver<W extends WinningCondition> extends Qbf
 				}
 				number = createUniqueID();
 				writer.write(number + " = " + writeOr(or));
-				deadlockSubFormulas[getSolvingObject().getGame().getTransitions().size() * (i - 1) + j] = number;
+				deadlockSubFormulas[transitionKeys.get(t)][i] = number;
 			}
 		}
 	}
@@ -182,11 +180,9 @@ public abstract class QbfFlowChainSolver<W extends WinningCondition> extends Qbf
 	protected void writeTerminatingSubFormulas(int s, int e) throws IOException {
 		Set<Integer> or = new HashSet<>();
 		Set<Place> pre;
-		Transition t;
 		int key;
 		for (int i = s; i <= e; ++i) {
-			for (int j = 0; j < getSolvingObject().getGame().getTransitions().size(); ++j) {
-				t = transitions[j];
+			for (Transition t : getSolvingObject().getGame().getTransitions()) {
 				pre = t.getPreset();
 				or.clear();
 				for (Place p : pre) {
@@ -194,7 +190,7 @@ public abstract class QbfFlowChainSolver<W extends WinningCondition> extends Qbf
 				}
 				key = createUniqueID();
 				writer.write(key + " = " + writeOr(or));
-				terminatingSubFormulas[getSolvingObject().getGame().getTransitions().size() * (i - 1) + j] = key;
+				terminatingSubFormulas[transitionKeys.get(t)][i] = key;
 			}
 		}
 	}
@@ -281,8 +277,6 @@ public abstract class QbfFlowChainSolver<W extends WinningCondition> extends Qbf
 		}
 		return writeOr(outerOr);
 	}
-	
-	// TODO why did/does it say here j = i + 2 at other getLoopIJ
 
 	@Override
 	protected String getLoopIJ() throws IOException {

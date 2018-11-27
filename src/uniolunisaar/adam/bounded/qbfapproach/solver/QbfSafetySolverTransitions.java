@@ -338,12 +338,10 @@ public class QbfSafetySolverTransitions extends QbfSolver<Safety> {
 	
 	protected void writeDeadlockSubFormulas(int s, int e) throws IOException {
 		Set<Integer> or = new HashSet<>();
-		Transition t;
 		int key;
 		int strat;
 		for (int i = s; i <= e; ++i) {
-			for (int j = 0; j < getSolvingObject().getGame().getTransitions().size(); ++j) {
-				t = transitions[j];
+			for (Transition t : getSolvingObject().getGame().getTransitions()) {
 				or.clear();
 				for (Place p : t.getPreset()) {
 					or.add(-getVarNr(p.getId() + "." + i, true)); // "p.i"
@@ -357,7 +355,7 @@ public class QbfSafetySolverTransitions extends QbfSolver<Safety> {
 				}
 				key = createUniqueID();
 				writer.write(key + " = " + writeOr(or));
-				deadlockSubFormulas[getSolvingObject().getGame().getTransitions().size() * (i - 1) + j] = key;
+				deadlockSubFormulas[transitionKeys.get(t)][i] = key;
 			}
 		}
 	}
@@ -375,8 +373,8 @@ public class QbfSafetySolverTransitions extends QbfSolver<Safety> {
 		// n via places
 		writeDeadlockSubFormulas(getSolvingObject().getN(), getSolvingObject().getN());
 		and.clear();
-		for (int j = 0; j < getSolvingObject().getGame().getTransitions().size(); ++j) {
-			and.add(deadlockSubFormulas[getSolvingObject().getGame().getTransitions().size() * (getSolvingObject().getN() - 1) + j]);
+		for (Transition t : getSolvingObject().getGame().getTransitions()) {
+			and.add(deadlockSubFormulas[transitionKeys.get(t)][getSolvingObject().getN()]);
 		}
 		deadlock[getSolvingObject().getN()] = writeAnd(and);
 		return deadlock;
