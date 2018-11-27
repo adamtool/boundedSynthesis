@@ -1,10 +1,7 @@
 package uniolunisaar.adam.bounded.qbfapproach;
 
-import static org.testng.Assert.assertTrue;
-
 import org.testng.Assert;
 
-import uniolunisaar.adam.bounded.qbfapproach.solver.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverFactory;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverOptions;
 import uniolunisaar.adam.bounded.qbfconcurrent.solver.QBFConSolverFactory;
@@ -16,7 +13,7 @@ import uniolunisaar.adam.logic.util.AdamTools;
 
 public abstract class EmptyTest {
 
-	private boolean trueconcurrent = true;
+	private boolean trueconcurrent = false;
 
 	protected void testPath (String path, int n, int b, boolean result) throws Exception {
 		if (trueconcurrent)
@@ -38,14 +35,13 @@ public abstract class EmptyTest {
 		PetriGame originalGame = sol.getGame();
         sol.existsWinningStrategy();	// calculate first, then output games, and then check for correctness
 		AdamTools.savePG2PDF("unfolding", sol.getGame(), false);
-		AdamTools.saveAPT("unfolding",sol.getGame(), false);
 		if (sol.existsWinningStrategy()) {
-			//AdamTools.savePG2PDF("strategy", sol.getStrategy(), false);
+			AdamTools.savePG2PDF("strategy", sol.getStrategy(), false);
 		}
 		
 		if (sol.existsWinningStrategy()) {
 			// TODO not compatible with some kinds of unfoldings -> JPTest
-			//assertTrue(QbfControl.checkStrategy(originalGame, sol.getStrategy()));	// ORIGINAL: check validity of strategy if existent
+			//assertEquals(QbfControl.checkStrategy(originalGame, sol.getStrategy()), true);	// ORIGINAL: check validity of strategy if existent
 		}
 		
 		Assert.assertEquals(sol.existsWinningStrategy(), result);

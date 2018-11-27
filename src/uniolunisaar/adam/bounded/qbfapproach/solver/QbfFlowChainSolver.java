@@ -409,7 +409,7 @@ public abstract class QbfFlowChainSolver<W extends WinningCondition> extends Qbf
 							} else {
 								// 0 is the last member
 								// System.out.println("Finished reading strategy.");
-								PGSimplifier.simplifyPG(getSolvingObject(), true, false);
+								new PGSimplifier(getSolvingObject(), true, false, false).simplifyPG();
 								strategy = new PetriGame(getSolvingObject().getGame());
 								return getSolvingObject().getGame();
 							}
@@ -418,7 +418,7 @@ public abstract class QbfFlowChainSolver<W extends WinningCondition> extends Qbf
 				}
 			}
 			// There were no decision points for the system, thus the previous loop did not leave the method
-			PGSimplifier.simplifyPG(getSolvingObject(), true, false);
+			new PGSimplifier(getSolvingObject(), true, false, false).simplifyPG();
 			strategy = new PetriGame(getSolvingObject().getGame());
 			return getSolvingObject().getGame();
 		}

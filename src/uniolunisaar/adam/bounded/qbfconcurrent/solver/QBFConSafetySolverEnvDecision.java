@@ -561,7 +561,7 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 							} else {
 								// 0 is the last member
 								// System.out.println("Finished reading strategy.");
-								PGSimplifier.simplifyPGtrueConcurrent(getSolvingObject(), true, false);
+								new PGSimplifier(getSolvingObject(), true, false, true).simplifyPG();
 								strategy = new PetriGame(getSolvingObject().getGame());
 								return getSolvingObject().getGame();
 							}
@@ -570,7 +570,7 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 				}
 			}
 			// There were no decision points for the system, thus the previous loop did not leave the method
-			PGSimplifier.simplifyPGtrueConcurrent(getSolvingObject(), true, false);
+			new PGSimplifier(getSolvingObject(), true, false, true).simplifyPG();
 			strategy = new PetriGame(getSolvingObject().getGame());
 			return getSolvingObject().getGame();
 		}

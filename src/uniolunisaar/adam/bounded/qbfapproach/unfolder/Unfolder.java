@@ -36,9 +36,7 @@ public abstract class Unfolder {
 	protected Map<String, Integer> limit = null;
 
 	// NewDeterministicUnfolder also uses this
-	public Map<Place, Set<Transition>> systemHasToDecideForAtLeastOne = new HashMap<>(); // Map for QCIRbuilder to
-																							// include additional
-																							// information
+	public Map<Place, Set<Transition>> systemHasToDecideForAtLeastOne = new HashMap<>(); // Map for QCIRbuilder to include additional information
 
 	// Counter to make copied transitions unique, places use numbers from current
 	protected Map<String, Integer> copycounter_map = new HashMap<>();
@@ -51,8 +49,7 @@ public abstract class Unfolder {
 		this.limit = max;
 	}
 
-	public void prepareUnfolding() throws NetNotSafeException, NoSuitableDistributionFoundException, UnboundedException,
-			FileNotFoundException {
+	public void prepareUnfolding() throws NetNotSafeException, NoSuitableDistributionFoundException, UnboundedException, FileNotFoundException {
 		for (Place p : pn.getPlaces()) {
 			current.put(p.getId(), 1);
 		}
@@ -72,8 +69,7 @@ public abstract class Unfolder {
 		createUnfolding();
 	}
 
-	protected abstract void createUnfolding()
-			throws NetNotSafeException, NoSuitableDistributionFoundException, UnboundedException, FileNotFoundException;
+	protected abstract void createUnfolding() throws NetNotSafeException, NoSuitableDistributionFoundException, UnboundedException, FileNotFoundException;
 
 	protected Map<String, LinkedList<Integer>> calculateOrderOfUnfoldingBasedOnGameSimulation() {
 		Map<String, LinkedList<Integer>> orderOfUnfolding = new HashMap<>();

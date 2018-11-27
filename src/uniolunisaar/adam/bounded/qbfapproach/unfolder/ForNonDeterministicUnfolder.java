@@ -17,8 +17,7 @@ public class ForNonDeterministicUnfolder extends NonDeterministicUnfolder {
 
 	Set<String> closed = new HashSet<>();
 
-	public ForNonDeterministicUnfolder(QBFSolvingObject<? extends WinningCondition> QBFPetriGame,
-			Map<String, Integer> max) {
+	public ForNonDeterministicUnfolder(QBFSolvingObject<? extends WinningCondition> QBFPetriGame, Map<String, Integer> max) {
 		super(QBFPetriGame, max);
 	}
 

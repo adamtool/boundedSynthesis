@@ -16,6 +16,7 @@ import uniol.apt.adt.pn.Marking;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
+import uniolunisaar.adam.bounded.qbfapproach.petrigame.QCIRconsistency;
 import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Safety;
@@ -27,6 +28,7 @@ import uniolunisaar.adam.ds.winningconditions.Safety;
  *
  */
 
+@Deprecated
 public class QbfSafetySolverTransitions extends QbfSolver<Safety> {
 	
 	// variable to store keys of calculated components for later use (special to this winning condition)
@@ -640,7 +642,7 @@ public class QbfSafetySolverTransitions extends QbfSolver<Safety> {
 			FileUtils.copyFile(file, new File(getSolvingObject().getGame().getName() + ".qcir"));
 		}
 
-		//assert(QCIRconsistency.checkConsistency(file));
+		assert(QCIRconsistency.checkConsistency(file));
 	}
 
 }

@@ -21,7 +21,7 @@ public class SafetyTest extends EmptyTest {
 		//oneTest("notConcurrencyPreservingTests/toMakeCP", 20, 2, false);	// TODO nets are unsafe, making them safe defeats their purpose
 		//oneTest("notConcurrencyPreservingTests/madeCP", 20, 2, true);		// TODO nets are unsafe, making them safe defeats their purpose
 		oneTest("ndet/nondet_motivationForSchedulingChange", 20, 0, false);
-		/*oneTest("jhh/myexample1", 10, 0, false);
+		oneTest("jhh/myexample1", 10, 0, false);
 		oneTest("ndet/nondet_s3", 10, 0, false);
 		oneTest("ndet/nondet_s3", 10, 2, true);
 		oneTest("ndet/nondet_s3_noStrat", 15, 2, false);
