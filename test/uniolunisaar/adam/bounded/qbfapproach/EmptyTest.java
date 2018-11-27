@@ -2,6 +2,7 @@ package uniolunisaar.adam.bounded.qbfapproach;
 
 import org.testng.Assert;
 
+import uniolunisaar.adam.bounded.qbfapproach.solver.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverFactory;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverOptions;
 import uniolunisaar.adam.bounded.qbfconcurrent.solver.QBFConSolverFactory;
@@ -32,16 +33,12 @@ public abstract class EmptyTest {
  
 	protected void testSolver (Solver<?,?> sol, int n, int b, boolean result) throws Exception {
 		AdamTools.savePG2PDF("originalGame", sol.getGame(), false);
-		PetriGame originalGame = sol.getGame();
-        sol.existsWinningStrategy();	// calculate first, then output games, and then check for correctness
+		PetriGame originalGame = new PetriGame(sol.getGame());		// true copy of original game to check strategy for correctness later
+        sol.existsWinningStrategy();								// solve game
 		AdamTools.savePG2PDF("unfolding", sol.getGame(), false);
 		if (sol.existsWinningStrategy()) {
 			AdamTools.savePG2PDF("strategy", sol.getStrategy(), false);
-		}
-		
-		if (sol.existsWinningStrategy()) {
-			// TODO not compatible with some kinds of unfoldings -> JPTest
-			//assertEquals(QbfControl.checkStrategy(originalGame, sol.getStrategy()), true);	// ORIGINAL: check validity of strategy if existent
+			Assert.assertEquals(QbfControl.checkStrategy(originalGame, sol.getStrategy()), true);
 		}
 		
 		Assert.assertEquals(sol.existsWinningStrategy(), result);
