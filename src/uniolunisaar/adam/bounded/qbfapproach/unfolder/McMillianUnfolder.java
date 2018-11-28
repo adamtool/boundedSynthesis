@@ -91,6 +91,7 @@ public class McMillianUnfolder extends Unfolder {
 			}
 		}
 
+		// TODO this probably wont work anymomre..
 		unfolding.setN(pg.getN());
 		unfolding.setB(pg.getB());
 		pg = unfolding;

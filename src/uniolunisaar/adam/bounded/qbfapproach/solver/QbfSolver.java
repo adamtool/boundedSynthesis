@@ -25,8 +25,9 @@ import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFSolvingObject;
-import uniolunisaar.adam.bounded.qbfapproach.unfolder.ForNonDeterministicUnfolder;
+import uniolunisaar.adam.bounded.qbfapproach.unfolder.FiniteDeterministicUnfolder;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
+import uniolunisaar.adam.ds.exceptions.NotSupportedGameException;
 import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.solver.Solver;
@@ -53,11 +54,6 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 	protected int[] seq;
 	protected int[] win;
 	protected int[] seqImpliesWin;
-
-	// results TODO still needed?
-	public Boolean solvable = null;
-	public Boolean sat = null;
-	public Boolean error = null;
 
 	// storing QBF result for strategy generation
 	protected String outputQBFsolver;
@@ -668,7 +664,6 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 		int or_index;
 		Set<Integer> or = new HashSet<>();
 		for (Place p : additionalInfoForNonDetUnfl.keySet()) {
-			// if (endsWithEnvPlace(p)) { // TODO is this right?
 			transitions = additionalInfoForNonDetUnfl.get(p);
 			or.clear();
 			for (Transition t : transitions) {
@@ -677,7 +672,6 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 			or_index = createUniqueID();
 			writer.write(or_index + " = " + writeOr(or));
 			and.add(or_index);
-			// }
 		}
 		int index = createUniqueID();
 		writer.write(index + " = " + writeAnd(and));
@@ -807,14 +801,14 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 	protected Map<Place, Set<Transition>> unfoldPG() {
 		originalGame = new PetriGame(getSolvingObject().getGame());
 		
-		ForNonDeterministicUnfolder unfolder = new ForNonDeterministicUnfolder(getSolvingObject(), null); // null forces unfolder to use b as bound for every place
+		// ForNonDeterministicUnfolder unfolder = new ForNonDeterministicUnfolder(getSolvingObject(), null); // null forces unfolder to use b as bound for every place
 		// TODO McMillian Unfolder:
-		/*FiniteDeterministicUnfolder unfolder = null;
+		FiniteDeterministicUnfolder unfolder = null;
 		try {
 			unfolder = new FiniteDeterministicUnfolder(getSolvingObject(), null);
 		} catch (NotSupportedGameException e2) {
 			e2.printStackTrace();
-		}*/
+		}
 		
 		
         try {
@@ -823,7 +817,7 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
             System.out.println("Error: The bounded unfolding of the game failed.");
             e1.printStackTrace();
         }
-
+        
 		unfolding = new PetriGame(getSolvingObject().getGame());
 		return unfolder.systemHasToDecideForAtLeastOne;
 	}
@@ -890,22 +884,13 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 		}
 		// Storing results
 		if (exitcode == 20) {
-			solvable = true;
-			sat = false;
-			error = false;
 			System.out.println("UNSAT ");
 			return false;
 		} else if (exitcode == 10) {
-			solvable = true;
-			sat = true;
-			error = false;
 			System.out.println("SAT");
 			return true;
 		} else {
 			System.out.println("QCIR ERROR with FULL output:" + outputQBFsolver);
-			solvable = false;
-			sat = null;
-			error = true;
 			return false;
 		}
 	}

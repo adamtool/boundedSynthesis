@@ -492,11 +492,7 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 
 	public int addEnvStrategy(Place p, Transition t, int i) {
 		if (getSolvingObject().getGame().getEnvPlaces().contains(p)) {
-			if (p.getId().startsWith(QbfControl.additionalSystemName)) {//TODO unnötiger Fall
-				return getVarNr(p.getId() + "**" + t.getId() + "**" + i, true);
-			} else {
-				return getVarNr(p.getId() + "**" + getTruncatedId(t.getId()) + "**" + i, true);
-			}
+			return getVarNr(p.getId() + "**" + getTruncatedId(t.getId()) + "**" + i, true);
 		} else {
 			return 0;
 		}

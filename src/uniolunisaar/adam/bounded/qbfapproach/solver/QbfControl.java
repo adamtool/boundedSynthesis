@@ -8,7 +8,6 @@ import uniolunisaar.adam.logic.util.AdamTools;
 
 public class QbfControl {
 
-	// TODO maybe optional arguments to change default values
 	public static String linebreak = System.lineSeparator(); // Controller
 	public static String additionalSystemName = "AS___"; // Controller
 	public static String additionalSystemUniqueDivider = "_0_"; // Controller
@@ -17,7 +16,7 @@ public class QbfControl {
 	public static boolean deterministicStrat = true; // Controller
 	public static boolean debug = false;
 	public static boolean edacc = false;
-	public static boolean mcmillian = false; // Unfolder
+	public static boolean mcmillian = true; // Unfolder
 	
 	// Check winning strategy for validity
 	public static boolean checkStrategy(PetriGame origNet, PetriGame strat) {
