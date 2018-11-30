@@ -1,4 +1,4 @@
-package uniolunisaar.adam.bounded.qbfapproach.solver;
+package uniolunisaar.adam.bounded.qbfapproach;
 
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
@@ -16,7 +16,7 @@ public class QbfControl {
 	public static boolean deterministicStrat = true; // Controller
 	public static boolean debug = false;
 	public static boolean edacc = false;
-	public static boolean mcmillian = true; // Unfolder
+	public static boolean mcmillian = false; // Unfolder
 	
 	// Check winning strategy for validity
 	public static boolean checkStrategy(PetriGame origNet, PetriGame strat) {

@@ -11,6 +11,7 @@ import org.apache.commons.io.FileUtils;
 
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
+import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QCIRconsistency;
 import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
@@ -88,8 +89,6 @@ public class QbfASafetySolver extends QbfSolver<Safety> {
 				getSolvingObject().getWinCon().getBadPlaces().remove(old); 
 			}
 		}
-		
-		System.out.println(getSolvingObject().getWinCon().getBadPlaces());
 		
 		initializeVariablesForWriteQCIR();
 

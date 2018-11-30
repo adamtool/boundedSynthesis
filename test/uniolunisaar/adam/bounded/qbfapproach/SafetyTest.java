@@ -53,7 +53,7 @@ public class SafetyTest extends EmptyTest {
 		//oneTest("constructedExampleWithoutLoop/constructedExampleWithoutLoop", 3, 0, false);			// LOOPs
 		//oneTest("constructedExampleWithoutLoop/constructedExampleWithoutLoop", 4, 0, true);			// LOOPs TODO loop despite name
 		//oneTest("container/container", 20, 0, false);
-		oneTest("deadlock/missDeadlock", 3, 0, false);		// already true for TRUECONCURRENT
+		//oneTest("deadlock/missDeadlock", 3, 0, false);		// already true for TRUECONCURRENT
 		oneTest("deadlock/missDeadlock", 4, 0, true);
 		//oneTest("firstExamplePaper/firstExamplePaper", 10, 2, false);
 		//oneTest("firstExamplePaper/firstExamplePaper", 4, 3, false);

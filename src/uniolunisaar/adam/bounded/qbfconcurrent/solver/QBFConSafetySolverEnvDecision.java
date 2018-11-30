@@ -16,12 +16,14 @@ import org.apache.commons.io.FileUtils;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.analysis.exception.UnboundedException;
+import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QbfControl;
+import uniolunisaar.adam.bounded.qbfapproach.unfolder.FiniteDeterministicUnfolder;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.ForNonDeterministicUnfolder;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
+import uniolunisaar.adam.ds.exceptions.NotSupportedGameException;
 import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Safety;
@@ -328,32 +330,31 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 	@Override
 	protected boolean exWinStrat() {
 		originalGame = new PetriGame(getSolvingObject().getGame());
-		ForNonDeterministicUnfolder unfolder = new ForNonDeterministicUnfolder(getSolvingObject(), null); // null forces to use b as bound for every place
-		//NewDeterministicUnfolder unfolder = new NewDeterministicUnfolder(getSolvingObject(), null); // null forces to use b as bound for every place
-		//OldDeterministicUnfolder unfolder = new OldDeterministicUnfolder(getSolvingObject(), null); // null forces to use b as bound for every place
 		
-		// McMillianUnfolder unfolder = null;
-		/*
-		 * try { //int x = 3; //unfolder = new McMillianUnfolder(getSolvingObject(),
-		 * null); } catch (UnboundedPGException e2) { // TODO Auto-generated catch block
-		 * e2.printStackTrace(); }
-		 */
+		ForNonDeterministicUnfolder unfolder = new ForNonDeterministicUnfolder(getSolvingObject(), null); // null forces to use b as bound for every place
+//		FiniteDeterministicUnfolder unfolder = null;
+//		try {
+//			unfolder = new FiniteDeterministicUnfolder(getSolvingObject(), null);
+//		} catch (NotSupportedGameException e2) {
+//			e2.printStackTrace();
+//		}
+		
 		try {
 			unfolder.prepareUnfolding();
-		} catch (UnboundedException | FileNotFoundException | NetNotSafeException
-				| NoSuitableDistributionFoundException e1) {
+		} catch (SolvingException | UnboundedException | FileNotFoundException e1) {
 			System.out.println("Error: The bounded unfolding of the game failed.");
 			e1.printStackTrace();
 		}
 
 		unfolding = new PetriGame(getSolvingObject().getGame());
-		/* ONLY for MCMillianUnfolder
-		 * this.pg = unfolder.pg; this.pn = unfolder.pn;
-		 * 
-		 * Set<Place> oldBad = new HashSet<>(getWinningCondition().getBadPlaces());
-		 * getWinningCondition().buffer(pg); for (Place old : oldBad) {
-		 * getWinningCondition().getBadPlaces().remove(old); }
-		 */
+
+		if (QbfControl.mcmillian) {
+			Set<Place> oldBad = new HashSet<>(getSolvingObject().getWinCon().getBadPlaces());
+			getWinningCondition().buffer(getSolvingObject().getGame()); 
+			for (Place old : oldBad) {
+				getSolvingObject().getWinCon().getBadPlaces().remove(old); 
+			}
+		}
 
 		seqImpliesWin = new int[getSolvingObject().getN() + 1];
 		transitions = getSolvingObject().getGame().getTransitions().toArray(new Transition[0]);

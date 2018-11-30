@@ -22,6 +22,7 @@ import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.analysis.exception.UnboundedException;
 import uniol.apt.util.Pair;
+import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFSolvingObject;
@@ -802,14 +803,12 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 		originalGame = new PetriGame(getSolvingObject().getGame());
 		
 		// ForNonDeterministicUnfolder unfolder = new ForNonDeterministicUnfolder(getSolvingObject(), null); // null forces unfolder to use b as bound for every place
-		// TODO McMillian Unfolder:
 		FiniteDeterministicUnfolder unfolder = null;
 		try {
 			unfolder = new FiniteDeterministicUnfolder(getSolvingObject(), null);
 		} catch (NotSupportedGameException e2) {
 			e2.printStackTrace();
 		}
-		
 		
         try {
             unfolder.prepareUnfolding();

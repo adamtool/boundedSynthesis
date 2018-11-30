@@ -2,7 +2,6 @@ package uniolunisaar.adam.bounded.qbfapproach;
 
 import org.testng.Assert;
 
-import uniolunisaar.adam.bounded.qbfapproach.solver.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverFactory;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverOptions;
 import uniolunisaar.adam.bounded.qbfconcurrent.solver.QBFConSolverFactory;
@@ -14,21 +13,22 @@ import uniolunisaar.adam.logic.util.AdamTools;
 
 public abstract class EmptyTest {
 
-	private boolean trueconcurrent = false;
+	private boolean trueconcurrent = true;
 
 	protected void testPath (String path, int n, int b, boolean result) throws Exception {
-		if (trueconcurrent)
+		if (trueconcurrent) {
 			testSolver(QBFConSolverFactory.getInstance().getSolver(path, new QBFConSolverOptions(n, b)),n,b,result);
-		else
+		} else {
 			testSolver(QbfSolverFactory.getInstance().getSolver(path, new QbfSolverOptions(n, b)),n,b,result);
+		}
 	}
 	
 	protected void testGame (PetriGame pg, int n, int b, boolean result) throws Exception {
-		if (trueconcurrent)
+		if (trueconcurrent) {
 			testSolver(QBFConSolverFactory.getInstance().getSolver(pg, false, new QBFConSolverOptions(n, b)),n,b,result);
-		else
+		} else {
 			testSolver(QbfSolverFactory.getInstance().getSolver(pg, false, new QbfSolverOptions(n, b)),n,b,result);
-
+		}
 	}
  
 	protected void testSolver (Solver<?,?> sol, int n, int b, boolean result) throws Exception {
