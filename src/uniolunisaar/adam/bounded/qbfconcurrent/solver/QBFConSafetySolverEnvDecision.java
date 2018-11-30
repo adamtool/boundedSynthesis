@@ -20,9 +20,8 @@ import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.FiniteDeterministicUnfolder;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.ForNonDeterministicUnfolder;
-import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
+import uniolunisaar.adam.bounded.qbfapproach.unfolder.Unfolder;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
-import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 import uniolunisaar.adam.ds.exceptions.NotSupportedGameException;
 import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
@@ -331,13 +330,16 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 	protected boolean exWinStrat() {
 		originalGame = new PetriGame(getSolvingObject().getGame());
 		
-		ForNonDeterministicUnfolder unfolder = new ForNonDeterministicUnfolder(getSolvingObject(), null); // null forces to use b as bound for every place
-//		FiniteDeterministicUnfolder unfolder = null;
-//		try {
-//			unfolder = new FiniteDeterministicUnfolder(getSolvingObject(), null);
-//		} catch (NotSupportedGameException e2) {
-//			e2.printStackTrace();
-//		}
+		Unfolder unfolder = null;
+		if (QbfControl.rebuildingUnfolder) {
+			try {
+				unfolder = new FiniteDeterministicUnfolder(getSolvingObject(), null);
+			} catch (NotSupportedGameException e2) {
+				e2.printStackTrace();
+			}
+		} else {
+			unfolder = new ForNonDeterministicUnfolder(getSolvingObject(), null); // null forces unfolder to use b as bound for every place
+		}
 		
 		try {
 			unfolder.prepareUnfolding();
@@ -348,7 +350,7 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 
 		unfolding = new PetriGame(getSolvingObject().getGame());
 
-		if (QbfControl.mcmillian) {
+		if (QbfControl.rebuildingUnfolder) {
 			Set<Place> oldBad = new HashSet<>(getSolvingObject().getWinCon().getBadPlaces());
 			getWinningCondition().buffer(getSolvingObject().getGame()); 
 			for (Place old : oldBad) {

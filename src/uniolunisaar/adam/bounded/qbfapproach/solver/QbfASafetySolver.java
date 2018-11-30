@@ -82,7 +82,7 @@ public class QbfASafetySolver extends QbfSolver<Safety> {
 	protected void writeQCIR() throws IOException {
 		Map<Place, Set<Transition>> systemHasToDecideForAtLeastOne = unfoldPG();
 		
-		if (QbfControl.mcmillian) {
+		if (QbfControl.rebuildingUnfolder) {
 			Set<Place> oldBad = new HashSet<>(getSolvingObject().getWinCon().getBadPlaces());
 			getWinningCondition().buffer(getSolvingObject().getGame()); 
 			for (Place old : oldBad) {

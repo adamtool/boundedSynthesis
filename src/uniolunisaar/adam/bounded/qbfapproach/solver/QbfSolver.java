@@ -27,6 +27,8 @@ import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingE
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFSolvingObject;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.FiniteDeterministicUnfolder;
+import uniolunisaar.adam.bounded.qbfapproach.unfolder.ForNonDeterministicUnfolder;
+import uniolunisaar.adam.bounded.qbfapproach.unfolder.Unfolder;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
 import uniolunisaar.adam.ds.exceptions.NotSupportedGameException;
 import uniolunisaar.adam.ds.exceptions.SolvingException;
@@ -802,12 +804,15 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 	protected Map<Place, Set<Transition>> unfoldPG() {
 		originalGame = new PetriGame(getSolvingObject().getGame());
 		
-		// ForNonDeterministicUnfolder unfolder = new ForNonDeterministicUnfolder(getSolvingObject(), null); // null forces unfolder to use b as bound for every place
-		FiniteDeterministicUnfolder unfolder = null;
-		try {
-			unfolder = new FiniteDeterministicUnfolder(getSolvingObject(), null);
-		} catch (NotSupportedGameException e2) {
-			e2.printStackTrace();
+		Unfolder unfolder = null;
+		if (QbfControl.rebuildingUnfolder) {
+			try {
+				unfolder = new FiniteDeterministicUnfolder(getSolvingObject(), null);
+			} catch (NotSupportedGameException e2) {
+				e2.printStackTrace();
+			}
+		} else {
+			unfolder = new ForNonDeterministicUnfolder(getSolvingObject(), null); // null forces unfolder to use b as bound for every place
 		}
 		
         try {
