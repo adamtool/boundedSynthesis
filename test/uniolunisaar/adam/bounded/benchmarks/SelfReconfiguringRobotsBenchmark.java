@@ -3,7 +3,7 @@ package uniolunisaar.adam.bounded.benchmarks;
 import org.testng.annotations.Test;
 
 import uniol.apt.adt.pn.PetriNet;
-import uniolunisaar.adam.generators.games.SelfOrganizingRobots;
+import uniolunisaar.adam.generators.synthesis.SelfOrganizingRobots;
 import uniolunisaar.adam.tools.Tools;
 
 //@Test

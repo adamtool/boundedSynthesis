@@ -3,7 +3,7 @@ package uniolunisaar.adam.bounded.qbfapproach;
 import org.testng.annotations.Test;
 
 import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.generators.games.RobotCell;
+import uniolunisaar.adam.generators.synthesis.RobotCell;
 
 /*
  * NO MEMORY REQUIRED TO SOLVE

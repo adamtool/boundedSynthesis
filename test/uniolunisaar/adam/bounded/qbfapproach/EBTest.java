@@ -3,7 +3,7 @@ package uniolunisaar.adam.bounded.qbfapproach;
 import org.testng.annotations.Test;
 
 import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.generators.games.EmergencyBreakdown;
+import uniolunisaar.adam.generators.synthesis.EmergencyBreakdown;
 
 @Test
 public class EBTest extends EmptyTest {

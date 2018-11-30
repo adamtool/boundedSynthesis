@@ -3,7 +3,7 @@ package uniolunisaar.adam.bounded.qbfapproach;
 import org.testng.annotations.Test;
 
 import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.generators.games.Philosopher;
+import uniolunisaar.adam.generators.synthesis.Philosopher;
 
 /*
  * NO MEMORY REQUIRED TO SOLVE
