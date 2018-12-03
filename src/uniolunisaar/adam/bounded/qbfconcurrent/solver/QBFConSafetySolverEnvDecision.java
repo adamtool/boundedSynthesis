@@ -47,11 +47,6 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 	private int detAdditionalSys;
 	private int strongdet;
 
-	// results
-	public Boolean solvable = null;
-	public Boolean sat = null;
-	public Boolean error = null;
-
 	// keys
 	public Map<Integer, String> exists_transitions = new HashMap<>();
 	public Map<Integer, String> forall_places = new HashMap<>();
@@ -80,18 +75,18 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 	 * Strong determinism for additional System places, since nondeterminism can never be legal for additional system places
 	 * @throws IOException
 	 */
-	private void writeStrongDet() throws IOException{
+	private void writeStrongDet() throws IOException {
 		boolean existAddSysPlaces = false;
-		for (Place p:getSolvingObject().getGame().getPlaces()){
+		for (Place p : getSolvingObject().getGame().getPlaces()){
 			if (p.getId().startsWith(QbfControl.additionalSystemName) && !getSolvingObject().getGame().getEnvPlaces().contains(p)){
 				existAddSysPlaces = true;
 				break;
 			}
 		}
-		if (existAddSysPlaces){
+		if (existAddSysPlaces) {
 			detAdditionalSys = createUniqueID();
 			writer.write(detAdditionalSys + " = " + getDetAdditionalSys());
-			}
+		}
 	}
 
 	private void writeInitial() throws IOException {
@@ -280,7 +275,6 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 		if (!forall.isEmpty()) {
 			writer.write("#Forall env\n");
 			writer.write(writeForall(forall));
-
 		}
 		// System.out.println(forall);
 
@@ -296,7 +290,6 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 				testSet.add(truncatedID);
 				forall.add(createVariable(truncatedID + "**" + "stall"));//Make this pretty again
 			}
-			
 		}
 	}
 
@@ -495,22 +488,13 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 		}
 		// Storing results
 		if (exitcode == 20) {
-			solvable = true;
-			sat = false;
-			error = false;
 			System.out.println("UNSAT ");
 			return false;
 		} else if (exitcode == 10) {
-			solvable = true;
-			sat = true;
-			error = false;
 			System.out.println("SAT");
 			return true;
 		} else {
 			System.out.println("QCIR ERROR with FULL output:" + outputCAQE);
-			solvable = false;
-			sat = null;
-			error = true;
 			return false;
 		}
 	}
@@ -579,5 +563,4 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 		}
 		throw new NoStrategyExistentException();
 	}
-
 }

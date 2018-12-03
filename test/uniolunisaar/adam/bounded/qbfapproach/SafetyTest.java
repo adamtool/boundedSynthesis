@@ -32,7 +32,7 @@ public class SafetyTest extends EmptyTest {
 		oneTest("ndet/nondet_jhh2", 20, 0, true);
 		oneTest("ndet/nondet_jhh3", 20, 0, false);
 		oneTest("ndet/nondet_motivationForSchedulingChange", 5, 0, false);
-		oneTest("jhh/myexample1", 10, 0, false);
+		/*oneTest("jhh/myexample1", 10, 0, false);
 		oneTest("jhh/myexample1", 10, 2, false);
 		oneTest("jhh/myexample2", 10, 0, true);
 		oneTest("jhh/myexample2", 10, 2, true);
