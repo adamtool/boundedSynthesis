@@ -117,22 +117,22 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 	 */
 	public String getDetEnv() throws IOException {
 		Set<Integer> outer_and = new HashSet<>();
-		Set<Transition> post_transitions = new HashSet<>();
-		Set<Transition> truncatedPostSet = new HashSet<>();
+		Set<String> post_transitions = new HashSet<>();
+		Set<String> truncatedPostSet = new HashSet<>();
 		Set<Integer> inner_or = new HashSet<>();
 		Set<Integer> inner_and = new HashSet<>();
 		for (Place p : getSolvingObject().getGame().getEnvPlaces()) {			
 			if (!p.getPostset().isEmpty()) {	
 				// only iterate over truncated ID once
 				for (Transition t : p.getPostset()) {
-					truncatedPostSet.add(getSolvingObject().getGame().getTransition(getTruncatedId(t.getId())));
+					truncatedPostSet.add(getTruncatedId(t.getId()));
 				}
 				for (int i = 1; i <= 1; i++) {//getSolvingObject().getN() //TODO
-					for (Transition t : truncatedPostSet) {
+					for (String t : truncatedPostSet) {
 						post_transitions.addAll(truncatedPostSet);
 						post_transitions.remove(t);
 						int check_truncated = addEnvStrategy(p, t, i);
-						for (Transition t_prime : post_transitions) {
+						for (String t_prime : post_transitions) {
 							//if (addEnvStrategy(p, t_prime, i) != check_truncated) // TODO unnecessary because now only iterate over truncated IDs?
 								inner_and.add(-addEnvStrategy(p, t_prime, i));
 						}
@@ -354,7 +354,7 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 			if (strat != 0) {
 				outerAnd.add(strat);
 			}
-			strat = addEnvStrategy(p, t, 1); //TODO i
+			strat = addEnvStrategy(p, t.getId(), 1); //TODO i
 			if (strat != 0)
 				outerAnd.add(strat);
 		}
@@ -490,9 +490,9 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 		}
 	}
 
-	public int addEnvStrategy(Place p, Transition t, int i) {
+	public int addEnvStrategy(Place p, String t, int i) {
 		if (getSolvingObject().getGame().getEnvPlaces().contains(p)) {
-			return getVarNr(p.getId() + "**" + getTruncatedId(t.getId()) + "**" + i, true);
+			return getVarNr(p.getId() + "**" + getTruncatedId(t) + "**" + i, true);
 		} else {
 			return 0;
 		}

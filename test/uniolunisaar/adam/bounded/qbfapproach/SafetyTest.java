@@ -3,7 +3,7 @@ package uniolunisaar.adam.bounded.qbfapproach;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-// TODO categorize what is tested, look at existing tests
+// TODO categorize what is tested, look at ALL existing example files
 
 @Test
 public class SafetyTest extends EmptyTest {
@@ -55,14 +55,14 @@ public class SafetyTest extends EmptyTest {
 		oneTest("deadlock/missDeadlock", bound, 0, false);
 		oneTest("deadlock/missDeadlock", bound + 1, 0, true);
 		bound = 4;
-		//if (trueconcurrent) bound = 3;	// TODO why does TC not work here?
+		if (trueconcurrent) bound = 3;
 		oneTest("firstExamplePaper/firstExamplePaper", bound, 3, false);
 		oneTest("firstExamplePaper/firstExamplePaper", bound + 1, 3, true);
 		bound = 4;
 	}
 	
 	@Test(timeOut = 1800 * 1000) // 30 min
-	public void testForallSafety() throws Exception {
+	public void testGeneralExamples() throws Exception {
 		//oneTest("tests/watchdog5", 15, 3, true);		// TODO search for bounds
 		//oneTest("container/container", 10, 2, true);	// TODO search for bounds
 		//oneTest("notConcurrencyPreservingTests/toMakeCP", 20, 2, false);	// TODO nets are unsafe, making them safe defeats their purpose

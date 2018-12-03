@@ -20,7 +20,7 @@ import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 
 /**
  * 
- * 27.11.2018 ONLY WORKS FOR FINITE NETS AND NEEDS QBFCONTROL MCMILLIAN ENABLED
+ * 27.11.2018 ONLY WORKS FOR FINITE NETS AND NEEDS QBFCONTROL rebuildingUnfolder ENABLED
  * copy original net and then build net in place new
  * Misc note: solvingObj -> PG -> PN
  * 
@@ -93,7 +93,7 @@ public class FiniteDeterministicUnfolder extends Unfolder {
 						if (getOriginalTransitionId(post.getId()).equals(t.getId()) && post.isFireable(marking)) {
 							Marking nextMarking = new Marking(marking);
 							nextMarking.fire(post);
-							if (i + 1 < pg.getN()) {
+							if (i + 1 <= pg.getN()) {
 								queue.add(new Pair<Marking, Integer>(nextMarking, i + 1));
 							}
 							fired = true;
@@ -127,7 +127,7 @@ public class FiniteDeterministicUnfolder extends Unfolder {
 						
 						Marking nextMarking = new Marking(marking);
 						nextMarking.fire(newT);
-						if (i + 1 < pg.getN()) {
+						if (i + 1 <= pg.getN()) {
 							queue.add(new Pair<Marking, Integer>(nextMarking, i + 1));
 						}
 					}
