@@ -13,7 +13,7 @@ import uniolunisaar.adam.logic.util.AdamTools;
 
 public abstract class EmptyTest {
 
-	private boolean trueconcurrent = true;
+	protected boolean trueconcurrent = false;
 
 	protected void testPath (String path, int n, int b, boolean result) throws Exception {
 		if (trueconcurrent) {
