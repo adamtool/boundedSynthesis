@@ -40,7 +40,7 @@ public abstract class EmptyTest {
 			AdamTools.savePG2PDF("strategy", sol.getStrategy(), false);
 			Assert.assertEquals(QbfControl.checkStrategy(originalGame, sol.getStrategy()), true);
 		}
-		
+		AdamTools.savePG2PDF("strategy",sol.getStrategy(),false);
 		Assert.assertEquals(sol.existsWinningStrategy(), result);
 	}
 }
