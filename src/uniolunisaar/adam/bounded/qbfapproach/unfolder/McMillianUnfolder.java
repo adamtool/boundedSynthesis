@@ -29,7 +29,7 @@ public class McMillianUnfolder extends Unfolder {
 	// Pair<Place, Transition>
 	// Pair<Transition, Set<Place>>
 
-	Set<Pair<String, String>> conflicts = new HashSet<>();
+	Set<Pair<String, String>> conflicts = new HashSet<>(); // TODO never added
 
 	Set<Pair<Transition, Set<Place>>> closed = new HashSet<>();
 
@@ -81,7 +81,7 @@ public class McMillianUnfolder extends Unfolder {
 				unfoldingNet.createFlow(newT, newPost);
 			}
 			if (possibleExtensions.isEmpty()) {
-				// POWERSET CANT HANDLE LARGER SETS
+				// POWERSET CANT HANDLE LARGER SETS8
 				// if (unfoldingNet.getPlaces().size() <= 20) {
 				possibleExtensions = possibleExtensions();
 				// }
@@ -91,6 +91,7 @@ public class McMillianUnfolder extends Unfolder {
 			}
 		}
 
+		// TODO this probably wont work anymomre..
 		unfolding.setN(pg.getN());
 		unfolding.setB(pg.getB());
 		pg = unfolding;

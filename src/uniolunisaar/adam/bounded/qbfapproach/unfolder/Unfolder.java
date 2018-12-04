@@ -4,7 +4,6 @@ import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -37,9 +36,7 @@ public abstract class Unfolder {
 	protected Map<String, Integer> limit = null;
 
 	// NewDeterministicUnfolder also uses this
-	public Map<Place, Set<Transition>> systemHasToDecideForAtLeastOne = new HashMap<>(); // Map for QCIRbuilder to
-																							// include additional
-																							// information
+	public Map<Place, Set<Transition>> systemHasToDecideForAtLeastOne = new HashMap<>(); // Map for QCIRbuilder to include additional information
 
 	// Counter to make copied transitions unique, places use numbers from current
 	protected Map<String, Integer> copycounter_map = new HashMap<>();
@@ -52,8 +49,7 @@ public abstract class Unfolder {
 		this.limit = max;
 	}
 
-	public void prepareUnfolding() throws NetNotSafeException, NoSuitableDistributionFoundException, UnboundedException,
-			FileNotFoundException {
+	public void prepareUnfolding() throws NetNotSafeException, NoSuitableDistributionFoundException, UnboundedException, FileNotFoundException {
 		for (Place p : pn.getPlaces()) {
 			current.put(p.getId(), 1);
 		}
@@ -73,8 +69,7 @@ public abstract class Unfolder {
 		createUnfolding();
 	}
 
-	protected abstract void createUnfolding()
-			throws NetNotSafeException, NoSuitableDistributionFoundException, UnboundedException, FileNotFoundException;
+	protected abstract void createUnfolding() throws NetNotSafeException, NoSuitableDistributionFoundException, UnboundedException, FileNotFoundException;
 
 	protected Map<String, LinkedList<Integer>> calculateOrderOfUnfoldingBasedOnGameSimulation() {
 		Map<String, LinkedList<Integer>> orderOfUnfolding = new HashMap<>();
@@ -89,12 +84,11 @@ public abstract class Unfolder {
 		Set<Marking> closed = new HashSet<>();
 		Pair<Marking, Integer> p;
 		int i;
-		List<Transition> transitions = sorted(pn.getTransitions());
 		while ((p = queue.poll()) != null) {
 			Marking m = p.getFirst();
 			i = p.getSecond();
 			closed.add(m);
-			for (Transition t : transitions) {
+			for (Transition t : pn.getTransitions()) {
 				if (t.isFireable(m)) {
 					Marking next = t.fire(m);
 					if (!closed.contains(next)) {
@@ -358,19 +352,5 @@ public abstract class Unfolder {
 				return false;
 		}
 		return result;
-	}
-
-	// TODO hack to make deterministic
-	private List<Transition> sorted(Set<Transition> places) {
-		List<Transition> ret = new LinkedList<>();
-		List<String> strings = new LinkedList<>();
-		for (Transition p : places) {
-			strings.add(p.getId());
-		}
-		java.util.Collections.sort(strings);
-		for (String s : strings) {
-			ret.add(pg.getGame().getTransition(s));
-		}
-		return ret;
 	}
 }

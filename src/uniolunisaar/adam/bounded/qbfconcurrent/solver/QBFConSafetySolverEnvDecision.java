@@ -16,12 +16,13 @@ import org.apache.commons.io.FileUtils;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.analysis.exception.UnboundedException;
+import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QbfControl;
+import uniolunisaar.adam.bounded.qbfapproach.unfolder.FiniteDeterministicUnfolder;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.ForNonDeterministicUnfolder;
-import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
+import uniolunisaar.adam.bounded.qbfapproach.unfolder.Unfolder;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
-import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
+import uniolunisaar.adam.ds.exceptions.NotSupportedGameException;
 import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Safety;
@@ -41,12 +42,10 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 	private int[] dlt;
 	private int[] win;
 	private int[] seqImpliesWin;
+	private int detenvlocal;
 	private int detenv;
-
-	// results
-	public Boolean solvable = null;
-	public Boolean sat = null;
-	public Boolean error = null;
+	private int detAdditionalSys;
+	private int strongdet;
 
 	// keys
 	public Map<Integer, String> exists_transitions = new HashMap<>();
@@ -70,6 +69,24 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 		detenv = createUniqueID();
 		if (!getSolvingObject().getGame().getEnvPlaces().isEmpty())
 			writer.write(detenv + " = " + getDetEnv());
+	}
+
+	/**
+	 * Strong determinism for additional System places, since nondeterminism can never be legal for additional system places
+	 * @throws IOException
+	 */
+	private void writeStrongDet() throws IOException {
+		boolean existAddSysPlaces = false;
+		for (Place p : getSolvingObject().getGame().getPlaces()){
+			if (p.getId().startsWith(QbfControl.additionalSystemName) && !getSolvingObject().getGame().getEnvPlaces().contains(p)){
+				existAddSysPlaces = true;
+				break;
+			}
+		}
+		if (existAddSysPlaces) {
+			detAdditionalSys = createUniqueID();
+			writer.write(detAdditionalSys + " = " + getDetAdditionalSys());
+		}
 	}
 
 	private void writeInitial() throws IOException {
@@ -97,7 +114,7 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 		Set<Integer> and = new HashSet<>();
 		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 			and.clear();
-			and.add(in);	
+			and.add(in);
 			for (int j = 1; j <= i - 1; ++j) {
 				// and.add(-dl[j]); // performance evaluation showed that leaving this out makes
 				// program faster as it is redundant
@@ -219,9 +236,7 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 
 	protected void addForall() throws IOException {
 		Set<Integer> forall = new HashSet<>();
-		int numplaces = 0;
 		for (Place p : getSolvingObject().getGame().getPlaces()) {
-			System.out.println(p);
 			for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 				int number = createVariable(p.getId() + "." + i);
 				// System.out.println(p.getId() + "." + i + " : number: " +
@@ -229,39 +244,53 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 				forall.add(number);
 				// System.out.println(number + " = " + p.getId() + "." + i);
 				forall_places.put(number, p.getId() /* + "." + i */);
-				numplaces++;
 			}
 		}
-		System.out.println("Plätzenummer : " + numplaces);
-
-		System.out.println(getSolvingObject().getN());
 		for (Place p : getSolvingObject().getGame().getPlaces()) {
 			if (getSolvingObject().getGame().getEnvPlaces().contains(p)) {
 				Set<String> truncatedIDs = new HashSet<>();
-				int groesse = 0;
 				for (Transition t : p.getPostset()) {
 					String truncatedID = getTruncatedId(t.getId());
 					if (!truncatedIDs.contains(truncatedID)) {
 						truncatedIDs.add(truncatedID);
-						for (int i = 1; i <= getSolvingObject().getN(); ++i) {
+						for (int i = 1; i <= 1; ++i) { //getSolvingObject().getN() //TODO
 							int number = createVariable(p.getId() + "**" + truncatedID + "**" + i);
 							forall.add(number);
-							groesse++;
 						}
 					}
 				}
-				System.out.println(p.toString() + " Groesse: " + groesse);
-				groesse = 0;
 
+			}
+		}
+		//Add environment stalling for all transtition including env transitions
+		//Truncated transitions behave equally
+		Set<String> testSet = new HashSet<>();
+		for (Transition t : getSolvingObject().getGame().getTransitions()){
+			String truncatedID = getTruncatedId(t.getId());
+			if (!testSet.contains(truncatedID)){
+				testSet.add(truncatedID);
+				forall.add(createVariable(truncatedID + "**" + "stall"));//Make this pretty again
 			}
 		}
 		if (!forall.isEmpty()) {
 			writer.write("#Forall env\n");
 			writer.write(writeForall(forall));
-
 		}
 		// System.out.println(forall);
 
+	}
+
+	protected void addForallEnvStall() throws IOException{
+		Set<Integer> forall = new HashSet<>();
+		Set<String> testSet = new HashSet<>();
+
+		for (Transition t : getSolvingObject().getGame().getTransitions()){
+			String truncatedID = getTruncatedId(t.getId());
+			if (!testSet.contains(truncatedID)){
+				testSet.add(truncatedID);
+				forall.add(createVariable(truncatedID + "**" + "stall"));//Make this pretty again
+			}
+		}
 	}
 
 	// Additional information from nondeterministic unfolding is utilized:
@@ -293,32 +322,34 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 	@Override
 	protected boolean exWinStrat() {
 		originalGame = new PetriGame(getSolvingObject().getGame());
-		ForNonDeterministicUnfolder unfolder = new ForNonDeterministicUnfolder(getSolvingObject(), null); // null forces to use b as bound for every place
-		//NewDeterministicUnfolder unfolder = new NewDeterministicUnfolder(getSolvingObject(), null); // null forces to use b as bound for every place
-		//OldDeterministicUnfolder unfolder = new OldDeterministicUnfolder(getSolvingObject(), null); // null forces to use b as bound for every place
-		
-		// McMillianUnfolder unfolder = null;
-		/*
-		 * try { //int x = 3; //unfolder = new McMillianUnfolder(getSolvingObject(),
-		 * null); } catch (UnboundedPGException e2) { // TODO Auto-generated catch block
-		 * e2.printStackTrace(); }
-		 */
+
+		Unfolder unfolder = null;
+		if (QbfControl.rebuildingUnfolder) {
+			try {
+				unfolder = new FiniteDeterministicUnfolder(getSolvingObject(), null);
+			} catch (NotSupportedGameException e2) {
+				e2.printStackTrace();
+			}
+		} else {
+			unfolder = new ForNonDeterministicUnfolder(getSolvingObject(), null); // null forces unfolder to use b as bound for every place
+		}
+
 		try {
 			unfolder.prepareUnfolding();
-		} catch (UnboundedException | FileNotFoundException | NetNotSafeException
-				| NoSuitableDistributionFoundException e1) {
+		} catch (SolvingException | UnboundedException | FileNotFoundException e1) {
 			System.out.println("Error: The bounded unfolding of the game failed.");
 			e1.printStackTrace();
 		}
 
 		unfolding = new PetriGame(getSolvingObject().getGame());
-		/* ONLY for MCMillianUnfolder
-		 * this.pg = unfolder.pg; this.pn = unfolder.pn;
-		 * 
-		 * Set<Place> oldBad = new HashSet<>(getWinningCondition().getBadPlaces());
-		 * getWinningCondition().buffer(pg); for (Place old : oldBad) {
-		 * getWinningCondition().getBadPlaces().remove(old); }
-		 */
+
+		if (QbfControl.rebuildingUnfolder) {
+			Set<Place> oldBad = new HashSet<>(getSolvingObject().getWinCon().getBadPlaces());
+			getWinningCondition().buffer(getSolvingObject().getGame());
+			for (Place old : oldBad) {
+				getSolvingObject().getWinCon().getBadPlaces().remove(old);
+			}
+		}
 
 		seqImpliesWin = new int[getSolvingObject().getN() + 1];
 		transitions = getSolvingObject().getGame().getTransitions().toArray(new Transition[0]);
@@ -335,11 +366,13 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 			addForall();
 			writer.write("output(1)" + QbfControl.linebreak); // 1 = \phi
 			writeDetEnv();
+			writeStrongDet(); //strong determinism for additional system places enforced
 			writeInitial();
 			writer.write("# End of Initial\n");
 			writeDeadlock();
 			writer.write("# End of Deadlock\n");
 			writeFlow();
+			writer.write("# End of Flow\n");
 			writeSequence();
 			writer.write("# start of no bad marking\n");
 			writeNoBadMarking();
@@ -364,7 +397,7 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 			// It is required that these decide for exactly one transition which
 			// is directly encoded into the problem.
 			int index_for_non_det_unfolding_info = enumerateStratForNonDetUnfold(unfolder.systemHasToDecideForAtLeastOne);
-			
+
 			if (index_for_non_det_unfolding_info != -1) {
 				phi.add(index_for_non_det_unfolding_info);
 			}
@@ -379,18 +412,18 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 			Set<Integer> wnandLoopSet = new HashSet<>();
 			wnandLoopSet.add(l);
 			wnandLoopSet.add(win[getSolvingObject().getN()]);
-			writer.write("# Win and Loop below\n");
 			writer.write(wnandLoop + " = " + writeAnd(wnandLoopSet));
-
 			seqImpliesWin[getSolvingObject().getN()] = createUniqueID();
 			writer.write(seqImpliesWin[getSolvingObject().getN()] + " = " + "or(-" + seq[getSolvingObject().getN()]
 					+ "," + wnandLoop + ")" + QbfControl.linebreak);
 			phi.add(seqImpliesWin[getSolvingObject().getN()]);
 			int phi_number = createUniqueID();
 			writer.write(phi_number + " = " + writeAnd(phi));
-			if (!getSolvingObject().getGame().getEnvPlaces().isEmpty())
-				writer.write("1 = " + "and(" + writeImplication(detenv, phi_number) + ")"); // initial is the high order implication attribute
-			else
+			if (!getSolvingObject().getGame().getEnvPlaces().isEmpty() && (detAdditionalSys != 0)) //with strongdet
+				writer.write("1 = " + "and(" + detAdditionalSys + "," + writeImplication(detenv, phi_number) + ")");
+			else if (!getSolvingObject().getGame().getEnvPlaces().isEmpty()) //without strongdet (no additional system places)
+				writer.write("1 = " + "and(" + writeImplication(detenv, phi_number) + ")");
+			else //no env places
 				writer.write("1 = and(" + phi_number + ")");
 			writer.close();
 
@@ -416,21 +449,26 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 
 			ProcessBuilder pb = null;
 			// Run solver on problem
-			System.out.println("You are using " + System.getProperty("os.name") + ".");
+
 			String os = System.getProperty("os.name");
 			if (os.startsWith("Mac")) {
-				System.out.println("Your operation system is supported.");
-				pb = new ProcessBuilder(AdamProperties.getInstance().getProperty(AdamProperties.LIBRARY_FOLDER) + File.separator + QbfControl.solver + "_mac",
-						"--partial-assignment", file.getAbsolutePath());
+				pb = new ProcessBuilder(AdamProperties.LIBRARY_FOLDER + File.separator + QbfControl.solver + "_mac", "--partial-assignment"/* , "--preprocessing", "0" */, file.getAbsolutePath());
 			} else if (os.startsWith("Linux")) {
-				System.out.println("Your operation system is supported.");
-				pb = new ProcessBuilder(AdamProperties.getInstance().getProperty(AdamProperties.LIBRARY_FOLDER) + File.separator + QbfControl.solver + "_unix",
-						"--partial-assignment", file.getAbsolutePath());
+				if (QbfControl.edacc) {
+                	// for use with EDACC
+					pb = new ProcessBuilder("./" + QbfControl.solver + "_unix", "--partial-assignment", file.getAbsolutePath());
+				} else {
+                	// for use with WEBSITE
+					pb = new ProcessBuilder(AdamProperties.LIBRARY_FOLDER + File.separator + QbfControl.solver + "_unix", "--partial-assignment", file.getAbsolutePath());
+				}
 			} else {
+				System.out.println("You are using " + os + ".");
 				System.out.println("Your operation system is not supported.");
 				return false;
 			}
-			System.out.println("A temporary file is saved to \"" + file.getAbsolutePath() + "\".");
+			if (QbfControl.debug) {
+				System.out.println("A temporary file is saved to \"" + file.getAbsolutePath() + "\".");
+			}
 
 			Process pr = pb.start();
 			// Read caqe's output
@@ -449,22 +487,13 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 		}
 		// Storing results
 		if (exitcode == 20) {
-			solvable = true;
-			sat = false;
-			error = false;
 			System.out.println("UNSAT ");
 			return false;
 		} else if (exitcode == 10) {
-			solvable = true;
-			sat = true;
-			error = false;
 			System.out.println("SAT");
 			return true;
 		} else {
 			System.out.println("QCIR ERROR with FULL output:" + outputCAQE);
-			solvable = false;
-			sat = null;
-			error = true;
 			return false;
 		}
 	}
@@ -472,6 +501,7 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 	@Override
 	protected PetriGame calculateStrategy() throws NoStrategyExistentException {
 		if (existsWinningStrategy()) {
+			System.out.println("Calculate strategy");
 			for (String outputCAQE_line : outputCAQE.split("\n")) {
 				if (outputCAQE_line.startsWith("V")) {
 					String[] parts = outputCAQE_line.split(" ");
@@ -517,7 +547,7 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 							} else {
 								// 0 is the last member
 								// System.out.println("Finished reading strategy.");
-								PGSimplifier.simplifyPGtrueConcurrent(getSolvingObject(), true, false);
+								new PGSimplifier(getSolvingObject(), true, false, true).simplifyPG();
 								strategy = new PetriGame(getSolvingObject().getGame());
 								return getSolvingObject().getGame();
 							}
@@ -526,11 +556,10 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 				}
 			}
 			// There were no decision points for the system, thus the previous loop did not leave the method
-			PGSimplifier.simplifyPGtrueConcurrent(getSolvingObject(), true, false);
+			new PGSimplifier(getSolvingObject(), true, false, true).simplifyPG();
 			strategy = new PetriGame(getSolvingObject().getGame());
 			return getSolvingObject().getGame();
 		}
 		throw new NoStrategyExistentException();
 	}
-
 }

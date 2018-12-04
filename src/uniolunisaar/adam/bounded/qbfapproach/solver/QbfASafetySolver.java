@@ -11,6 +11,7 @@ import org.apache.commons.io.FileUtils;
 
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
+import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QCIRconsistency;
 import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
@@ -81,7 +82,13 @@ public class QbfASafetySolver extends QbfSolver<Safety> {
 	protected void writeQCIR() throws IOException {
 		Map<Place, Set<Transition>> systemHasToDecideForAtLeastOne = unfoldPG();
 		
-		// TODO maybe remove bad places for McMillianUnfolder
+		if (QbfControl.rebuildingUnfolder) {
+			Set<Place> oldBad = new HashSet<>(getSolvingObject().getWinCon().getBadPlaces());
+			getWinningCondition().buffer(getSolvingObject().getGame()); 
+			for (Place old : oldBad) {
+				getSolvingObject().getWinCon().getBadPlaces().remove(old); 
+			}
+		}
 		
 		initializeVariablesForWriteQCIR();
 

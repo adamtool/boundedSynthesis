@@ -14,10 +14,10 @@ public class JPTest extends EmptyTest { // Job Processing
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testManufactorSystem() throws Exception {
 		oneTest(2, 7, 3, true); // -> FAST
-		/*oneTest(3, 4, 1, false);
-		oneTest(4, 4, 1, false);
-		oneTest(2, 9, 6, true);
-		oneTest(2, 5, 9, false);*/
+		//oneTest(3, 4, 1, false);
+		//oneTest(4, 4, 1, false);
+		//oneTest(2, 9, 6, true);
+		//oneTest(2, 5, 9, false);
 		// oneTest (3, 9, 6); // -> timeout
 		// oneTest (3, 7/8/9/10, 3); // -> UNSAT
 	}

@@ -19,10 +19,12 @@ import uniol.apt.adt.pn.Marking;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
+import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
+import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFSolvingObject;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QbfControl;
 import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
+import uniolunisaar.adam.ds.solver.Solver;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 
 /**
@@ -31,11 +33,7 @@ import uniolunisaar.adam.ds.winningconditions.WinningCondition;
  *
  */
 
-public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extends QBFConSolver<W> {
-
-	// Caches
-	private Map<Transition, Set<Place>> restCache = new HashMap<>();
-	private Map<Transition, Set<Place>> preMinusPostCache = new HashMap<>();
+public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extends Solver<QBFSolvingObject<W>, QBFConSolverOptions> {
 
 	// steps of solving
 	public QBFSolvingObject<W> originalSolvingObject;
@@ -56,18 +54,35 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 
 	protected List<Map<Integer,Integer>> enabledlist; // First setindex, then iteration index
 	protected Map<Transition, Integer> transitionmap; 
-	protected List<Transition> setlist; 
+	protected List<Transition> setlist;
+	
 	protected QBFConSolverEnvDecision(PetriGame game, W winCon, QBFConSolverOptions so) throws SolvingException {
-		super(game, winCon, so);
-		getSolvingObject().setN(so.getN());
-		getSolvingObject().setB(so.getB());
+		super(new QBFSolvingObject<>(game, winCon), so);
+		//super(game, winCon, so);
+		int n = so.getN();
+		int b = so.getB();
+		if (n == -1) {
+			if (getSolvingObject().hasBoundedParameterNinExtension()) {
+				n = getSolvingObject().getBoundedParameterNFromExtension();
+			}
+		}
+		if (b == -1) {
+			if (getSolvingObject().hasBoundedParameterBinExtension()) {
+				b = getSolvingObject().getBoundedParameterBFromExtension();
+			}
+		}
+		if (n == -1 || b == -1) {
+			throw new BoundedParameterMissingException(n, b);
+		}
+		getSolvingObject().setN(n);
+		getSolvingObject().setB(b);
 		transitions = new Transition[getSolvingObject().getGame().getTransitions().size()];
 		int counter = 0;
 		numTransitions = getSolvingObject().getGame().getTransitions().size();
 		for (Transition t : getSolvingObject().getGame().getTransitions()) {
 			transitions[counter++] = t;
 		}
-
+		
 		// Create random file in tmp directory which is deleted after solving it
 		String prefix = "";
 		final Random rand = new Random();
@@ -102,38 +117,72 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 	 */
 	public String getDetEnv() throws IOException {
 		Set<Integer> outer_and = new HashSet<>();
-		Set<Transition> post_transitions = new HashSet<>();
+		Set<String> post_transitions = new HashSet<>();
+		Set<String> truncatedPostSet = new HashSet<>();
 		Set<Integer> inner_or = new HashSet<>();
 		Set<Integer> inner_and = new HashSet<>();
-		writer.write("#Start det env\n");
-		for (Place p : getSolvingObject().getGame().getEnvPlaces()) {
-			for (int i = 1; i <= getSolvingObject().getN(); i++) {
+		for (Place p : getSolvingObject().getGame().getEnvPlaces()) {			
+			if (!p.getPostset().isEmpty()) {	
+				// only iterate over truncated ID once
 				for (Transition t : p.getPostset()) {
-					post_transitions.addAll(p.getPostset());
-					post_transitions.remove(t);
-					int check_truncated = addEnvStrategy(p,t,i);
-					for (Transition t_prime : post_transitions) {
-						if (addEnvStrategy(p,t_prime,i) != check_truncated)
-							inner_and.add(-addEnvStrategy(p, t_prime, i));
-					}
-					inner_and.add(check_truncated);
-					int inner_and_var = createUniqueID();
-					writer.write("# START detenv for transition: " + t + " iteration: " + i + "\n");
-					writer.write(inner_and_var + " = " + writeAnd(inner_and));
-					writer.write("# END detenv for transition: " + t + " iteration: " + i+ "\n");
-					inner_or.add(inner_and_var);
-					inner_and.clear();
-					post_transitions.clear();
+					truncatedPostSet.add(getTruncatedId(t.getId()));
 				}
-				int inner_or_var = createUniqueID();
-				writer.write(inner_or_var + " = " + writeOr(inner_or));
-				outer_and.add(inner_or_var);
-				inner_or.clear();
+				for (int i = 1; i <= 1; i++) {//getSolvingObject().getN() //TODO
+					for (String t : truncatedPostSet) {
+						post_transitions.addAll(truncatedPostSet);
+						post_transitions.remove(t);
+						int check_truncated = addEnvStrategy(p, t, i);
+						for (String t_prime : post_transitions) {
+							//if (addEnvStrategy(p, t_prime, i) != check_truncated) // TODO unnecessary because now only iterate over truncated IDs?
+								inner_and.add(-addEnvStrategy(p, t_prime, i));
+						}
+						inner_and.add(check_truncated);
+						int inner_and_var = createUniqueID();
+						writer.write(inner_and_var + " = " + writeAnd(inner_and));
+						inner_or.add(inner_and_var);
+						inner_and.clear();
+						post_transitions.clear();
+					}
+					int inner_or_var = createUniqueID();
+					writer.write(inner_or_var + " = " + writeOr(inner_or));
+					outer_and.add(inner_or_var);
+					inner_or.clear();
+				}
+				truncatedPostSet.clear();
 			}
 		}
-		writer.write("#last line of det env\n");
 		return writeAnd(outer_and);
 	}
+	
+	public String getDetAdditionalSys() throws IOException {
+		//No check for single post transition, bc additional system place always has at least 2 post transition
+		Set<Integer> outer_and = new HashSet<>();
+		Set<Integer> inner_and = new HashSet<>();
+		Set<Integer> inner_or = new HashSet<>();
+		for (Place addsys : getSolvingObject().getGame().getPlaces()){
+			inner_or.clear();
+			if (!getSolvingObject().getGame().getEnvPlaces().contains(addsys)
+				&& addsys.getId().startsWith(QbfControl.additionalSystemName)) {
+				for (Transition t : addsys.getPostset()){
+					inner_and.clear();
+					inner_and.add(addSysStrategy(addsys, t));
+					for (Transition t_prime : addsys.getPostset()){
+						if (!t.getId().equals(t_prime.getId()))
+							inner_and.add(-addSysStrategy(addsys,t_prime));
+					}
+					int inner_and_id = createUniqueID();
+					writer.write(inner_and_id + " = " + writeAnd(inner_and));
+					inner_or.add(inner_and_id);
+					}
+				int inner_or_id = createUniqueID();
+				writer.write(inner_or_id + " = " + writeOr(inner_or));
+				outer_and.add(inner_or_id);
+			
+				}
+			}
+		return writeAnd(outer_and);
+	}
+	
 
 	public String getInitial() {
 		Marking initialMarking = getSolvingObject().getGame().getInitialMarking();
@@ -161,6 +210,8 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 		}
 		return deadlock;
 	}
+	
+	
 
 	private void writeDeadlockSubFormulas(int s, int e) throws IOException {
 		Transition t;
@@ -255,7 +306,6 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 	 * @throws IOException
 	 */
 	public int fireOneTransition(int i, int setindex) throws IOException {
-		writer.write("# STARTED fire iteration " + i + " transition " + setlist.get(setindex) + "\n" );
 		Transition t = setlist.get(setindex);
 		int number = createUniqueID();
 		Set<Integer> and = new HashSet<>();
@@ -268,7 +318,6 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 			and.add(-getVarNr(p.getId() + "." + (i + 1), true));
 		}
 		writer.write(number + " = " + writeAnd(and));
-		writer.write("# ENDED fire iteration " + i + " transition " + setlist.get(setindex) + "\n" );
 		return number;
 	}
 
@@ -293,7 +342,6 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 	 * @throws IOException
 	 */
 	public int isEnabledSet(int i, int setindex) throws IOException{
-		writer.write("# STARTED is enabled for iteration " + i + " and transition " + setlist.get(setindex) + "\n");
 		Set<Integer> outerAnd = new HashSet<>();
 		int strat;
 		int outer_and_number = createUniqueID();
@@ -306,14 +354,13 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 			if (strat != 0) {
 				outerAnd.add(strat);
 			}
-			strat = addEnvStrategy(p, t, i);
+			strat = addEnvStrategy(p, t.getId(), 1); //TODO i
 			if (strat != 0)
 				outerAnd.add(strat);
 		}
-		
+		outerAnd.add(addEnvStall(t));
 		writer.write(outer_and_number + " = " + writeAnd(outerAnd));
 		
-		writer.write("# ENDED is enabled for iteration " + i + " and set " + setindex + "\n");
 		return outer_and_number;
 	}
 
@@ -357,8 +404,7 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 		}
 	}
 
-	public String[] getDeterministic() throws IOException { // faster than naive
-															// implementation
+	public String[] getDeterministic() throws IOException { // faster than naive implementation
 		List<Set<Integer>> and = new ArrayList<>(getSolvingObject().getN() + 1);
 		and.add(null); // first element is never accessed
 		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
@@ -367,12 +413,11 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 		Transition t1, t2;
 		Transition[] sys_transitions;
 		for (Place sys : getSolvingObject().getGame().getPlaces()) {
-			// Additional system places are not forced to behave
-			// deterministically, this is the faster variant (especially the
-			// larger the PG becomes)
+			// Additional system places ARE FORCED to behave deterministically in getDetAdditionalSys, not here
+			// since the true concurrent flow fired every enabled transition
 			if (!getSolvingObject().getGame().getEnvPlaces().contains(sys)
-					&& !sys.getId().startsWith(QbfControl.additionalSystemName)) {
-				if (sys.getPostset().size() > 1) {
+				&& !sys.getId().startsWith(QbfControl.additionalSystemName)) {
+					if (sys.getPostset().size() > 1) {
 					sys_transitions = sys.getPostset().toArray(new Transition[0]);
 					for (int j = 0; j < sys_transitions.length; ++j) {
 						t1 = sys_transitions[j];
@@ -429,19 +474,6 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 				writer.write(andNumber + " = " + writeAnd(and));
 				or.add(andNumber);
 			}
-			if (i == getSolvingObject().getN() - 1) {
-				int j = getSolvingObject().getN();
-				Set<Integer> and = new HashSet<>();
-				for (Place p : getSolvingObject().getGame().getPlaces()) {
-					int p_i = getVarNr(p.getId() + "." + i, true);
-					int p_j = getVarNr(p.getId() + "." + j, true);
-					and.add(writeImplication(p_i, p_j));
-					and.add(writeImplication(p_j, p_i));
-				}
-				int andNumber = createUniqueID();
-				writer.write(andNumber + " = " + writeAnd(and));
-				or.add(andNumber);
-			}
 		}
 		return writeOr(or);
 	}
@@ -458,16 +490,16 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 		}
 	}
 
-	public int addEnvStrategy(Place p, Transition t, int i) {
+	public int addEnvStrategy(Place p, String t, int i) {
 		if (getSolvingObject().getGame().getEnvPlaces().contains(p)) {
-			if (p.getId().startsWith(QbfControl.additionalSystemName)) {//TODO unnötiger Fall
-				return getVarNr(p.getId() + "**" + t.getId() + "**" + i, true);
-			} else {
-				return getVarNr(p.getId() + "**" + getTruncatedId(t.getId()) + "**" + i, true);
-			}
+			return getVarNr(p.getId() + "**" + getTruncatedId(t) + "**" + i, true);
 		} else {
 			return 0;
 		}
+	}
+	
+	public int addEnvStall(Transition t){
+		return getVarNr((getTruncatedId(t.getId()) + "**" + "stall"), true);
 	}
 
 	public int getVarNr(String id, boolean extraCheck) {

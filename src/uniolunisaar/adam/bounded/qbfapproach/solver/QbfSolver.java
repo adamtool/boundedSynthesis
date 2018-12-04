@@ -22,11 +22,15 @@ import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.analysis.exception.UnboundedException;
 import uniol.apt.util.Pair;
+import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFSolvingObject;
+import uniolunisaar.adam.bounded.qbfapproach.unfolder.FiniteDeterministicUnfolder;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.ForNonDeterministicUnfolder;
+import uniolunisaar.adam.bounded.qbfapproach.unfolder.Unfolder;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
+import uniolunisaar.adam.ds.exceptions.NotSupportedGameException;
 import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.solver.Solver;
@@ -54,11 +58,6 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 	protected int[] win;
 	protected int[] seqImpliesWin;
 
-	// results TODO still needed?
-	public Boolean solvable = null;
-	public Boolean sat = null;
-	public Boolean error = null;
-
 	// storing QBF result for strategy generation
 	protected String outputQBFsolver;
 	
@@ -80,12 +79,12 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 	protected int variablesCounter = 1;
 	protected Map<String, Integer> numbersForVariables = new HashMap<>(); // map for storing keys and the corresponding value
 
-	protected int[][] oneTransitionFormulas;
+	protected int[][] oneTransitionFormulas; // (Transition, 1..n) -> fireTransitionID
 	protected Map<Transition, Integer> transitionKeys = new HashMap<>();
 
 	protected Transition[] transitions;
-	protected int[] deadlockSubFormulas; // TODO make [][] as oneTransitionForumlas
-	protected int[] terminatingSubFormulas; // TODO make [][] as oneTransitionForumlas
+	protected int[][] deadlockSubFormulas; // (Transition, 1..n) -> deadlockID
+	protected int[][] terminatingSubFormulas; // (Transition, 1..n) -> terminatingID
 	protected File file;
 
 	public QbfSolver(PetriGame game, W winCon, QbfSolverOptions so) throws SolvingException {
@@ -174,8 +173,8 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 		Set<Integer> and = new HashSet<>();
 		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 			and.clear();
-			for (int j = 0; j < getSolvingObject().getGame().getTransitions().size(); ++j) {
-				and.add(deadlockSubFormulas[getSolvingObject().getGame().getTransitions().size() * (i - 1) + j]);
+			for (Transition t : getSolvingObject().getGame().getTransitions()) {
+				and.add(deadlockSubFormulas[transitionKeys.get(t)][i]);
 			}
 			deadlock[i] = writeAnd(and);
 		}
@@ -183,13 +182,11 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 	}
 
 	protected void writeDeadlockSubFormulas(int s, int e) throws IOException {
-		Transition t;
 		Set<Integer> or = new HashSet<>();
 		int number;
 		int strat;
 		for (int i = s; i <= e; ++i) {
-			for (int j = 0; j < getSolvingObject().getGame().getTransitions().size(); ++j) {
-				t = transitions[j];
+			for (Transition t : getSolvingObject().getGame().getTransitions()) {
 				or.clear();
 				for (Place p : t.getPreset()) {
 					or.add(-getVarNr(p.getId() + "." + i, true)); // "p.i"
@@ -200,7 +197,7 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 				}
 				number = createUniqueID();
 				writer.write(number + " = " + writeOr(or));
-				deadlockSubFormulas[getSolvingObject().getGame().getTransitions().size() * (i - 1) + j] = number;
+				deadlockSubFormulas[transitionKeys.get(t)][i] = number;
 			}
 		}
 	}
@@ -221,8 +218,8 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 			if (getSolvingObject().getGame().getTransitions().size() >= 1) {
 				and.clear();
-				for (int j = 0; j < getSolvingObject().getGame().getTransitions().size(); ++j) {
-					and.add(terminatingSubFormulas[getSolvingObject().getGame().getTransitions().size() * (i - 1) + j]);
+				for (Transition t : getSolvingObject().getGame().getTransitions()) {
+					and.add(terminatingSubFormulas[transitionKeys.get(t)][i]);
 				}
 				terminating[i] = writeAnd(and);
 			}
@@ -233,11 +230,9 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 	protected void writeTerminatingSubFormulas(int s, int e) throws IOException {
 		Set<Integer> or = new HashSet<>();
 		Set<Place> pre;
-		Transition t;
 		int key;
 		for (int i = s; i <= e; ++i) {
-			for (int j = 0; j < getSolvingObject().getGame().getTransitions().size(); ++j) {
-				t = transitions[j];
+			for (Transition t : getSolvingObject().getGame().getTransitions()) {
 				pre = t.getPreset();
 				or.clear();
 				for (Place p : pre) {
@@ -245,7 +240,7 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 				}
 				key = createUniqueID();
 				writer.write(key + " = " + writeOr(or));
-				terminatingSubFormulas[getSolvingObject().getGame().getTransitions().size() * (i - 1) + j] = key;
+				terminatingSubFormulas[transitionKeys.get(t)][i] = key;
 			}
 		}
 	}
@@ -429,8 +424,6 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 		l = createUniqueID();
 		writer.write(l + " = " + loop);
 	}
-	
-	// TODO why did/does it say here j = i + 2 at other getLoopIJ
 
 	protected String getLoopIJ() throws IOException {
 		Set<Integer> or = new HashSet<>();
@@ -674,7 +667,6 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 		int or_index;
 		Set<Integer> or = new HashSet<>();
 		for (Place p : additionalInfoForNonDetUnfl.keySet()) {
-			// if (endsWithEnvPlace(p)) { // TODO is this right?
 			transitions = additionalInfoForNonDetUnfl.get(p);
 			or.clear();
 			for (Transition t : transitions) {
@@ -683,7 +675,6 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 			or_index = createUniqueID();
 			writer.write(or_index + " = " + writeOr(or));
 			and.add(or_index);
-			// }
 		}
 		int index = createUniqueID();
 		writer.write(index + " = " + writeAnd(and));
@@ -813,34 +804,39 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 	protected Map<Place, Set<Transition>> unfoldPG() {
 		originalGame = new PetriGame(getSolvingObject().getGame());
 		
-		ForNonDeterministicUnfolder unfolder = new ForNonDeterministicUnfolder(getSolvingObject(), null); // null forces unfolder to use b as bound for every place
-		// TODO McMillian Unfolder:
-		/*McMillianUnfolder unfolder = null;
-		try {
-			unfolder = new McMillianUnfolder(getSolvingObject(), null);
-		} catch (NotSupportedGameException e2) {
-			e2.printStackTrace();
-		}*/
+		Unfolder unfolder = null;
+		if (QbfControl.rebuildingUnfolder) {
+			try {
+				unfolder = new FiniteDeterministicUnfolder(getSolvingObject(), null);
+			} catch (NotSupportedGameException e2) {
+				e2.printStackTrace();
+			}
+		} else {
+			unfolder = new ForNonDeterministicUnfolder(getSolvingObject(), null); // null forces unfolder to use b as bound for every place
+		}
+		
         try {
             unfolder.prepareUnfolding();
         } catch (SolvingException | UnboundedException | FileNotFoundException e1) {
             System.out.println("Error: The bounded unfolding of the game failed.");
             e1.printStackTrace();
         }
-
+        
 		unfolding = new PetriGame(getSolvingObject().getGame());
 		return unfolder.systemHasToDecideForAtLeastOne;
 	}
 
 	protected void initializeVariablesForWriteQCIR() {
 		transitions = getSolvingObject().getGame().getTransitions().toArray(new Transition[0]);
-		deadlockSubFormulas = new int[(getSolvingObject().getN() + 1) * getSolvingObject().getGame().getTransitions().size()];
-		terminatingSubFormulas = new int[(getSolvingObject().getN() + 1) * getSolvingObject().getGame().getTransitions().size()];
-
-		oneTransitionFormulas = new int[getSolvingObject().getGame().getTransitions().size()][getSolvingObject().getN() + 1];
 		for (int i = 0; i < transitions.length; ++i) {
 			transitionKeys.put(transitions[i], i);
 		}
+		
+		int numberOfTransitions = getSolvingObject().getGame().getTransitions().size();
+		int n = getSolvingObject().getN();
+		deadlockSubFormulas = new int[numberOfTransitions][n + 1];
+		terminatingSubFormulas = new int[numberOfTransitions][n + 1];
+		oneTransitionFormulas = new int[numberOfTransitions][n + 1];
 	}
 
 	protected abstract void writeQCIR() throws IOException;
@@ -857,14 +853,14 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 
 			if (os.startsWith("Mac")) {
 				// pb = new ProcessBuilder("./" + solver + "_mac", "--partial-assignment", file.getAbsolutePath());
-				pb = new ProcessBuilder(AdamProperties.getInstance().getProperty(AdamProperties.LIBRARY_FOLDER)+ File.separator + QbfControl.solver + "_mac", "--partial-assignment"/* , "--preprocessing", "0" */, file.getAbsolutePath());
+				pb = new ProcessBuilder(AdamProperties.LIBRARY_FOLDER + File.separator + QbfControl.solver + "_mac", "--partial-assignment"/* , "--preprocessing", "0" */, file.getAbsolutePath());
 			} else if (os.startsWith("Linux")) {
 				if (QbfControl.edacc) {
                 	// for use with EDACC
 					pb = new ProcessBuilder("./" + QbfControl.solver + "_unix", "--partial-assignment", file.getAbsolutePath());
 				} else {
                 	// for use with WEBSITE
-					pb = new ProcessBuilder(AdamProperties.getInstance().getProperty(AdamProperties.LIBRARY_FOLDER) + File.separator + QbfControl.solver + "_unix", "--partial-assignment", file.getAbsolutePath());
+					pb = new ProcessBuilder(AdamProperties.LIBRARY_FOLDER + File.separator + QbfControl.solver + "_unix", "--partial-assignment", file.getAbsolutePath());
 				}
 			} else {
 				System.out.println("You are using " + os + ".");
@@ -892,22 +888,13 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 		}
 		// Storing results
 		if (exitcode == 20) {
-			solvable = true;
-			sat = false;
-			error = false;
 			System.out.println("UNSAT ");
 			return false;
 		} else if (exitcode == 10) {
-			solvable = true;
-			sat = true;
-			error = false;
 			System.out.println("SAT");
 			return true;
 		} else {
 			System.out.println("QCIR ERROR with FULL output:" + outputQBFsolver);
-			solvable = false;
-			sat = null;
-			error = true;
 			return false;
 		}
 	}
@@ -959,7 +946,7 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 							} else {
 								// 0 is the last member
 								// System.out.println("Finished reading strategy.");
-								PGSimplifier.simplifyPG(getSolvingObject(), true, false);
+								new PGSimplifier(getSolvingObject(), true, false, false).simplifyPG();
 								strategy = new PetriGame(getSolvingObject().getGame());
 								return getSolvingObject().getGame();
 							}
@@ -968,7 +955,7 @@ public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSo
 				}
 			}
 			// There were no decision points for the system, thus the previous loop did not leave the method
-			PGSimplifier.simplifyPG(getSolvingObject(), true, false);
+			new PGSimplifier(getSolvingObject(), true, false, false).simplifyPG();
 			strategy = new PetriGame(getSolvingObject().getGame());
 			return getSolvingObject().getGame();
 		}

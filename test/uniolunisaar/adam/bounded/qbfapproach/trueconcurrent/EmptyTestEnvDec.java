@@ -2,7 +2,7 @@ package uniolunisaar.adam.bounded.qbfapproach.trueconcurrent;
 
 import org.testng.Assert;
 
-import uniolunisaar.adam.bounded.qbfapproach.solver.QbfControl;
+import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.bounded.qbfconcurrent.solver.QBFConSolverEnvDecision;
 import uniolunisaar.adam.bounded.qbfconcurrent.solver.QBFConSolverFactory;
 import uniolunisaar.adam.bounded.qbfconcurrent.solver.QBFConSolverOptions;

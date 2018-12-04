@@ -10,7 +10,7 @@ import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Token;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QbfControl;
+import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 
 /**
@@ -25,62 +25,19 @@ import uniolunisaar.adam.ds.winningconditions.WinningCondition;
  * @author Jesko Hecking-Harbusch
  */
 public class PGSimplifier {
-
-	public static void simplifyPG(QBFSolvingObject<? extends WinningCondition> solvingObject, boolean removeAdditionalPlaces, boolean removeUnreachablePlaces) {
-		// Initialization
-		Queue<Pair<Marking, Integer>> queue = new LinkedList<>();
-		queue.add(new Pair<>(solvingObject.getGame().getInitialMarking(), 1));
-
-		Set<Marking> closed = new HashSet<>();
-		Set<Transition> firedTransitions = new HashSet<>();
-		Set<Place> reachedPlaces = new HashSet<>();
-
-		if (removeUnreachablePlaces) {
-			addReachedPlaces(solvingObject, solvingObject.getGame().getInitialMarking(), reachedPlaces);
-		}
-
-		// Search loop
-		Pair<Marking, Integer> pair;
-		while ((pair = queue.poll()) != null) {
-			Marking marking = pair.getFirst();
-			int i = pair.getSecond();
-			closed.add(marking);
-			for (Transition transition : solvingObject.getGame().getTransitions()) {
-				if (transition.isFireable(marking)) {
-					Marking nextMarking = transition.fire(marking);
-					firedTransitions.add(transition);
-					if (!closed.contains(nextMarking)) {
-						if (removeUnreachablePlaces) {
-							addReachedPlaces(solvingObject, nextMarking, reachedPlaces);
-						}
-						if (i + 1 <= solvingObject.getN()) {
-							queue.add(new Pair<>(nextMarking, i + 1));
-						}
-					}
-				}
-			}
-		}
-
-		// Removal
-		Set<Transition> transitions = new HashSet<>(solvingObject.getGame().getTransitions());
-		for (Transition transition : transitions) {
-			if (!firedTransitions.contains(transition)) {
-				solvingObject.removeTransitionRecursively(transition);
-			}
-		}
-		if (removeAdditionalPlaces) {
-			removeAS(solvingObject);
-		}
-		if (removeUnreachablePlaces) {
-			for (Place place : solvingObject.getGame().getPlaces()) {
-				if (!reachedPlaces.contains(place)) {
-					solvingObject.removePlaceRecursively(place);
-				}
-			}
-		}
+	
+	private QBFSolvingObject<? extends WinningCondition> solvingObject;
+	private boolean removeAdditionalPlaces;
+	private boolean removeUnreachablePlaces;
+	private boolean trueConcurrent;
+	
+	public PGSimplifier(QBFSolvingObject<? extends WinningCondition> solvingObject, boolean removeAdditionalPlaces, boolean removeUnreachablePlaces, boolean trueConcurrent) {
+		this.solvingObject = solvingObject;
+		this.removeAdditionalPlaces = removeAdditionalPlaces;
+		this.removeUnreachablePlaces = removeUnreachablePlaces;
 	}
 
-	public static void simplifyPGtrueConcurrent(QBFSolvingObject<? extends WinningCondition> solvingObject, boolean removeAdditionalPlaces, boolean removeUnreachablePlaces) {
+	public void simplifyPG() {
 		// Initialization
 		Queue<Pair<Marking, Integer>> queue = new LinkedList<>();
 		queue.add(new Pair<>(solvingObject.getGame().getInitialMarking(), 1));
@@ -90,7 +47,7 @@ public class PGSimplifier {
 		Set<Place> reachedPlaces = new HashSet<>();
 
 		if (removeUnreachablePlaces) {
-			addReachedPlaces(solvingObject, solvingObject.getGame().getInitialMarking(), reachedPlaces);
+			addReachedPlaces(solvingObject.getGame().getInitialMarking(), reachedPlaces);
 		}
 
 		// Search loop
@@ -103,14 +60,17 @@ public class PGSimplifier {
 				if (transition.isFireable(marking)) {
 					Marking nextMarking = transition.fire(marking);
 					firedTransitions.add(transition);
-					Transition further;
-					while ((further = findFurtherTransition(solvingObject, marking, nextMarking)) != null) {
-						nextMarking = further.fire(nextMarking);
-						firedTransitions.add(transition);
+					if (trueConcurrent) {
+						// fire all enabled transitions in the true concurrent case
+						Transition further;
+						while ((further = findFurtherTransition(marking, nextMarking)) != null) {
+							nextMarking = further.fire(nextMarking);
+							firedTransitions.add(transition);
+						}
 					}
 					if (!closed.contains(nextMarking)) {
 						if (removeUnreachablePlaces) {
-							addReachedPlaces(solvingObject, nextMarking, reachedPlaces);
+							addReachedPlaces(nextMarking, reachedPlaces);
 						}
 						if (i + 1 <= solvingObject.getN()) {
 							queue.add(new Pair<>(nextMarking, i + 1));
@@ -119,35 +79,18 @@ public class PGSimplifier {
 				}
 			}
 		}
-
-		// Removal
-		Set<Transition> transitions = new HashSet<>(solvingObject.getGame().getTransitions());
-		for (Transition transition : transitions) {
-			if (!firedTransitions.contains(transition)) {
-				solvingObject.removeTransitionRecursively(transition);
-			}
-		}
-		if (removeAdditionalPlaces) {
-			removeAS(solvingObject);
-		}
-		if (removeUnreachablePlaces) {
-			for (Place place : solvingObject.getGame().getPlaces()) {
-				if (!reachedPlaces.contains(place)) {
-					solvingObject.removePlaceRecursively(place);
-				}
-			}
-		}
+		removal(firedTransitions, reachedPlaces);
 	}
 	
 	/**
-	 * returns null of no transition existent
+	 * returns null if no transition existent, needed to fire all transitions in the true concurrent case
 	 * 
 	 * @param solvingObject
 	 * @param marking
 	 * @return
 	 */
 	
-	private static Transition findFurtherTransition (QBFSolvingObject<? extends WinningCondition> solvingObject, Marking start, Marking current) {
+	private Transition findFurtherTransition (Marking start, Marking current) {
 		for (Transition transition : solvingObject.getGame().getTransitions()) {
 			// transition is now and initially fireable
 			if (transition.isFireable(current) && transition.isFireable(start)) {
@@ -158,26 +101,52 @@ public class PGSimplifier {
 	}
 	
 	/**
+	 * remove unreachable places and transitions as well as additional system places if wanted
+	 * 
+	 * @param pg
+	 */
+	
+	private void removal(Set<Transition> firedTransitions, Set<Place> reachedPlaces) {
+		// Removal
+		Set<Transition> transitions = new HashSet<>(solvingObject.getGame().getTransitions());
+		for (Transition transition : transitions) {
+			if (!firedTransitions.contains(transition)) {
+				solvingObject.removeTransitionRecursively(transition);
+			}
+		}
+		if (removeAdditionalPlaces) {
+			removeAS();
+		}
+		if (removeUnreachablePlaces) {
+			for (Place place : solvingObject.getGame().getPlaces()) {
+				if (!reachedPlaces.contains(place)) {
+					solvingObject.removePlaceRecursively(place);
+				}
+			}
+		}
+	}
+	
+	/**
 	 * Additional system places from unfolder are removed including their flow.
 	 * 
 	 * @param pg
 	 */
-	private static void removeAS(QBFSolvingObject<? extends WinningCondition> pg) {
-		Set<Place> places = new HashSet<>(pg.getGame().getPlaces());
+	private void removeAS() {
+		Set<Place> places = new HashSet<>(solvingObject.getGame().getPlaces());
 		for (Place place : places) {
 			if (place.getId().startsWith(QbfControl.additionalSystemName)) {
 				Set<Transition> transitions = new HashSet<>(place.getPreset());
 				for (Transition transition : transitions) {
-					pg.getGame().removeFlow(place, transition);
-					pg.getGame().removeFlow(transition, place);
+					solvingObject.getGame().removeFlow(place, transition);
+					solvingObject.getGame().removeFlow(transition, place);
 				}
-				pg.getGame().removePlace(place);
+				solvingObject.getGame().removePlace(place);
 			}
 		}
 	}
 
 	/**
-	 * For a given Petri game (because class is static) and option that unreachable
+	 * For a given Petri game and option that unreachable
 	 * places are removed, places with token from marking are added to the set of
 	 * reached places.
 	 * 
@@ -185,8 +154,8 @@ public class PGSimplifier {
 	 * @param marking
 	 * @param reachedPlaces
 	 */
-	private static void addReachedPlaces(QBFSolvingObject<? extends WinningCondition> pg, Marking marking, Set<Place> reachedPlaces) {
-		for (Place place : pg.getGame().getPlaces()) {
+	private void addReachedPlaces(Marking marking, Set<Place> reachedPlaces) {
+		for (Place place : solvingObject.getGame().getPlaces()) {
 			Token token = marking.getToken(place);
 			if (token.getValue() > 0) {
 				reachedPlaces.add(place);
