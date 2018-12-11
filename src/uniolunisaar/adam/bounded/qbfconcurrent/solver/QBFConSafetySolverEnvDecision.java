@@ -28,7 +28,7 @@ import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Safety;
 import uniolunisaar.adam.tools.AdamProperties;
 
-public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safety> {
+public class QbfConSafetySolverEnvDecision extends QbfConSolverEnvDecision<Safety> {
 
 	// variable to store keys of calculated components for later use
 	private int in;
@@ -53,7 +53,7 @@ public class QBFConSafetySolverEnvDecision extends QBFConSolverEnvDecision<Safet
 
 	private String outputCAQE = "";
 
-	public QBFConSafetySolverEnvDecision(PetriGame game, Safety winCon, QBFConSolverOptions so) throws SolvingException {
+	public QbfConSafetySolverEnvDecision(PetriGame game, Safety winCon, QbfConSolverOptions so) throws SolvingException {
 		super(game, winCon, so);
 		fl = new int[getSolvingObject().getN() + 1];
 		bad = new int[getSolvingObject().getN() + 1];

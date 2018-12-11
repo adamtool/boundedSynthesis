@@ -4,8 +4,8 @@ import org.testng.Assert;
 
 import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverFactory;
 import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverOptions;
-import uniolunisaar.adam.bounded.qbfconcurrent.solver.QBFConSolverFactory;
-import uniolunisaar.adam.bounded.qbfconcurrent.solver.QBFConSolverOptions;
+import uniolunisaar.adam.bounded.qbfconcurrent.solver.QbfConSolverFactory;
+import uniolunisaar.adam.bounded.qbfconcurrent.solver.QbfConSolverOptions;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.solver.Solver;
 import uniolunisaar.adam.logic.util.AdamTools;
@@ -17,7 +17,7 @@ public abstract class EmptyTest {
 
 	protected void testPath (String path, int n, int b, boolean result) throws Exception {
 		if (trueconcurrent) {
-			testSolver(QBFConSolverFactory.getInstance().getSolver(path, new QBFConSolverOptions(n, b)),n,b,result);
+			testSolver(QbfConSolverFactory.getInstance().getSolver(path, new QbfConSolverOptions(n, b)),n,b,result);
 		} else {
 			testSolver(QbfSolverFactory.getInstance().getSolver(path, new QbfSolverOptions(n, b)),n,b,result);
 		}
@@ -25,7 +25,7 @@ public abstract class EmptyTest {
 	
 	protected void testGame (PetriGame pg, int n, int b, boolean result) throws Exception {
 		if (trueconcurrent) {
-			testSolver(QBFConSolverFactory.getInstance().getSolver(pg, false, new QBFConSolverOptions(n, b)),n,b,result);
+			testSolver(QbfConSolverFactory.getInstance().getSolver(pg, false, new QbfConSolverOptions(n, b)),n,b,result);
 		} else {
 			testSolver(QbfSolverFactory.getInstance().getSolver(pg, false, new QbfSolverOptions(n, b)),n,b,result);
 		}

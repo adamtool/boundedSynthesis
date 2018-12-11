@@ -2,16 +2,16 @@ package uniolunisaar.adam.bounded.qbfconcurrent.solver;
 
 import uniolunisaar.adam.ds.solver.SolverOptions;
 
-public class QBFConSolverOptions extends SolverOptions {
+public class QbfConSolverOptions extends SolverOptions {
 
 	private int n = 0;
 	private int b = 0;
 
-	public QBFConSolverOptions() {
+	public QbfConSolverOptions() {
 		super("qbfcon");
 	}
 
-	public QBFConSolverOptions(int n, int b) {
+	public QbfConSolverOptions(int n, int b) {
 		super("qbfcon");
 		this.n = n;
 		this.b = b;

@@ -33,7 +33,7 @@ import uniolunisaar.adam.ds.winningconditions.WinningCondition;
  *
  */
 
-public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extends QbfSharedSolver<W, QBFConSolverOptions> {
+public abstract class QbfConSolverEnvDecision<W extends WinningCondition> extends QbfSharedSolver<W, QbfConSolverOptions> {
 
 	// steps of solving
 	public QBFSolvingObject<W> originalSolvingObject;
@@ -56,7 +56,7 @@ public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extend
 	protected Map<Transition, Integer> transitionmap; 
 	protected List<Transition> setlist;
 	
-	protected QBFConSolverEnvDecision(PetriGame game, W winCon, QBFConSolverOptions so) throws SolvingException {
+	protected QbfConSolverEnvDecision(PetriGame game, W winCon, QbfConSolverOptions so) throws SolvingException {
 		super(new QBFSolvingObject<>(game, winCon), so);
 		//super(game, winCon, so);
 		int n = so.getN();
