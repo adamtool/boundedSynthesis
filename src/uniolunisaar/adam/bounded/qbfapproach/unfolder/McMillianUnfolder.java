@@ -13,7 +13,7 @@ import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.analysis.exception.UnboundedException;
 import uniol.apt.util.Pair;
-import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFSolvingObject;
+import uniolunisaar.adam.bounded.qbfapproach.petrigame.QbfSolvingObject;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 import uniolunisaar.adam.ds.exceptions.NotSupportedGameException;
@@ -23,7 +23,7 @@ import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 public class McMillianUnfolder extends Unfolder {
 
 	// unfolded result Petri game and Petri net
-	public QBFSolvingObject<? extends WinningCondition> unfolding;
+	public QbfSolvingObject<? extends WinningCondition> unfolding;
 	public PetriNet unfoldingNet;
 
 	// Pair<Place, Transition>
@@ -35,11 +35,11 @@ public class McMillianUnfolder extends Unfolder {
 
 	int counter = 0;
 
-	public McMillianUnfolder(QBFSolvingObject<? extends WinningCondition> petriGame, Map<String, Integer> max) throws NotSupportedGameException {
+	public McMillianUnfolder(QbfSolvingObject<? extends WinningCondition> petriGame, Map<String, Integer> max) throws NotSupportedGameException {
 		super(petriGame, max);
 
 		unfoldingNet = new PetriNet(pn.getName() + "_unfolding");
-		unfolding = new QBFSolvingObject<>(new PetriGame(unfoldingNet), petriGame.getWinCon()); // todo MG: funzt so?
+		unfolding = new QbfSolvingObject<>(new PetriGame(unfoldingNet), petriGame.getWinCon()); // todo MG: funzt so?
 
 		Marking initial = pn.getInitialMarking();
 		for (Place p : pn.getPlaces()) {

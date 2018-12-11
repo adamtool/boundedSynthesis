@@ -22,20 +22,20 @@ import uniolunisaar.adam.ds.winningconditions.WinningCondition;
  * @author Jesko Hecking-Harbusch
  * @param <W>
  */
-public class QBFSolvingObject<W extends WinningCondition> extends SolvingObject<PetriGame, W> {
+public class QbfSolvingObject<W extends WinningCondition> extends SolvingObject<PetriGame, W> {
 
     private int n; // length of the simulation, i.e., for n there are n - 1 transitions simulated
     private int b; // number of unfoldings per place in the bounded unfolding
     private Map<Transition, Set<Pair<Place, Place>>> fl = new HashMap<>(); // tokenflow
 
-    public QBFSolvingObject(PetriGame game, W winCon) {
+    public QbfSolvingObject(PetriGame game, W winCon) {
         super(game, winCon);
         for (Transition t : game.getTransitions()) {	// TODO talk with Manuel about this
             fl.put(t, new HashSet<>());
         }
     }
 
-    public QBFSolvingObject(QBFSolvingObject<W> obj) {
+    public QbfSolvingObject(QbfSolvingObject<W> obj) {
         super(new PetriGame(obj.getGame()), obj.getWinCon().getCopy());
         this.n = obj.n;
         this.b = obj.b;
@@ -107,7 +107,7 @@ public class QBFSolvingObject<W extends WinningCondition> extends SolvingObject<
     }
 
     @Override
-    public QBFSolvingObject<W> getCopy() {
-        return new QBFSolvingObject<>(this);
+    public QbfSolvingObject<W> getCopy() {
+        return new QbfSolvingObject<>(this);
     }
 }

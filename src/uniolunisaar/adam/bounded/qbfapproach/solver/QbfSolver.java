@@ -25,7 +25,7 @@ import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
-import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFSolvingObject;
+import uniolunisaar.adam.bounded.qbfapproach.petrigame.QbfSolvingObject;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.FiniteDeterministicUnfolder;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.ForNonDeterministicUnfolder;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.Unfolder;
@@ -42,7 +42,7 @@ import uniolunisaar.adam.tools.AdamProperties;
  *
  * @param <W>
  */
-public abstract class QbfSolver<W extends WinningCondition> extends QbfSharedSolver<W, QbfSolverOptions> {
+public abstract class QbfSolver<W extends WinningCondition> extends SolverQbfAndQbfCon<W, QbfSolverOptions> {
 
 	// variable to store keys of calculated components for later use (shared among all solvers)
 	protected int in;
@@ -68,7 +68,7 @@ public abstract class QbfSolver<W extends WinningCondition> extends QbfSharedSol
 	private Map<Transition, Set<Place>> preMinusPostCache = new HashMap<>();
 
 	// steps of solving
-	public QBFSolvingObject<W> originalSolvingObject;
+	public QbfSolvingObject<W> originalSolvingObject;
 	public PetriGame originalGame;
 	public PetriGame unfolding;
 	public PetriGame strategy;
@@ -87,7 +87,7 @@ public abstract class QbfSolver<W extends WinningCondition> extends QbfSharedSol
 	protected File file;
 
 	public QbfSolver(PetriGame game, W winCon, QbfSolverOptions so) throws SolvingException {
-		super(new QBFSolvingObject<>(game, winCon), so);
+		super(new QbfSolvingObject<>(game, winCon), so);
 		
 		originalSolvingObject = getSolvingObject().getCopy();
 		

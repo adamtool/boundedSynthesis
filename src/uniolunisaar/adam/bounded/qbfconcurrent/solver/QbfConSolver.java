@@ -21,8 +21,8 @@ import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
-import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFSolvingObject;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSharedSolver;
+import uniolunisaar.adam.bounded.qbfapproach.petrigame.QbfSolvingObject;
+import uniolunisaar.adam.bounded.qbfapproach.solver.SolverQbfAndQbfCon;
 import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
@@ -33,10 +33,10 @@ import uniolunisaar.adam.ds.winningconditions.WinningCondition;
  *
  */
 
-public abstract class QbfConSolverEnvDecision<W extends WinningCondition> extends QbfSharedSolver<W, QbfConSolverOptions> {
+public abstract class QbfConSolver<W extends WinningCondition> extends SolverQbfAndQbfCon<W, QbfConSolverOptions> {
 
 	// steps of solving
-	public QBFSolvingObject<W> originalSolvingObject;
+	public QbfSolvingObject<W> originalSolvingObject;
 	public PetriGame originalGame;
 	public PetriGame unfolding;
 	public PetriGame strategy;
@@ -56,8 +56,8 @@ public abstract class QbfConSolverEnvDecision<W extends WinningCondition> extend
 	protected Map<Transition, Integer> transitionmap; 
 	protected List<Transition> setlist;
 	
-	protected QbfConSolverEnvDecision(PetriGame game, W winCon, QbfConSolverOptions so) throws SolvingException {
-		super(new QBFSolvingObject<>(game, winCon), so);
+	protected QbfConSolver(PetriGame game, W winCon, QbfConSolverOptions so) throws SolvingException {
+		super(new QbfSolvingObject<>(game, winCon), so);
 		//super(game, winCon, so);
 		int n = so.getN();
 		int b = so.getB();

@@ -26,12 +26,12 @@ import uniolunisaar.adam.ds.winningconditions.WinningCondition;
  */
 public class PGSimplifier {
 	
-	private QBFSolvingObject<? extends WinningCondition> solvingObject;
+	private QbfSolvingObject<? extends WinningCondition> solvingObject;
 	private boolean removeAdditionalPlaces;
 	private boolean removeUnreachablePlaces;
 	private boolean trueConcurrent;
 	
-	public PGSimplifier(QBFSolvingObject<? extends WinningCondition> solvingObject, boolean removeAdditionalPlaces, boolean removeUnreachablePlaces, boolean trueConcurrent) {
+	public PGSimplifier(QbfSolvingObject<? extends WinningCondition> solvingObject, boolean removeAdditionalPlaces, boolean removeUnreachablePlaces, boolean trueConcurrent) {
 		this.solvingObject = solvingObject;
 		this.removeAdditionalPlaces = removeAdditionalPlaces;
 		this.removeUnreachablePlaces = removeUnreachablePlaces;
