@@ -22,9 +22,9 @@ import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QBFSolvingObject;
+import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSharedSolver;
 import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.ds.solver.Solver;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 
 /**
@@ -33,7 +33,7 @@ import uniolunisaar.adam.ds.winningconditions.WinningCondition;
  *
  */
 
-public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extends Solver<QBFSolvingObject<W>, QBFConSolverOptions> {
+public abstract class QBFConSolverEnvDecision<W extends WinningCondition> extends QbfSharedSolver<W, QBFConSolverOptions> {
 
 	// steps of solving
 	public QBFSolvingObject<W> originalSolvingObject;

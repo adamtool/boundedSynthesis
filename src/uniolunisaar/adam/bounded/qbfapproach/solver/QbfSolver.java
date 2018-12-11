@@ -33,7 +33,6 @@ import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
 import uniolunisaar.adam.ds.exceptions.NotSupportedGameException;
 import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.ds.solver.Solver;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 import uniolunisaar.adam.tools.AdamProperties;
 
@@ -43,7 +42,7 @@ import uniolunisaar.adam.tools.AdamProperties;
  *
  * @param <W>
  */
-public abstract class QbfSolver<W extends WinningCondition> extends Solver<QBFSolvingObject<W>, QbfSolverOptions> {
+public abstract class QbfSolver<W extends WinningCondition> extends QbfSharedSolver<W, QbfSolverOptions> {
 
 	// variable to store keys of calculated components for later use (shared among all solvers)
 	protected int in;

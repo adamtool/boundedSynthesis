@@ -54,11 +54,6 @@ public class SafetyTest extends EmptyTest {
 		if (trueconcurrent) bound = 2;
 		oneTest("deadlock/missDeadlock", bound, 0, false);
 		oneTest("deadlock/missDeadlock", bound + 1, 0, true);
-		bound = 4;
-		//if (trueconcurrent) bound = 3; // TODO why dont the fix with removing _ work anymore?
-		oneTest("firstExamplePaper/firstExamplePaper", bound, 3, false);
-		oneTest("firstExamplePaper/firstExamplePaper", bound + 1, 3, true);
-		bound = 4;
 	}
 	
 	@Test(timeOut = 1800 * 1000) // 30 min
@@ -87,6 +82,10 @@ public class SafetyTest extends EmptyTest {
 		//oneTest("burglar/burglar", 7, 3, true);
 		//oneTest("burglar/burglar", 6, 2, false);
 		//oneTest("container/container", 20, 0, false);
+		int bound = 4;
+		//if (trueconcurrent) bound = 3; // TODO why did i think an error is here?
+		oneTest("firstExamplePaper/firstExamplePaper", bound, 3, false);
+		oneTest("firstExamplePaper/firstExamplePaper", bound + 1, 3, true);
 		oneTest("firstExamplePaper/firstExamplePaper_extended", 10, 0, false);
 		oneTest("firstExamplePaper/firstExamplePaper_extended", 10, 3, false);
 		oneTest("firstExamplePaper/firstExamplePaper_extended", 10, 10, false);

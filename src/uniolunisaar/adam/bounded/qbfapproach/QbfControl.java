@@ -16,7 +16,7 @@ public class QbfControl {
 	public static boolean deterministicStrat = true; // Controller
 	public static boolean debug = false;
 	public static boolean edacc = false;
-	public static boolean rebuildingUnfolder = false; // in contrast to extending unfolder
+	public static boolean rebuildingUnfolder = true; // in contrast to extending unfolder
 	
 	// Check winning strategy for validity
 	public static boolean checkStrategy(PetriGame origNet, PetriGame strat) {
