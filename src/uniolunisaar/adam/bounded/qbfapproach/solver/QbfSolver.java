@@ -44,71 +44,23 @@ import uniolunisaar.adam.tools.AdamProperties;
  */
 public abstract class QbfSolver<W extends WinningCondition> extends SolverQbfAndQbfCon<W, QbfSolverOptions> {
 
-	// variable to store keys of calculated components for later use (shared among all solvers)
-	protected int in;
-	protected int l;
-	protected int u;
-	protected int[] fl;
-	protected int[] det;
-	protected int[] dlt;
-	protected int[] dl;
-	protected int[] term;
-	protected int[] seq;
-	protected int[] win;
-	protected int[] seqImpliesWin;
-
-	// storing QBF result for strategy generation
-	protected String outputQBFsolver;
-	
-	// keys
-	public Map<Integer, String> exists_transitions = new HashMap<>();
-
-	// caches
+	// caches for getOneTransition()
 	private Map<Transition, Set<Place>> restCache = new HashMap<>(); // proven to be slightly useful in terms of performance
 	private Map<Transition, Set<Place>> preMinusPostCache = new HashMap<>();
 
-	// steps of solving
-	public QbfSolvingObject<W> originalSolvingObject;
-	public PetriGame originalGame;
-	public PetriGame unfolding;
-	public PetriGame strategy;
-
-	// solving
-	protected BufferedWriter writer;
-	protected int variablesCounter = 1;
-	protected Map<String, Integer> numbersForVariables = new HashMap<>(); // map for storing keys and the corresponding value
-
-	protected int[][] oneTransitionFormulas; // (Transition, 1..n) -> fireTransitionID
 	protected Map<Transition, Integer> transitionKeys = new HashMap<>();
-
-	protected Transition[] transitions;
+	protected int[][] oneTransitionFormulas; // (Transition, 1..n) -> fireTransitionID
 	protected int[][] deadlockSubFormulas; // (Transition, 1..n) -> deadlockID
 	protected int[][] terminatingSubFormulas; // (Transition, 1..n) -> terminatingID
-	protected File file;
 
 	public QbfSolver(PetriGame game, W winCon, QbfSolverOptions so) throws SolvingException {
 		super(new QbfSolvingObject<>(game, winCon), so);
 		
-		originalSolvingObject = getSolvingObject().getCopy();
-		
 		// initializing bounded parameters n and b
 		int n = so.getN();
 		int b = so.getB();
-		if (n == -1) {
-			if (getSolvingObject().hasBoundedParameterNinExtension()) {
-				n = getSolvingObject().getBoundedParameterNFromExtension();
-			}
-		}
-		if (b == -1) {
-			if (getSolvingObject().hasBoundedParameterBinExtension()) {
-				b = getSolvingObject().getBoundedParameterBFromExtension();
-			}
-		}
-		if (n == -1 || b == -1) {
-			throw new BoundedParameterMissingException(n, b);
-		}
-		getSolvingObject().setN(n);
-		getSolvingObject().setB(b);
+		initializeNandB(n, b);
+		
 
 		// initializing arrays for storing variable IDs
 		fl = new int[n + 1];

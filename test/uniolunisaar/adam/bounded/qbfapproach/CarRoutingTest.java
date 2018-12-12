@@ -10,7 +10,7 @@ public class CarRoutingTest extends EmptyTest {
 	
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testCR() throws Exception {
-		oneTest(2, 1, 15, 3, true);			// TODO does not work...
+		oneTest(2, 1, 15, 3, true);			// TODO does not work... Why should this work?
 	}
 	
 	private void oneTest(int nb_routes, int nb_cars, int n, int b, boolean result) throws Exception {

@@ -35,22 +35,10 @@ import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 
 public abstract class QbfConSolver<W extends WinningCondition> extends SolverQbfAndQbfCon<W, QbfConSolverOptions> {
 
-	// steps of solving
-	public QbfSolvingObject<W> originalSolvingObject;
-	public PetriGame originalGame;
-	public PetriGame unfolding;
-	public PetriGame strategy;
-
-	protected BufferedWriter writer;
-	protected int variablesCounter = 2; // 1 reserved for phi
-	protected Map<String, Integer> numbersForVariables = new HashMap<>();
-
-	protected Transition[] transitions;
+	// TODO make all three [][]
 	protected int[] flowSubFormulas;
 	protected int[] deadlockSubFormulas;
 	protected int[] terminatingSubFormulas;
-	protected File file = null;
-	protected int numTransitions;
 
 	protected List<Map<Integer,Integer>> enabledlist; // First setindex, then iteration index
 	protected Map<Transition, Integer> transitionmap; 
@@ -58,27 +46,14 @@ public abstract class QbfConSolver<W extends WinningCondition> extends SolverQbf
 	
 	protected QbfConSolver(PetriGame game, W winCon, QbfConSolverOptions so) throws SolvingException {
 		super(new QbfSolvingObject<>(game, winCon), so);
-		//super(game, winCon, so);
+		
+		// initializing bounded parameters n and b
 		int n = so.getN();
 		int b = so.getB();
-		if (n == -1) {
-			if (getSolvingObject().hasBoundedParameterNinExtension()) {
-				n = getSolvingObject().getBoundedParameterNFromExtension();
-			}
-		}
-		if (b == -1) {
-			if (getSolvingObject().hasBoundedParameterBinExtension()) {
-				b = getSolvingObject().getBoundedParameterBFromExtension();
-			}
-		}
-		if (n == -1 || b == -1) {
-			throw new BoundedParameterMissingException(n, b);
-		}
-		getSolvingObject().setN(n);
-		getSolvingObject().setB(b);
+		initializeNandB(n, b);
+		
 		transitions = new Transition[getSolvingObject().getGame().getTransitions().size()];
 		int counter = 0;
-		numTransitions = getSolvingObject().getGame().getTransitions().size();
 		for (Transition t : getSolvingObject().getGame().getTransitions()) {
 			transitions[counter++] = t;
 		}

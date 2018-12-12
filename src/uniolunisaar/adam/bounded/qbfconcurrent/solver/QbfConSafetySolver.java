@@ -31,27 +31,11 @@ import uniolunisaar.adam.tools.AdamProperties;
 public class QbfConSafetySolver extends QbfConSolver<Safety> {
 
 	// variable to store keys of calculated components for later use
-	private int in;
-	private int[] fl;
 	private int[] bad;
-	private int[] term;
-	private int[] det;
-	private int l;
-	private int[] dl;
-	private int[] seq;
-	private int[] dlt;
-	private int[] win;
-	private int[] seqImpliesWin;
 	private int detenvlocal;
 	private int detenv;
 	private int detAdditionalSys;
 	private int strongdet;
-
-	// keys
-	public Map<Integer, String> exists_transitions = new HashMap<>();
-	public Map<Integer, String> forall_places = new HashMap<>();
-
-	private String outputCAQE = "";
 
 	public QbfConSafetySolver(PetriGame game, Safety winCon, QbfConSolverOptions so) throws SolvingException {
 		super(game, winCon, so);
@@ -243,7 +227,6 @@ public class QbfConSafetySolver extends QbfConSolver<Safety> {
 				// number);
 				forall.add(number);
 				// System.out.println(number + " = " + p.getId() + "." + i);
-				forall_places.put(number, p.getId() /* + "." + i */);
 			}
 		}
 		for (Place p : getSolvingObject().getGame().getPlaces()) {
@@ -474,9 +457,9 @@ public class QbfConSafetySolver extends QbfConSolver<Safety> {
 			// Read caqe's output
 			BufferedReader inputReader = new BufferedReader(new InputStreamReader(pr.getInputStream()));
 			String line_read;
-			outputCAQE = "";
+			outputQBFsolver = "";
 			while ((line_read = inputReader.readLine()) != null) {
-				outputCAQE += line_read + "\n";
+				outputQBFsolver += line_read + "\n";
 			}
 
 			exitcode = pr.waitFor();
@@ -493,7 +476,7 @@ public class QbfConSafetySolver extends QbfConSolver<Safety> {
 			System.out.println("SAT");
 			return true;
 		} else {
-			System.out.println("QCIR ERROR with FULL output:" + outputCAQE);
+			System.out.println("QCIR ERROR with FULL output:" + outputQBFsolver);
 			return false;
 		}
 	}
@@ -502,7 +485,7 @@ public class QbfConSafetySolver extends QbfConSolver<Safety> {
 	protected PetriGame calculateStrategy() throws NoStrategyExistentException {
 		if (existsWinningStrategy()) {
 			System.out.println("Calculate strategy");
-			for (String outputCAQE_line : outputCAQE.split("\n")) {
+			for (String outputCAQE_line : outputQBFsolver.split("\n")) {
 				if (outputCAQE_line.startsWith("V")) {
 					String[] parts = outputCAQE_line.split(" ");
 					for (int i = 0; i < parts.length; ++i) {
