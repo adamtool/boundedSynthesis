@@ -6,7 +6,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -66,14 +65,6 @@ public class QbfConSafetySolver extends QbfConSolver<Safety> {
 		}
 	}
 
-	private void writeDeadlock() throws IOException {
-		String[] deadlock = getDeadlock();
-		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
-			dl[i] = createUniqueID();
-			writer.write(dl[i] + " = " + deadlock[i]);
-		}
-	}
-
 	private void writeFlow() throws IOException {
 		String[] flow = getFlow();
 		for (int i = 1; i < getSolvingObject().getN(); ++i) {
@@ -120,31 +111,6 @@ public class QbfConSafetySolver extends QbfConSolver<Safety> {
 			nobadmarking[i] = writeAnd(and);
 		}
 		return nobadmarking;
-	}
-
-	private void writeTerminating() throws IOException {
-		String[] terminating = new String[getSolvingObject().getN() + 1];
-		terminating = getTerminating();
-		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
-			term[i] = createUniqueID();
-			writer.write(term[i] + " = " + terminating[i]);
-		}
-	}
-
-	private void writeDeterministic() throws IOException {
-		if (QbfControl.deterministicStrat) {
-			String[] deterministic = getDeterministic();
-			for (int i = 1; i <= getSolvingObject().getN(); ++i) {
-				det[i] = createUniqueID();
-				writer.write(det[i] + " = " + deterministic[i]);
-			}
-		}
-	}
-
-	private void writeLoop() throws IOException {
-		String loop = getLoopIJ();
-		l = createUniqueID();
-		writer.write(l + " = " + loop);
 	}
 
 	private void writeDeadlocksterm() throws IOException {
@@ -322,11 +288,8 @@ public class QbfConSafetySolver extends QbfConSolver<Safety> {
 			}
 		}
 
-		transitions = getSolvingObject().getGame().getTransitions().toArray(new Transition[0]);
-		deadlockSubFormulas = new int[(getSolvingObject().getN() + 1)
-				* getSolvingObject().getGame().getTransitions().size()];
-		terminatingSubFormulas = new int[(getSolvingObject().getN() + 1)
-				* getSolvingObject().getGame().getTransitions().size()];
+		initializeForQcirWrite();
+		
 		int exitcode = -1;
 		try {
 			writer.write("#QCIR-G14          " + QbfControl.linebreak); // spaces left to add variable count in the

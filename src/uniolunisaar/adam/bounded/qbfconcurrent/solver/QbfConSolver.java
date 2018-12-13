@@ -25,10 +25,6 @@ import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 
 public abstract class QbfConSolver<W extends WinningCondition> extends SolverQbfAndQbfCon<W, QbfConSolverOptions> {
 
-	// TODO make both [][]
-	protected int[] deadlockSubFormulas;
-	protected int[] terminatingSubFormulas;
-
 	protected List<Map<Integer,Integer>> enabledlist; // First setindex, then iteration index
 	protected Map<Transition, Integer> transitionmap; 
 	protected List<Transition> setlist;
@@ -40,7 +36,7 @@ public abstract class QbfConSolver<W extends WinningCondition> extends SolverQbf
 		initializeNandB(so.getN(), so.getB());
 		
 		// initializing arrays for storing variable IDs
-		initializeArrays(getSolvingObject().getN());
+		initialize(getSolvingObject().getN());
 	}
 
 	/**
@@ -116,44 +112,6 @@ public abstract class QbfConSolver<W extends WinningCondition> extends SolverQbf
 				}
 			}
 		return writeAnd(outer_and);
-	}
-
-	public String[] getDeadlock() throws IOException {
-		writeDeadlockSubFormulas(1, getSolvingObject().getN());
-		String[] deadlock = new String[getSolvingObject().getN() + 1];
-		Set<Integer> and = new HashSet<>();
-		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
-			and.clear();
-			for (int j = 0; j < getSolvingObject().getGame().getTransitions().size(); ++j) {
-				and.add(deadlockSubFormulas[getSolvingObject().getGame().getTransitions().size() * (i - 1) + j]);
-			}
-			deadlock[i] = writeAnd(and);
-		}
-		return deadlock;
-	}
-	
-	
-
-	private void writeDeadlockSubFormulas(int s, int e) throws IOException {
-		Transition t;
-		Set<Integer> or = new HashSet<>();
-		int number;
-		int strat;
-		for (int i = s; i <= e; ++i) {
-			for (int j = 0; j < getSolvingObject().getGame().getTransitions().size(); ++j) {
-				t = transitions[j];
-				number = createUniqueID();
-				or.clear();
-				for (Place p : t.getPreset()) {
-					or.add(-getVarNr(p.getId() + "." + i, true)); // "p.i"
-					strat = addSysStrategy(p, t);
-					if (strat != 0)
-						or.add(-strat);
-				}
-				writer.write(number + " = " + writeOr(or));
-				deadlockSubFormulas[getSolvingObject().getGame().getTransitions().size() * (i - 1) + j] = number;
-			}
-		}
 	}
 
 	/**
@@ -285,133 +243,7 @@ public abstract class QbfConSolver<W extends WinningCondition> extends SolverQbf
 		return outer_and_number;
 	}
 
-
-	public String[] getTerminating() throws IOException {
-		writeTerminatingSubFormulas(1, getSolvingObject().getN());
-		String[] terminating = new String[getSolvingObject().getN() + 1];
-		Set<Integer> and = new HashSet<>();
-		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
-			if (getSolvingObject().getGame().getTransitions().size() >= 1) {
-				and.clear();
-				for (int j = 0; j < getSolvingObject().getGame().getTransitions().size(); ++j) {
-					and.add(terminatingSubFormulas[getSolvingObject().getGame().getTransitions().size() * (i - 1) + j]);
-				}
-				terminating[i] = writeAnd(and);
-			} else {
-				terminating[i] = "";
-			}
-		}
-		return terminating;
-	}
-
-	private void writeTerminatingSubFormulas(int s, int e) throws IOException {
-		Set<Integer> or = new HashSet<>();
-		Set<Place> pre;
-		Transition t;
-		int key;
-		for (int i = s; i <= e; ++i) {
-			for (int j = 0; j < getSolvingObject().getGame().getTransitions().size(); ++j) {
-				t = transitions[j];
-				key = createUniqueID();
-				pre = t.getPreset();
-				or.clear();
-				for (Place p : pre) {
-					or.add(-getVarNr(p.getId() + "." + i, true));
-				}
-
-				writer.write(key + " = " + writeOr(or));
-				terminatingSubFormulas[getSolvingObject().getGame().getTransitions().size() * (i - 1) + j] = key;
-			}
-		}
-	}
-
-	public String[] getDeterministic() throws IOException { // faster than naive implementation
-		List<Set<Integer>> and = new ArrayList<>(getSolvingObject().getN() + 1);
-		and.add(null); // first element is never accessed
-		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
-			and.add(new HashSet<Integer>());
-		}
-		Transition t1, t2;
-		Transition[] sys_transitions;
-		for (Place sys : getSolvingObject().getGame().getPlaces()) {
-			// Additional system places ARE FORCED to behave deterministically in getDetAdditionalSys, not here
-			// since the true concurrent flow fired every enabled transition
-			if (!getSolvingObject().getGame().getEnvPlaces().contains(sys)
-				&& !sys.getId().startsWith(QbfControl.additionalSystemName)) {
-					if (sys.getPostset().size() > 1) {
-					sys_transitions = sys.getPostset().toArray(new Transition[0]);
-					for (int j = 0; j < sys_transitions.length; ++j) {
-						t1 = sys_transitions[j];
-						for (int k = j + 1; k < sys_transitions.length; ++k) {
-							t2 = sys_transitions[k];
-							for (int i = 1; i <= getSolvingObject().getN(); ++i) {
-								and.get(i).add(writeOneMissingPre(t1, t2, i));
-							}
-						}
-					}
-				}
-			}
-		}
-		String[] deterministic = new String[getSolvingObject().getN() + 1];
-		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
-			deterministic[i] = writeAnd(and.get(i));
-		}
-		return deterministic;
-	}
-
-	private int writeOneMissingPre(Transition t1, Transition t2, int i) throws IOException {
-		Set<Integer> or = new HashSet<>();
-		int strat;
-		for (Place p : t1.getPreset()) {
-			or.add(-getVarNr(p.getId() + "." + i, true));
-			strat = addSysStrategy(p, t1);
-			if (strat != 0)
-				or.add(-strat);
-		}
-		for (Place p : t2.getPreset()) {
-			or.add(-getVarNr(p.getId() + "." + i, true));
-			strat = addSysStrategy(p, t2);
-			if (strat != 0)
-				or.add(-strat);
-		}
-
-		int number = createUniqueID();
-		writer.write(number + " = " + writeOr(or));
-		return number;
-	}
-
-	public String getLoopIJ() throws IOException {
-		Set<Integer> or = new HashSet<>();
-		for (int i = 1; i < getSolvingObject().getN(); ++i) {
-			for (int j = i + 1; j <= getSolvingObject().getN(); ++j) {
-				Set<Integer> and = new HashSet<>();
-				for (Place p : getSolvingObject().getGame().getPlaces()) {
-					int p_i = getVarNr(p.getId() + "." + i, true);
-					int p_j = getVarNr(p.getId() + "." + j, true);
-					and.add(writeImplication(p_i, p_j));
-					and.add(writeImplication(p_j, p_i));
-				}
-				int andNumber = createUniqueID();
-				writer.write(andNumber + " = " + writeAnd(and));
-				or.add(andNumber);
-			}
-		}
-		return writeOr(or);
-	}
-
-	public int addSysStrategy(Place p, Transition t) {
-		if (!getSolvingObject().getGame().getEnvPlaces().contains(p)) {
-			if (p.getId().startsWith(QbfControl.additionalSystemName)) {
-				return getVarNr(p.getId() + ".." + t.getId(), true);
-			} else {
-				return getVarNr(p.getId() + ".." + getTruncatedId(t.getId()), true);
-			}
-		} else {
-			return 0;
-		}
-	}
-
-	public int addEnvStrategy(Place p, String t, int i) {
+	protected int addEnvStrategy(Place p, String t, int i) {
 		if (getSolvingObject().getGame().getEnvPlaces().contains(p)) {
 			return getVarNr(p.getId() + "**" + getTruncatedId(t) + "**" + i, true);
 		} else {

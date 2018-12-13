@@ -288,7 +288,7 @@ public class QbfAReachabilitySolver extends QbfFlowChainSolver<Reachability> {
 	protected void writeQCIR() throws IOException {
 		Map<Place, Set<Transition>> systemHasToDecideForAtLeastOne = unfoldPG();
 
-		initializeVariablesForWriteQCIR();
+		initializeForQcirWrite();
 
 		writer.write("#QCIR-G14          " + QbfControl.linebreak); // spaces left to add variable count in the end
 		addExists();
