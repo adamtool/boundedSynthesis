@@ -1,29 +1,22 @@
 package uniolunisaar.adam.bounded.qbfapproach.solver;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 
-import uniol.apt.adt.pn.Marking;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.analysis.exception.UnboundedException;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
-import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QbfSolvingObject;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.FiniteDeterministicUnfolder;
@@ -49,6 +42,7 @@ public abstract class QbfSolver<W extends WinningCondition> extends SolverQbfAnd
 	private Map<Transition, Set<Place>> preMinusPostCache = new HashMap<>();
 
 	protected Map<Transition, Integer> transitionKeys = new HashMap<>();
+	// TODO only used for construction?? reuse them?!
 	protected int[][] oneTransitionFormulas; // (Transition, 1..n) -> fireTransitionID
 	protected int[][] deadlockSubFormulas; // (Transition, 1..n) -> deadlockID
 	protected int[][] terminatingSubFormulas; // (Transition, 1..n) -> terminatingID
@@ -57,57 +51,10 @@ public abstract class QbfSolver<W extends WinningCondition> extends SolverQbfAnd
 		super(new QbfSolvingObject<>(game, winCon), so);
 		
 		// initializing bounded parameters n and b
-		int n = so.getN();
-		int b = so.getB();
-		initializeNandB(n, b);
+		initializeNandB(so.getN(), so.getB());
 		
-
 		// initializing arrays for storing variable IDs
-		fl = new int[n + 1];
-		det = new int[n + 1];
-		dlt = new int[n + 1];
-		dl = new int[n + 1];
-		term = new int[n + 1];
-		seq = new int[n + 1];
-		win = new int[n + 1];
-		seqImpliesWin = new int[n + 1];
-
-		// create random file in tmp directory which is deleted after solving it
-		String prefix = "";
-		final Random rand = new Random();
-		final String lexicon = "ABCDEFGHIJKLMNOPQRSTUVWXYZ12345674890";
-		for (int i = 0; i < 20; ++i) {
-			prefix += lexicon.charAt(rand.nextInt(lexicon.length()));
-		}
-		try {
-			file = File.createTempFile(prefix, /* pn.getName() + */ ".qcir");
-		} catch (IOException e) {
-			throw new SolvingException("Generation of QBF-file failed.", e.fillInStackTrace());
-		}
-		file.deleteOnExit();
-		try {
-			writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "utf-8"));
-		} catch (FileNotFoundException | UnsupportedEncodingException e) {
-			throw new SolvingException("Writing of QBF-file failed.", e.fillInStackTrace());
-		}
-	}
-
-	protected void writeInitial() throws IOException {
-		in = createUniqueID();
-		writer.write(in + " = " + getInitial());
-	}
-
-	protected String getInitial() {
-		Marking initialMarking = getSolvingObject().getGame().getInitialMarking();
-		Set<Integer> initial = new HashSet<>();
-		for (Place p : getSolvingObject().getGame().getPlaces()) {
-			if (initialMarking.getToken(p).getValue() == 1) {
-				initial.add(getVarNr(p.getId() + "." + 1, true));
-			} else {
-				initial.add(-getVarNr(p.getId() + "." + 1, true));
-			}
-		}
-		return writeAnd(initial);
+		initializeArrays(getSolvingObject().getN());
 	}
 
 	protected void writeDeadlock() throws IOException {
@@ -669,87 +616,6 @@ public abstract class QbfSolver<W extends WinningCondition> extends SolverQbfAnd
 		int index = createUniqueID();
 		writer.write(index + " = " + writeAnd(outerAnd));
 		return index;
-	}
-
-	public int getVarNr(String id, boolean extraCheck) {
-		Integer ret = numbersForVariables.get(id);
-		if (ret != null) {
-			return ret;
-		} else if (extraCheck) {
-			throw new IllegalArgumentException("Could not but should have found: " + id);
-		} else {
-			return createVariable(id);
-		}
-	}
-
-	public Pair<Boolean, Integer> getVarNrWithResult(String id) {
-		Integer ret = numbersForVariables.get(id);
-		if (ret != null) {
-			return new Pair<>(false, ret);
-		} else {
-			return new Pair<>(true, createVariable(id));
-		}
-	}
-
-	public int createVariable(String id) {
-		numbersForVariables.put(id, variablesCounter);
-		return variablesCounter++;
-	}
-
-	public int createUniqueID() {
-		return variablesCounter++;
-	}
-
-	public String getTruncatedId(String id) {
-		int index = id.indexOf("__");
-		if (index != -1) {
-			id = id.substring(0, index);
-		}
-		return id;
-	}
-
-	// WRITERS:
-	public String writeExists(Set<Integer> input) {
-		return writeString("exists", input);
-	}
-
-	public String writeForall(Set<Integer> input) {
-		return writeString("forall", input);
-	}
-
-	public String writeOr(Set<Integer> input) {
-		return writeString("or", input);
-	}
-
-	public String writeAnd(Set<Integer> input) {
-		return writeString("and", input);
-	}
-
-	private String writeString(String op, Set<Integer> input) {
-		StringBuilder sb = new StringBuilder(op);
-		sb.append("(");
-		String delim = ""; // first element is added without ","
-
-		for (int i : input) {
-			sb.append(delim);
-			delim = ",";
-			sb.append(i);
-		}
-		sb.append(")" + QbfControl.linebreak);
-		String result = sb.toString();
-		return result;
-	}
-
-	public int writeImplication(int from, int to) throws IOException {
-		Pair<Boolean, Integer> result = getVarNrWithResult("Variable:" + from + "=>Variable:" + to);
-		int number = result.getSecond();
-		if (result.getFirst()) {
-			Set<Integer> or = new HashSet<>();
-			or.add(-from);
-			or.add(to);
-			writer.write(number + " = " + writeOr(or));
-		}
-		return number;
 	}
 
 	protected Map<Place, Set<Transition>> unfoldPG() {

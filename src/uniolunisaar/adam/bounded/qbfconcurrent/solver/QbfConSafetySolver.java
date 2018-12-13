@@ -39,14 +39,7 @@ public class QbfConSafetySolver extends QbfConSolver<Safety> {
 
 	public QbfConSafetySolver(PetriGame game, Safety winCon, QbfConSolverOptions so) throws SolvingException {
 		super(game, winCon, so);
-		fl = new int[getSolvingObject().getN() + 1];
 		bad = new int[getSolvingObject().getN() + 1];
-		term = new int[getSolvingObject().getN() + 1];
-		det = new int[getSolvingObject().getN() + 1];
-		dl = new int[getSolvingObject().getN() + 1];
-		seq = new int[getSolvingObject().getN() + 1];
-		dlt = new int[getSolvingObject().getN() + 1];
-		win = new int[getSolvingObject().getN() + 1];
 	}
 
 	private void writeDetEnv() throws IOException {
@@ -71,11 +64,6 @@ public class QbfConSafetySolver extends QbfConSolver<Safety> {
 			detAdditionalSys = createUniqueID();
 			writer.write(detAdditionalSys + " = " + getDetAdditionalSys());
 		}
-	}
-
-	private void writeInitial() throws IOException {
-		in = createUniqueID();
-		writer.write(in + " = " + getInitial());
 	}
 
 	private void writeDeadlock() throws IOException {
@@ -334,9 +322,7 @@ public class QbfConSafetySolver extends QbfConSolver<Safety> {
 			}
 		}
 
-		seqImpliesWin = new int[getSolvingObject().getN() + 1];
 		transitions = getSolvingObject().getGame().getTransitions().toArray(new Transition[0]);
-		flowSubFormulas = new int[getSolvingObject().getN() * getSolvingObject().getGame().getTransitions().size()];
 		deadlockSubFormulas = new int[(getSolvingObject().getN() + 1)
 				* getSolvingObject().getGame().getTransitions().size()];
 		terminatingSubFormulas = new int[(getSolvingObject().getN() + 1)
