@@ -26,7 +26,7 @@ public abstract class QbfFlowChainSolver<W extends Condition> extends QbfSolver<
 	protected void setTokenFlow() {
 		Map<Transition, Set<Pair<Place, Place>>> tfl = new HashMap<>();
 		for (Transition t : getSolvingObject().getGame().getTransitions()) {
-			Collection<Transit> list = getSolvingObject().getGame().getTokenFlows(t);
+			Collection<Transit> list = getSolvingObject().getGame().getTransits(t);
 			Set<Pair<Place, Place>> set = new HashSet<>();
 			for (Transit tf : list) {
 //				for (Place pre : tf.getPreset()) {
@@ -111,7 +111,7 @@ public abstract class QbfFlowChainSolver<W extends Condition> extends QbfSolver<
 	protected int getAllObjectiveFlowChain(Place p, Transition t, int i, Set<Place> tokenFlow) throws IOException {
 		Pair<Boolean, Integer> result = getVarNrWithResult("allOBJECTIVEFlowChain" + p.getId() + "." + t.getId() + "." + i);
 		if (result.getFirst()) {
-			Collection<Transit> list = getSolvingObject().getGame().getTokenFlows(t);
+			Collection<Transit> list = getSolvingObject().getGame().getTransits(t);
 			for (Transit tfl : list) {
 				if (tfl.getPostset().contains(p) && tfl.isInitial()) {
 					Pair<Boolean, Integer> or = getVarNrWithResult("or()");
@@ -134,7 +134,7 @@ public abstract class QbfFlowChainSolver<W extends Condition> extends QbfSolver<
 	protected int getOneNotObjectiveFlowChain(Place p, Transition t, int i, Set<Place> tokenflow) throws IOException {
 		Pair<Boolean, Integer> result = getVarNrWithResult("oneNOTOBJECTIVEFlowChain" + p.getId() + "." + t.getId() + "." + i);
 		if (result.getFirst()) {
-			Collection<Transit> list = getSolvingObject().getGame().getTokenFlows(t);
+			Collection<Transit> list = getSolvingObject().getGame().getTransits(t);
 			for (Transit tfl : list) {
 				if (tfl.getPostset().contains(p) && tfl.isInitial()) {
 					Pair<Boolean, Integer> and = getVarNrWithResult("and()");

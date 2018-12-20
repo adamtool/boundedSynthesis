@@ -8,7 +8,7 @@ import uniolunisaar.adam.bounded.qbfconcurrent.solver.QbfConSolverFactory;
 import uniolunisaar.adam.bounded.qbfconcurrent.solver.QbfConSolverOptions;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.solver.Solver;
-import uniolunisaar.adam.logic.util.AdamTools;
+import uniolunisaar.adam.util.PNWTTools;
 
 
 public abstract class EmptyTest {
@@ -32,12 +32,12 @@ public abstract class EmptyTest {
 	}
  
 	protected void testSolver (Solver<?,?> sol, int n, int b, boolean result) throws Exception {
-		AdamTools.savePG2PDF("originalGame", sol.getGame(), false);
+		PNWTTools.savePnwt2PDF("originalGame", sol.getGame(), false);
 		PetriGame originalGame = new PetriGame(sol.getGame());		// true copy of original game to check strategy for correctness later
         sol.existsWinningStrategy();								// solve game
-		AdamTools.savePG2PDF("unfolding", sol.getGame(), false);
+		PNWTTools.savePnwt2PDF("unfolding", sol.getGame(), false);
 		if (sol.existsWinningStrategy()) {
-			AdamTools.savePG2PDF("strategy", sol.getStrategy(), false);
+			PNWTTools.savePnwt2PDF("strategy", sol.getStrategy(), false);
 			Assert.assertEquals(QbfControl.checkStrategy(originalGame, sol.getStrategy()), true);
 		}
 		Assert.assertEquals(sol.existsWinningStrategy(), result);

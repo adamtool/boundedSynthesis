@@ -4,7 +4,7 @@ import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.Unfolder;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.logic.util.AdamTools;
+import uniolunisaar.adam.util.PNWTTools;
 
 public class QbfControl {
 
@@ -30,6 +30,6 @@ public class QbfControl {
 		for (Transition t : strat.getTransitions()) {
 			t.setLabel(Unfolder.getTruncatedId(t.getId()));
 		}
-		return AdamTools.checkStrategy(origNet, strat);
+		return PNWTTools.checkStrategy(origNet, strat);
 	}
 }

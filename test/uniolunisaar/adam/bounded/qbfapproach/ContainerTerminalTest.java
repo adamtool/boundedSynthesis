@@ -15,7 +15,7 @@ import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverOptions;
 import uniolunisaar.adam.logic.exceptions.NetNotConcurrencyPreservingException;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
-import uniolunisaar.adam.ds.exceptions.CouldNotFindSuitableWinningConditionException;
+import uniolunisaar.adam.exceptions.CouldNotFindSuitableConditionException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 import uniolunisaar.adam.logic.exceptions.ParameterMissingException;
 import uniolunisaar.adam.ds.exceptions.SolverDontFitPetriGameException;
@@ -24,7 +24,7 @@ import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.objectives.Condition;
 import uniolunisaar.adam.generators.synthesis.ContainerTerminal;
-import uniolunisaar.adam.logic.util.AdamTools;
+import uniolunisaar.adam.util.PNWTTools;
 import uniolunisaar.adam.tools.Logger;
 
 /**
@@ -56,18 +56,18 @@ public class ContainerTerminalTest {
     }
 
     @Test(dataProvider = "conTerminal", enabled=false)
-    public void testContainerTerminal(int containerPlaces, boolean hasStrategy) throws NetNotSafeException, NetNotConcurrencyPreservingException, NoStrategyExistentException, IOException, InterruptedException, FileNotFoundException, ModuleException, NoSuitableDistributionFoundException, SolverDontFitPetriGameException, NotSupportedGameException, CouldNotFindSuitableWinningConditionException, ParameterMissingException, ParseException, SolvingException {
+    public void testContainerTerminal(int containerPlaces, boolean hasStrategy) throws NetNotSafeException, NetNotConcurrencyPreservingException, NoStrategyExistentException, IOException, InterruptedException, FileNotFoundException, ModuleException, NoSuitableDistributionFoundException, SolverDontFitPetriGameException, NotSupportedGameException, CouldNotFindSuitableConditionException, ParameterMissingException, ParseException, SolvingException {
         final String path = outputDir;
         String name = containerPlaces + "_conTerminal";
         File f = new File(path);
         f.mkdir();
         System.out.println("Generate container terminal...");
         PetriGame pn = ContainerTerminal.createSafetyVersion(containerPlaces, true);
-        AdamTools.savePG2PDF(path + name, pn, false);
+        PNWTTools.savePnwt2PDF(path + name, pn, false);
         QbfSolver<? extends Condition> solv = QbfSolverFactory.getInstance().getSolver(pn, false, new QbfSolverOptions(15, 3));
         if (hasStrategy) {
             Assert.assertTrue(solv.existsWinningStrategy());
-            AdamTools.savePG2PDF(path + name + "_pg", solv.getStrategy(), true);
+            PNWTTools.savePnwt2PDF(path + name + "_pg", solv.getStrategy(), true);
         } else {
             Assert.assertFalse(solv.existsWinningStrategy());
         }
