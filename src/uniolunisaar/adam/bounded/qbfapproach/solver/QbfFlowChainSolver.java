@@ -14,7 +14,7 @@ import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
 import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.ds.petrigame.TokenFlow;
+import uniolunisaar.adam.ds.petrinetwithtransits.Transit;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 
 public abstract class QbfFlowChainSolver<W extends WinningCondition> extends QbfSolver<W> {
@@ -26,9 +26,9 @@ public abstract class QbfFlowChainSolver<W extends WinningCondition> extends Qbf
 	protected void setTokenFlow() {
 		Map<Transition, Set<Pair<Place, Place>>> tfl = new HashMap<>();
 		for (Transition t : getSolvingObject().getGame().getTransitions()) {
-			Collection<TokenFlow> list = getSolvingObject().getGame().getTokenFlows(t);
+			Collection<Transit> list = getSolvingObject().getGame().getTokenFlows(t);
 			Set<Pair<Place, Place>> set = new HashSet<>();
-			for (TokenFlow tf : list) {
+			for (Transit tf : list) {
 //				for (Place pre : tf.getPreset()) {
                     Place pre = tf.getPresetPlace();
                     if (pre != null) {
@@ -111,8 +111,8 @@ public abstract class QbfFlowChainSolver<W extends WinningCondition> extends Qbf
 	protected int getAllObjectiveFlowChain(Place p, Transition t, int i, Set<Place> tokenFlow) throws IOException {
 		Pair<Boolean, Integer> result = getVarNrWithResult("allOBJECTIVEFlowChain" + p.getId() + "." + t.getId() + "." + i);
 		if (result.getFirst()) {
-			Collection<TokenFlow> list = getSolvingObject().getGame().getTokenFlows(t);
-			for (TokenFlow tfl : list) {
+			Collection<Transit> list = getSolvingObject().getGame().getTokenFlows(t);
+			for (Transit tfl : list) {
 				if (tfl.getPostset().contains(p) && tfl.isInitial()) {
 					Pair<Boolean, Integer> or = getVarNrWithResult("or()");
 					if (or.getFirst()) {
@@ -134,8 +134,8 @@ public abstract class QbfFlowChainSolver<W extends WinningCondition> extends Qbf
 	protected int getOneNotObjectiveFlowChain(Place p, Transition t, int i, Set<Place> tokenflow) throws IOException {
 		Pair<Boolean, Integer> result = getVarNrWithResult("oneNOTOBJECTIVEFlowChain" + p.getId() + "." + t.getId() + "." + i);
 		if (result.getFirst()) {
-			Collection<TokenFlow> list = getSolvingObject().getGame().getTokenFlows(t);
-			for (TokenFlow tfl : list) {
+			Collection<Transit> list = getSolvingObject().getGame().getTokenFlows(t);
+			for (Transit tfl : list) {
 				if (tfl.getPostset().contains(p) && tfl.isInitial()) {
 					Pair<Boolean, Integer> and = getVarNrWithResult("and()");
 					if (and.getFirst()) {

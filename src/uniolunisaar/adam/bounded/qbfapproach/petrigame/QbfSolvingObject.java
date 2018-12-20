@@ -11,7 +11,7 @@ import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.solver.SolvingObject;
-import uniolunisaar.adam.ds.util.AdamExtensions;
+import uniolunisaar.adam.util.AdamExtensions;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 
 /**
