@@ -11,7 +11,6 @@ import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
-import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
 import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
@@ -359,64 +358,6 @@ public abstract class QbfFlowChainSolver<W extends WinningCondition> extends Qbf
 
 	@Override
 	protected PetriGame calculateStrategy() throws NoStrategyExistentException {
-		if (existsWinningStrategy()) {
-			for (String outputCAQE_line : outputQBFsolver.split("\n")) {
-				if (outputCAQE_line.startsWith("V")) {
-					String[] parts = outputCAQE_line.split(" ");
-					for (int i = 0; i < parts.length; ++i) {
-						if (!parts[i].equals("V")) {
-							int num = Integer.parseInt(parts[i]);
-							if (num > 0) {
-								// System.out.println("ALLOW " + num);
-							} else if (num < 0) {
-								// System.out.println("DISALLOW " + num * (-1));
-								String remove = exists_transitions.get(num * (-1));
-								int in = remove.indexOf("..");
-								if (in != -1) { // CTL has exists variables for path EF which mean not remove
-									String place = remove.substring(0, in);
-									String transition = remove.substring(in + 2, remove.length());
-									if (place.startsWith(QbfControl.additionalSystemName)) {
-										// additional system place exactly removes transitions
-										// Transition might already be removed by recursion
-										Set<Transition> transitions = new HashSet<>(getSolvingObject().getGame().getTransitions());
-										for (Transition t : transitions) {
-											if (t.getId().equals(transition)) {
-												// System.out.println("starting " + t);
-												getSolvingObject().removeTransitionRecursively(t);
-											}
-										}
-									} else {
-										// original system place removes ALL transitions
-										Set<Place> places = new HashSet<>(getSolvingObject().getGame().getPlaces());
-										for (Place p : places) {
-											if (p.getId().equals(place)) {
-												Set<Transition> transitions = new HashSet<>(p.getPostset());
-												for (Transition post : transitions) {
-													if (transition.equals(getTruncatedId(post.getId()))) {
-														// System.out.println("starting " + post);
-														getSolvingObject().removeTransitionRecursively(post);
-													}
-												}
-											}
-										}
-									}
-								}
-							} else {
-								// 0 is the last member
-								// System.out.println("Finished reading strategy.");
-								new PGSimplifier(getSolvingObject(), true, false, false).simplifyPG();
-								strategy = new PetriGame(getSolvingObject().getGame());
-								return getSolvingObject().getGame();
-							}
-						}
-					}
-				}
-			}
-			// There were no decision points for the system, thus the previous loop did not leave the method
-			new PGSimplifier(getSolvingObject(), true, false, false).simplifyPG();
-			strategy = new PetriGame(getSolvingObject().getGame());
-			return getSolvingObject().getGame();
-		}
-		throw new NoStrategyExistentException();
+		return calculateStrategy(false);
 	}
 }

@@ -14,6 +14,7 @@ import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QCIRconsistency;
+import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
 import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Buchi;
@@ -99,7 +100,7 @@ public class QbfEBuchiSolver extends QbfSolver<Buchi> {
 	protected void writeQCIR() throws IOException {
 		Map<Place, Set<Transition>> systemHasToDecideForAtLeastOne = unfoldPG();
 
-		initializeForQcirWrite();
+		initializeAfterUnfolding();
 
 		writer.write("#QCIR-G14" + QbfControl.replaceAfterWardsSpaces + QbfControl.linebreak); // spaces left to add variable count in the end
 		addExists();
@@ -166,5 +167,10 @@ public class QbfEBuchiSolver extends QbfSolver<Buchi> {
 		}
 
 		assert (QCIRconsistency.checkConsistency(file));
+	}
+	
+	@Override
+	protected PetriGame calculateStrategy() throws NoStrategyExistentException {
+		return calculateStrategy(false);
 	}
 }

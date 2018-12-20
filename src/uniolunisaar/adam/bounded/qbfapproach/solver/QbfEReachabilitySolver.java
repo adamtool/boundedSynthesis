@@ -14,6 +14,7 @@ import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QCIRconsistency;
+import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
 import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Reachability;
@@ -107,7 +108,7 @@ public class QbfEReachabilitySolver extends QbfSolver<Reachability> {
 	protected void writeQCIR() throws IOException {
 		Map<Place, Set<Transition>> systemHasToDecideForAtLeastOne = unfoldPG();
 
-		initializeForQcirWrite();
+		initializeAfterUnfolding();
 
 		writer.write("#QCIR-G14" + QbfControl.replaceAfterWardsSpaces + QbfControl.linebreak); // spaces left to add variable count in the end
 		addExists();
@@ -117,8 +118,8 @@ public class QbfEReachabilitySolver extends QbfSolver<Reachability> {
 		writeFlow();
 		writeSequence();
 		writeGoodPlaces();
-		writeDeadlock();
 		writeTerminating();
+		writeDeadlock();
 		writeDeadlocksterm();
 		writeDeterministic();
 		writeLoop();
@@ -179,5 +180,10 @@ public class QbfEReachabilitySolver extends QbfSolver<Reachability> {
 		}
 
 		assert (QCIRconsistency.checkConsistency(file));
+	}
+	
+	@Override
+	protected PetriGame calculateStrategy() throws NoStrategyExistentException {
+		return calculateStrategy(false);
 	}
 }

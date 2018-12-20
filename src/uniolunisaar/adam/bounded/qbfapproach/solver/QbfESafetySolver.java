@@ -312,18 +312,18 @@ public class QbfESafetySolver extends QbfFlowChainSolver<Safety> {
 	protected void writeQCIR() throws IOException {
 		Map<Place, Set<Transition>> systemHasToDecideForAtLeastOne = unfoldPG();
 
-		initializeForQcirWrite();
+		initializeAfterUnfolding();
 
 		writer.write("#QCIR-G14          " + QbfControl.linebreak); // spaces left to add variable count in the end
 		addExists();
 		addForall();
 
 		writeInitial();
+		writeTerminating();
 		writeDeadlock();
 		writeFlow();
 		writeSequence();
 		writeNoBadPlaces();
-		writeTerminating();
 		writeDeterministic();
 		if (!getTransitionCreatingTokenFlow().isEmpty()) {
 			writeSimultaneousSpawnAndBad();

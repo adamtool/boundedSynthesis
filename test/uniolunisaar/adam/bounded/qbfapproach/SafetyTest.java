@@ -18,7 +18,7 @@ public class SafetyTest extends EmptyTest {
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testLoops() throws Exception {
 		if (!QbfControl.rebuildingUnfolder) { // simple examples with loops
-			oneTest("jhh/robots_true", 20, 0, true);
+			oneTest("jhh/robots_true", 19, 0, true);
 			oneTest("jhh/robots_false", 20, 0, false);
 			oneTest("constructedExample/constructedExample", 3, 0, false);
 			oneTest("constructedExample/constructedExample", 4, 0, true);

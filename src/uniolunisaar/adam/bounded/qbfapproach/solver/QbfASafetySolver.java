@@ -13,6 +13,7 @@ import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QCIRconsistency;
+import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
 import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.Safety;
@@ -90,18 +91,18 @@ public class QbfASafetySolver extends QbfSolver<Safety> {
 			}
 		}
 		
-		initializeForQcirWrite();
+		initializeAfterUnfolding();
 
 		writer.write("#QCIR-G14" + QbfControl.replaceAfterWardsSpaces + QbfControl.linebreak); // spaces left to add variable count in the end
 		addExists();
 		addForall();
 
 		writeInitial();
+		writeTerminating();
 		writeDeadlock();
 		writeFlow();
 		writeSequence();
 		writeNoBadPlaces();
-		writeTerminating();
 		writeDeterministic();
 		writeLoop();
 		writeDeadlocksterm();
@@ -157,5 +158,10 @@ public class QbfASafetySolver extends QbfSolver<Safety> {
 		}
 
 		assert (QCIRconsistency.checkConsistency(file));
+	}
+
+	@Override
+	protected PetriGame calculateStrategy() throws NoStrategyExistentException {
+		return calculateStrategy(false);
 	}
 }

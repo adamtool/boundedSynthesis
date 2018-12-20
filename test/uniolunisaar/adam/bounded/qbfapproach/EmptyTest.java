@@ -13,21 +13,21 @@ import uniolunisaar.adam.logic.util.AdamTools;
 
 public abstract class EmptyTest {
 
-	protected boolean trueconcurrent = false;
+	protected boolean trueconcurrent = true;
 
 	protected void testPath (String path, int n, int b, boolean result) throws Exception {
 		if (trueconcurrent) {
-			testSolver(QbfConSolverFactory.getInstance().getSolver(path, new QbfConSolverOptions(n, b)),n,b,result);
+			testSolver(QbfConSolverFactory.getInstance().getSolver(path, new QbfConSolverOptions(n, b)), n, b, result);
 		} else {
-			testSolver(QbfSolverFactory.getInstance().getSolver(path, new QbfSolverOptions(n, b)),n,b,result);
+			testSolver(QbfSolverFactory.getInstance().getSolver(path, new QbfSolverOptions(n, b)), n, b, result);
 		}
 	}
 	
 	protected void testGame (PetriGame pg, int n, int b, boolean result) throws Exception {
 		if (trueconcurrent) {
-			testSolver(QbfConSolverFactory.getInstance().getSolver(pg, false, new QbfConSolverOptions(n, b)),n,b,result);
+			testSolver(QbfConSolverFactory.getInstance().getSolver(pg, false, new QbfConSolverOptions(n, b)), n, b, result);
 		} else {
-			testSolver(QbfSolverFactory.getInstance().getSolver(pg, false, new QbfSolverOptions(n, b)),n,b,result);
+			testSolver(QbfSolverFactory.getInstance().getSolver(pg, false, new QbfSolverOptions(n, b)), n, b, result);
 		}
 	}
  

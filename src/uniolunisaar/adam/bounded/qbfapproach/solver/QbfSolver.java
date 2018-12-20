@@ -1,10 +1,6 @@
 package uniolunisaar.adam.bounded.qbfapproach.solver;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -12,19 +8,11 @@ import java.util.Set;
 
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
-import uniol.apt.analysis.exception.UnboundedException;
 import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
-import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QbfSolvingObject;
-import uniolunisaar.adam.bounded.qbfapproach.unfolder.FiniteDeterministicUnfolder;
-import uniolunisaar.adam.bounded.qbfapproach.unfolder.ForNonDeterministicUnfolder;
-import uniolunisaar.adam.bounded.qbfapproach.unfolder.Unfolder;
-import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
-import uniolunisaar.adam.ds.exceptions.NotSupportedGameException;
 import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.winningconditions.WinningCondition;
-import uniolunisaar.adam.tools.AdamProperties;
 
 /**
  *
@@ -45,18 +33,7 @@ public abstract class QbfSolver<W extends WinningCondition> extends SolverQbfAnd
 		initializeNandB(so.getN(), so.getB());
 		
 		// initializing arrays for storing variable IDs
-		initialize(getSolvingObject().getN());
-	}
-
-	protected void writeDeadlocksterm() throws IOException {
-		Set<Integer> or = new HashSet<>();
-		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
-			or.clear();
-			or.add(-dl[i]);
-			or.add(term[i]);
-			dlt[i] = createUniqueID();
-			writer.write(dlt[i] + " = " + writeOr(or));
-		}
+		initializeBeforeUnfolding(getSolvingObject().getN());
 	}
 
 	protected void writeFlow() throws IOException {
@@ -74,7 +51,6 @@ public abstract class QbfSolver<W extends WinningCondition> extends SolverQbfAnd
 		for (int i = 1; i < getSolvingObject().getN(); ++i) {
 			or.clear();
 			for (int j = 0; j < getSolvingObject().getGame().getTransitions().size(); ++j) {
-				// or.add(flowSubFormulas[pn.getTransitions().size() * (i - 1) + j]);
 				or.add(getOneTransition(transitions[j], i));
 			}
 			flow[i] = writeOr(or);
@@ -85,7 +61,8 @@ public abstract class QbfSolver<W extends WinningCondition> extends SolverQbfAnd
 	protected int getOneTransition(Transition t, int i) throws IOException {
 		if (oneTransitionFormulas[transitionKeys.get(t)][i] == 0) {
 			Set<Integer> and = new HashSet<>();
-			int strat;
+			//old alternative:
+			/*int strat;
 			for (Place p : t.getPreset()) {
 				and.add(getVarNr(p.getId() + "." + i, true));
 				strat = addSysStrategy(p, t);
@@ -93,6 +70,10 @@ public abstract class QbfSolver<W extends WinningCondition> extends SolverQbfAnd
 					and.add(strat);
 				}
 			}
+			*/
+			//new alternative:
+			and.add(-deadlockSubFormulas[transitionKeys.get(t)][i]);
+			
 			for (Place p : t.getPostset()) {
 				and.add(getVarNr(p.getId() + "." + (i + 1), true));
 			}
@@ -301,218 +282,5 @@ public abstract class QbfSolver<W extends WinningCondition> extends SolverQbfAnd
 		}
 		writer.write(writeForall(forall));
 		writer.write("output(1)" + QbfControl.replaceAfterWardsSpaces + QbfControl.linebreak);
-	}
-
-	// Additional information from nondeterministic unfolding is utilized:
-	// for each place a set of transitions is given of which at least one has to
-	// be activated by the strategy to be deadlock-avoiding
-	protected int enumerateStratForNonDetUnfold(Map<Place, Set<Transition>> additionalInfoForNonDetUnfl) throws IOException {
-		if (additionalInfoForNonDetUnfl.keySet().isEmpty()) {
-			return -1;
-		}
-		Set<Integer> and = new HashSet<>();
-		Set<Transition> transitions;
-		int or_index;
-		Set<Integer> or = new HashSet<>();
-		for (Place p : additionalInfoForNonDetUnfl.keySet()) {
-			transitions = additionalInfoForNonDetUnfl.get(p);
-			or.clear();
-			for (Transition t : transitions) {
-				or.add(getVarNr(p.getId() + ".." + t.getId(), true));
-			}
-			or_index = createUniqueID();
-			writer.write(or_index + " = " + writeOr(or));
-			and.add(or_index);
-		}
-		int index = createUniqueID();
-		writer.write(index + " = " + writeAnd(and));
-		return index;
-	}
-
-	// Additional information from nondeterministic unfolding is utilized:
-	// for each place a set of transitions is given of which EXACTLY one has to
-	// be activated by the strategy to be deadlock-avoiding
-	protected int enumerateStratForNonDetUnfoldEXACTLYONE(Map<Place, Set<Transition>> additionalInfoForNonDetUnfl) throws IOException {
-		if (additionalInfoForNonDetUnfl.keySet().isEmpty()) {
-			return -1;
-		}
-		Set<Integer> outerAnd = new HashSet<>();
-		int innerAnd_index;
-		Set<Integer> innerAnd = new HashSet<>();
-		Set<Transition> transitions;
-		int or_index;
-		Set<Integer> or = new HashSet<>();
-		for (Place p : additionalInfoForNonDetUnfl.keySet()) {
-			transitions = additionalInfoForNonDetUnfl.get(p);
-			or.clear();
-			for (Transition t : transitions) {
-				innerAnd.clear();
-				int transition_index = getVarNr(p.getId() + ".." + t.getId(), true);
-				innerAnd.add(transition_index);
-				for (Transition t2 : transitions) {
-					int transition2_index = getVarNr(p.getId() + ".." + t2.getId(), true);
-					if (t != t2) {
-						innerAnd.add(-transition2_index);
-					}
-				}
-				innerAnd_index = createUniqueID();
-				writer.write(innerAnd_index + " = " + writeAnd(innerAnd));
-				or.add(innerAnd_index);
-			}
-			or_index = createUniqueID();
-			writer.write(or_index + " = " + writeOr(or));
-			outerAnd.add(or_index);
-		}
-		int index = createUniqueID();
-		writer.write(index + " = " + writeAnd(outerAnd));
-		return index;
-	}
-
-	protected Map<Place, Set<Transition>> unfoldPG() {
-		originalGame = new PetriGame(getSolvingObject().getGame());
-		
-		Unfolder unfolder = null;
-		if (QbfControl.rebuildingUnfolder) {
-			try {
-				unfolder = new FiniteDeterministicUnfolder(getSolvingObject(), null);
-			} catch (NotSupportedGameException e2) {
-				e2.printStackTrace();
-			}
-		} else {
-			unfolder = new ForNonDeterministicUnfolder(getSolvingObject(), null); // null forces unfolder to use b as bound for every place
-		}
-		
-        try {
-            unfolder.prepareUnfolding();
-        } catch (SolvingException | UnboundedException | FileNotFoundException e1) {
-            System.out.println("Error: The bounded unfolding of the game failed.");
-            e1.printStackTrace();
-        }
-        
-		unfolding = new PetriGame(getSolvingObject().getGame());
-		return unfolder.systemHasToDecideForAtLeastOne;
-	}
-
-	protected abstract void writeQCIR() throws IOException;
-
-	@Override
-	protected boolean exWinStrat() {
-		int exitcode = -1;
-		try {
-			writeQCIR();
-
-			ProcessBuilder pb = null;
-			// Run solver on problem
-			String os = System.getProperty("os.name");
-
-			if (os.startsWith("Mac")) {
-				// pb = new ProcessBuilder("./" + solver + "_mac", "--partial-assignment", file.getAbsolutePath());
-				pb = new ProcessBuilder(AdamProperties.LIBRARY_FOLDER + File.separator + QbfControl.solver + "_mac", "--partial-assignment"/* , "--preprocessing", "0" */, file.getAbsolutePath());
-			} else if (os.startsWith("Linux")) {
-				if (QbfControl.edacc) {
-                	// for use with EDACC
-					pb = new ProcessBuilder("./" + QbfControl.solver + "_unix", "--partial-assignment", file.getAbsolutePath());
-				} else {
-                	// for use with WEBSITE
-					pb = new ProcessBuilder(AdamProperties.LIBRARY_FOLDER + File.separator + QbfControl.solver + "_unix", "--partial-assignment", file.getAbsolutePath());
-				}
-			} else {
-				System.out.println("You are using " + os + ".");
-				System.out.println("Your operation system is not supported.");
-				return false;
-			}
-			if (QbfControl.debug) {
-				System.out.println("A temporary file is saved to \"" + file.getAbsolutePath() + "\".");
-			}
-
-			Process pr = pb.start();
-			// Read caqe's output
-			BufferedReader inputReader = new BufferedReader(new InputStreamReader(pr.getInputStream()));
-			String line_read;
-			outputQBFsolver = "";
-			while ((line_read = inputReader.readLine()) != null) {
-				outputQBFsolver += line_read + "\n";
-			}
-
-			exitcode = pr.waitFor();
-			inputReader.close();
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-			e.printStackTrace();
-		}
-		// Storing results
-		if (exitcode == 20) {
-			System.out.println("UNSAT ");
-			return false;
-		} else if (exitcode == 10) {
-			System.out.println("SAT");
-			return true;
-		} else {
-			System.out.println("QCIR ERROR with FULL output:" + outputQBFsolver);
-			return false;
-		}
-	}
-
-	@Override
-	protected PetriGame calculateStrategy() throws NoStrategyExistentException {
-		if (existsWinningStrategy()) {
-			for (String outputCAQE_line : outputQBFsolver.split("\n")) {
-				if (outputCAQE_line.startsWith("V")) {
-					String[] parts = outputCAQE_line.split(" ");
-					for (int i = 0; i < parts.length; ++i) {
-						if (!parts[i].equals("V")) {
-							int num = Integer.parseInt(parts[i]);
-							if (num > 0) {
-								// System.out.println("ALLOW " + num);
-							} else if (num < 0) {
-								// System.out.println("DISALLOW " + num * (-1));
-								String remove = exists_transitions.get(num * (-1));
-								int in = remove.indexOf("..");
-								if (in != -1) { // CTL has exists variables for path EF which mean not remove
-									String place = remove.substring(0, in);
-									String transition = remove.substring(in + 2, remove.length());
-									if (place.startsWith(QbfControl.additionalSystemName)) {
-										// additional system place exactly removes transitions
-										// Transition might already be removed by recursion
-										Set<Transition> transitions = new HashSet<>(getSolvingObject().getGame().getTransitions());
-										for (Transition t : transitions) {
-											if (t.getId().equals(transition)) {
-												// System.out.println("starting " + t);
-												getSolvingObject().removeTransitionRecursively(t);
-											}
-										}
-									} else {
-										// original system place removes ALL transitions
-										Set<Place> places = new HashSet<>(getSolvingObject().getGame().getPlaces());
-										for (Place p : places) {
-											if (p.getId().equals(place)) {
-												Set<Transition> transitions = new HashSet<>(p.getPostset());
-												for (Transition post : transitions) {
-													if (transition.equals(getTruncatedId(post.getId()))) {
-														// System.out.println("starting " + post);
-														getSolvingObject().removeTransitionRecursively(post);
-													}
-												}
-											}
-										}
-									}
-								}
-							} else {
-								// 0 is the last member
-								// System.out.println("Finished reading strategy.");
-								new PGSimplifier(getSolvingObject(), true, false, false).simplifyPG();
-								strategy = new PetriGame(getSolvingObject().getGame());
-								return getSolvingObject().getGame();
-							}
-						}
-					}
-				}
-			}
-			// There were no decision points for the system, thus the previous loop did not leave the method
-			new PGSimplifier(getSolvingObject(), true, false, false).simplifyPG();
-			strategy = new PetriGame(getSolvingObject().getGame());
-			return getSolvingObject().getGame();
-		}
-		throw new NoStrategyExistentException();
 	}
 }

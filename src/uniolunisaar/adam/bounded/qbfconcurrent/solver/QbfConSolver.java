@@ -36,7 +36,7 @@ public abstract class QbfConSolver<W extends WinningCondition> extends SolverQbf
 		initializeNandB(so.getN(), so.getB());
 		
 		// initializing arrays for storing variable IDs
-		initialize(getSolvingObject().getN());
+		initializeBeforeUnfolding(getSolvingObject().getN());
 	}
 
 	/**
@@ -245,6 +245,7 @@ public abstract class QbfConSolver<W extends WinningCondition> extends SolverQbf
 
 	protected int addEnvStrategy(Place p, String t, int i) {
 		if (getSolvingObject().getGame().getEnvPlaces().contains(p)) {
+			System.out.println(getTruncatedId(t));
 			return getVarNr(p.getId() + "**" + getTruncatedId(t) + "**" + i, true);
 		} else {
 			return 0;
