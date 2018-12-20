@@ -12,7 +12,7 @@ import uniol.apt.util.Pair;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.solver.SolvingObject;
 import uniolunisaar.adam.util.AdamExtensions;
-import uniolunisaar.adam.ds.winningconditions.WinningCondition;
+import uniolunisaar.adam.ds.objectives.Condition;
 
 /**
  * Parameters for bounded synthesis added. Possibilities to remove
@@ -22,7 +22,7 @@ import uniolunisaar.adam.ds.winningconditions.WinningCondition;
  * @author Jesko Hecking-Harbusch
  * @param <W>
  */
-public class QbfSolvingObject<W extends WinningCondition> extends SolvingObject<PetriGame, W> {
+public class QbfSolvingObject<W extends Condition> extends SolvingObject<PetriGame, W> {
 
     private int n; // length of the simulation, i.e., for n there are n - 1 transitions simulated
     private int b; // number of unfoldings per place in the bounded unfolding

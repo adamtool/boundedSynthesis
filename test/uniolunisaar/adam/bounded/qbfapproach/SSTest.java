@@ -23,7 +23,7 @@ import uniolunisaar.adam.ds.exceptions.SolverDontFitPetriGameException;
 import uniolunisaar.adam.ds.exceptions.NotSupportedGameException;
 import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.ds.winningconditions.WinningCondition;
+import uniolunisaar.adam.ds.objectives.Condition;
 import uniolunisaar.adam.generators.synthesis.SecuritySystem;
 import uniolunisaar.adam.logic.util.AdamTools;
 import uniolunisaar.adam.tools.Logger;
@@ -65,7 +65,7 @@ public class SSTest {
         System.out.println("Generate security system ...");
         PetriGame pn = SecuritySystem.createSafetyVersionForBounded(intrudingPoints, true);
         AdamTools.savePG2PDF(path + name, pn, false);
-        QbfSolver<? extends WinningCondition> solv = QbfSolverFactory.getInstance().getSolver(pn, false, new QbfSolverOptions(7, 3));
+        QbfSolver<? extends Condition> solv = QbfSolverFactory.getInstance().getSolver(pn, false, new QbfSolverOptions(7, 3));
         if (hasStrategy) {
             Assert.assertTrue(solv.existsWinningStrategy());
             AdamTools.savePG2PDF(path + name + "_pg", solv.getStrategy(), true);

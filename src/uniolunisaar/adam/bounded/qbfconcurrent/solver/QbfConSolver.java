@@ -15,7 +15,7 @@ import uniolunisaar.adam.bounded.qbfapproach.petrigame.QbfSolvingObject;
 import uniolunisaar.adam.bounded.qbfapproach.solver.SolverQbfAndQbfCon;
 import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.ds.winningconditions.WinningCondition;
+import uniolunisaar.adam.ds.objectives.Condition;
 
 /**
  * 
@@ -23,7 +23,7 @@ import uniolunisaar.adam.ds.winningconditions.WinningCondition;
  *
  */
 
-public abstract class QbfConSolver<W extends WinningCondition> extends SolverQbfAndQbfCon<W, QbfConSolverOptions> {
+public abstract class QbfConSolver<W extends Condition> extends SolverQbfAndQbfCon<W, QbfConSolverOptions> {
 
 	protected List<Map<Integer,Integer>> enabledlist; // First setindex, then iteration index
 	protected Map<Transition, Integer> transitionmap; 

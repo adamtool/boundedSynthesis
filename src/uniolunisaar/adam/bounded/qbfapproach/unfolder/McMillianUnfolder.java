@@ -18,12 +18,12 @@ import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 import uniolunisaar.adam.ds.exceptions.NotSupportedGameException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.ds.winningconditions.WinningCondition;
+import uniolunisaar.adam.ds.objectives.Condition;
 
 public class McMillianUnfolder extends Unfolder {
 
 	// unfolded result Petri game and Petri net
-	public QbfSolvingObject<? extends WinningCondition> unfolding;
+	public QbfSolvingObject<? extends Condition> unfolding;
 	public PetriNet unfoldingNet;
 
 	// Pair<Place, Transition>
@@ -35,7 +35,7 @@ public class McMillianUnfolder extends Unfolder {
 
 	int counter = 0;
 
-	public McMillianUnfolder(QbfSolvingObject<? extends WinningCondition> petriGame, Map<String, Integer> max) throws NotSupportedGameException {
+	public McMillianUnfolder(QbfSolvingObject<? extends Condition> petriGame, Map<String, Integer> max) throws NotSupportedGameException {
 		super(petriGame, max);
 
 		unfoldingNet = new PetriNet(pn.getName() + "_unfolding");

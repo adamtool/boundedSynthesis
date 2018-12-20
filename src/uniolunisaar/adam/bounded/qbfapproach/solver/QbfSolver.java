@@ -12,7 +12,7 @@ import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QbfSolvingObject;
 import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.ds.winningconditions.WinningCondition;
+import uniolunisaar.adam.ds.objectives.Condition;
 
 /**
  *
@@ -20,7 +20,7 @@ import uniolunisaar.adam.ds.winningconditions.WinningCondition;
  *
  * @param <W>
  */
-public abstract class QbfSolver<W extends WinningCondition> extends SolverQbfAndQbfCon<W, QbfSolverOptions> {
+public abstract class QbfSolver<W extends Condition> extends SolverQbfAndQbfCon<W, QbfSolverOptions> {
 
 	// caches for getOneTransition()
 	private Map<Transition, Set<Place>> restCache = new HashMap<>(); // proven to be slightly useful in terms of performance

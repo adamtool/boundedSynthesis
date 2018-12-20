@@ -11,7 +11,7 @@ import uniol.apt.adt.pn.Token;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
-import uniolunisaar.adam.ds.winningconditions.WinningCondition;
+import uniolunisaar.adam.ds.objectives.Condition;
 
 /**
  * TODO removal is based on n, can shorten strategy wrongly for too short n and
@@ -26,12 +26,12 @@ import uniolunisaar.adam.ds.winningconditions.WinningCondition;
  */
 public class PGSimplifier {
 	
-	private QbfSolvingObject<? extends WinningCondition> solvingObject;
+	private QbfSolvingObject<? extends Condition> solvingObject;
 	private boolean removeAdditionalPlaces;
 	private boolean removeUnreachablePlaces;
 	private boolean trueConcurrent;
 	
-	public PGSimplifier(QbfSolvingObject<? extends WinningCondition> solvingObject, boolean removeAdditionalPlaces, boolean removeUnreachablePlaces, boolean trueConcurrent) {
+	public PGSimplifier(QbfSolvingObject<? extends Condition> solvingObject, boolean removeAdditionalPlaces, boolean removeUnreachablePlaces, boolean trueConcurrent) {
 		this.solvingObject = solvingObject;
 		this.removeAdditionalPlaces = removeAdditionalPlaces;
 		this.removeUnreachablePlaces = removeUnreachablePlaces;

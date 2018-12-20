@@ -2,17 +2,17 @@ package uniolunisaar.adam.bounded.qbfapproach.solver;
 
 import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.ds.winningconditions.Buchi;
-import uniolunisaar.adam.ds.winningconditions.Reachability;
-import uniolunisaar.adam.ds.winningconditions.Safety;
-import uniolunisaar.adam.ds.winningconditions.WinningCondition;
+import uniolunisaar.adam.ds.objectives.Buchi;
+import uniolunisaar.adam.ds.objectives.Reachability;
+import uniolunisaar.adam.ds.objectives.Safety;
+import uniolunisaar.adam.ds.objectives.Condition;
 import uniolunisaar.adam.logic.solver.SolverFactory;
 
 /**
  *
  * @author Manuel Gieseking
  */
-public class QbfSolverFactory extends SolverFactory<QbfSolverOptions, QbfSolver<? extends WinningCondition>> {
+public class QbfSolverFactory extends SolverFactory<QbfSolverOptions, QbfSolver<? extends Condition>> {
 
     private static QbfSolverFactory instance = null;
 

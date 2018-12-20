@@ -16,7 +16,7 @@ import uniolunisaar.adam.bounded.qbfapproach.petrigame.QbfSolvingObject;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
 import uniolunisaar.adam.ds.exceptions.NotSupportedGameException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.ds.winningconditions.WinningCondition;
+import uniolunisaar.adam.ds.objectives.Condition;
 
 /**
  * 
@@ -30,13 +30,13 @@ import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 
 public class FiniteDeterministicUnfolder extends Unfolder {
 	
-	private QbfSolvingObject<? extends WinningCondition> originalSolvingObj;
+	private QbfSolvingObject<? extends Condition> originalSolvingObj;
 	private PetriGame originalGame;
 	
 	public Queue<Pair<Marking, Integer>> queue = new LinkedList<>();
 	public int counter = 0;
 	
-	public FiniteDeterministicUnfolder(QbfSolvingObject<? extends WinningCondition> petriGame, Map<String, Integer> max) throws NotSupportedGameException {
+	public FiniteDeterministicUnfolder(QbfSolvingObject<? extends Condition> petriGame, Map<String, Integer> max) throws NotSupportedGameException {
 		super(petriGame, max);
 		
 		originalSolvingObj = new QbfSolvingObject<>(petriGame);

@@ -15,9 +15,9 @@ import uniolunisaar.adam.ds.exceptions.NoStrategyExistentException;
 import uniolunisaar.adam.ds.exceptions.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.petrinetwithtransits.Transit;
-import uniolunisaar.adam.ds.winningconditions.WinningCondition;
+import uniolunisaar.adam.ds.objectives.Condition;
 
-public abstract class QbfFlowChainSolver<W extends WinningCondition> extends QbfSolver<W> {
+public abstract class QbfFlowChainSolver<W extends Condition> extends QbfSolver<W> {
 
 	protected QbfFlowChainSolver(PetriGame game, W winCon, QbfSolverOptions options) throws SolvingException {
 		super(game, winCon, options);

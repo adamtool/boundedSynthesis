@@ -9,7 +9,7 @@ import uniol.apt.adt.pn.Transition;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QbfSolvingObject;
 import uniolunisaar.adam.ds.exceptions.NetNotSafeException;
 import uniolunisaar.adam.ds.exceptions.NoSuitableDistributionFoundException;
-import uniolunisaar.adam.ds.winningconditions.WinningCondition;
+import uniolunisaar.adam.ds.objectives.Condition;
 
 /**
  * quick and dirty
@@ -22,7 +22,7 @@ import uniolunisaar.adam.ds.winningconditions.WinningCondition;
 
 public class OldDeterministicUnfolder extends Unfolder {
 
-	public OldDeterministicUnfolder(QbfSolvingObject<? extends WinningCondition> QBFPetriGame, Map<String, Integer> max) {
+	public OldDeterministicUnfolder(QbfSolvingObject<? extends Condition> QBFPetriGame, Map<String, Integer> max) {
 		super(QBFPetriGame, max);
 	}
 

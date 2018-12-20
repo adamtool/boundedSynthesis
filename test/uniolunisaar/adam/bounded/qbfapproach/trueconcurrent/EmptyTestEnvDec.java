@@ -7,22 +7,22 @@ import uniolunisaar.adam.bounded.qbfconcurrent.solver.QbfConSolver;
 import uniolunisaar.adam.bounded.qbfconcurrent.solver.QbfConSolverFactory;
 import uniolunisaar.adam.bounded.qbfconcurrent.solver.QbfConSolverOptions;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.ds.winningconditions.WinningCondition;
+import uniolunisaar.adam.ds.objectives.Condition;
 import uniolunisaar.adam.logic.util.AdamTools;
 
 public abstract class EmptyTestEnvDec {
 	
 	protected void testPath (String path, int n, int b, boolean result) throws Exception {
-		QbfConSolver<? extends WinningCondition> sol = QbfConSolverFactory.getInstance().getSolver(path, new QbfConSolverOptions(n, b));
+		QbfConSolver<? extends Condition> sol = QbfConSolverFactory.getInstance().getSolver(path, new QbfConSolverOptions(n, b));
 		testSolver(sol, n, b, result);
 	}
 	
 	protected void testGame (PetriGame pg, int n, int b, boolean result) throws Exception {
-		QbfConSolver<? extends WinningCondition> sol = QbfConSolverFactory.getInstance().getSolver(pg, false, new QbfConSolverOptions(n, b));
+		QbfConSolver<? extends Condition> sol = QbfConSolverFactory.getInstance().getSolver(pg, false, new QbfConSolverOptions(n, b));
 		testSolver(sol, n, b, result);
 	}
  
-	protected void testSolver (QbfConSolver<?extends WinningCondition> sol, int n, int b, boolean result) throws Exception {
+	protected void testSolver (QbfConSolver<? extendsObjective> sol, int n, int b, boolean result) throws Exception {
         sol.existsWinningStrategy();	// calculate first, then output games, and then check for correctness
 		
 	AdamTools.savePG2PDF("originalGame", sol.originalGame, false);
