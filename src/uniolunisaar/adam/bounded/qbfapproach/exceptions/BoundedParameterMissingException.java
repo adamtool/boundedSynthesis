@@ -1,6 +1,6 @@
 package uniolunisaar.adam.bounded.qbfapproach.exceptions;
 
-import uniolunisaar.adam.logic.exceptions.ParameterMissingException;
+import uniolunisaar.adam.exceptions.pg.ParameterMissingException;
 
 /**
  *
