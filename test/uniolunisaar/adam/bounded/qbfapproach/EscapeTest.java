@@ -3,7 +3,7 @@ package uniolunisaar.adam.bounded.qbfapproach;
 import org.testng.annotations.Test;
 
 import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.generators.synthesis.Escape;
+import uniolunisaar.adam.generators.pg.Escape;
 
 @Test
 public class EscapeTest extends EmptyTest {

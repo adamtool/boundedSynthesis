@@ -24,7 +24,7 @@ import uniolunisaar.adam.exceptions.pg.NotSupportedGameException;
 import uniolunisaar.adam.exceptions.pg.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.objectives.Condition;
-import uniolunisaar.adam.generators.synthesis.SecuritySystem;
+import uniolunisaar.adam.generators.pg.SecuritySystem;
 import uniolunisaar.adam.util.PNWTTools;
 import uniolunisaar.adam.tools.Logger;
 

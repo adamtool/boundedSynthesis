@@ -3,7 +3,7 @@ package uniolunisaar.adam.bounded.qbfapproach;
 import org.testng.annotations.Test;
 
 import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.generators.synthesis.ManufactorySystem;
+import uniolunisaar.adam.generators.pg.ManufactorySystem;
 
 @Test
 public class JPTest extends EmptyTest { // Job Processing

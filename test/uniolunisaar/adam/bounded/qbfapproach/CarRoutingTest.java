@@ -3,7 +3,7 @@ package uniolunisaar.adam.bounded.qbfapproach;
 import org.testng.annotations.Test;
 
 import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.generators.synthesis.CarRouting;
+import uniolunisaar.adam.generators.pg.CarRouting;
 
 @Test
 public class CarRoutingTest extends EmptyTest {

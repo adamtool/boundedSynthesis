@@ -4,7 +4,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.generators.synthesis.ManufactorySystem;
+import uniolunisaar.adam.generators.pg.ManufactorySystem;
 
 @Test
 public class TestSimpleFlow extends EmptyTestEnvDec {
