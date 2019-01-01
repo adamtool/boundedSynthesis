@@ -13,7 +13,7 @@ import uniol.apt.adt.pn.Transition;
 import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QbfSolvingObject;
 import uniolunisaar.adam.bounded.qbfapproach.solver.SolverQbfAndQbfCon;
-import uniolunisaar.adam.ds.exceptions.SolvingException;
+import uniolunisaar.adam.exceptions.pg.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.objectives.Condition;
 

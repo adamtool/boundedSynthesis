@@ -1,6 +1,6 @@
 package uniolunisaar.adam.bounded.qbfconcurrent.solver;
 
-import uniolunisaar.adam.ds.exceptions.SolvingException;
+import uniolunisaar.adam.exceptions.pg.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.objectives.Buchi;
 import uniolunisaar.adam.ds.objectives.Reachability;
