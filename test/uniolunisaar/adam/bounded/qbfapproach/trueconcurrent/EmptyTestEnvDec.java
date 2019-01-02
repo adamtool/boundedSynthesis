@@ -22,7 +22,7 @@ public abstract class EmptyTestEnvDec {
 		testSolver(sol, n, b, result);
 	}
  
-	protected void testSolver (QbfConSolver<? extendsObjective> sol, int n, int b, boolean result) throws Exception {
+	protected void testSolver (QbfConSolver<? extends Condition> sol, int n, int b, boolean result) throws Exception {
         sol.existsWinningStrategy();	// calculate first, then output games, and then check for correctness
 		
 	PNWTTools.savePnwt2PDF("originalGame", sol.originalGame, false);
