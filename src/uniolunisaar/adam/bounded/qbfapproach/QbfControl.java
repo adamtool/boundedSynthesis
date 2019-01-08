@@ -6,6 +6,12 @@ import uniolunisaar.adam.bounded.qbfapproach.unfolder.Unfolder;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.util.PGTools;
 
+/**
+ * 
+ * @author Jesko Hecking-Harbusch
+ *
+ */
+
 public class QbfControl {
 
 	public static String linebreak = System.lineSeparator(); // Controller

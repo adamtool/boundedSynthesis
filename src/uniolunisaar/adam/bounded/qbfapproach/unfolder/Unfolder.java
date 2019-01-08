@@ -20,7 +20,6 @@ import uniolunisaar.adam.exceptions.pg.NoSuitableDistributionFoundException;
 import uniolunisaar.adam.ds.objectives.Condition;
 
 /**
- * TODO for ( : ) allows parallelization and arbitrary order, check with hashcode of place and transition and remember error/problem leading to this fix 
  * 
  * @author Jesko Hecking-Harbusch
  *

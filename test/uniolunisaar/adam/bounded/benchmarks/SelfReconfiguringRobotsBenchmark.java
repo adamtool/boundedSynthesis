@@ -1,10 +1,14 @@
 package uniolunisaar.adam.bounded.benchmarks;
 
-import org.testng.annotations.Test;
-
 import uniol.apt.adt.pn.PetriNet;
 import uniolunisaar.adam.generators.pg.SelfOrganizingRobots;
 import uniolunisaar.adam.tools.Tools;
+
+/**
+ * 
+ * @author Jesko Hecking-Harbusch
+ *
+ */
 
 //@Test
 public class SelfReconfiguringRobotsBenchmark {

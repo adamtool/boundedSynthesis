@@ -5,7 +5,10 @@ import org.testng.annotations.Test;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.generators.pg.Philosopher;
 
-/*
+/**
+ * 
+ * @author Jesko Hecking-Harbusch
+ *
  * NO MEMORY REQUIRED TO SOLVE
  */
 

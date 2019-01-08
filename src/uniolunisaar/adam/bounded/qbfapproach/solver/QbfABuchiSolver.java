@@ -18,6 +18,12 @@ import uniolunisaar.adam.exceptions.pg.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.objectives.Buchi;
 
+/**
+ * 
+ * @author Jesko Hecking-Harbusch
+ *
+ */
+
 public class QbfABuchiSolver extends QbfFlowChainSolver<Buchi> {
 
 	private int[] noFlowChainEnded;

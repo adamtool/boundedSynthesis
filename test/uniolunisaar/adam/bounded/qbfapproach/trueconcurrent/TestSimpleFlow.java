@@ -6,6 +6,12 @@ import org.testng.annotations.Test;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.generators.pg.ManufactorySystem;
 
+/**
+ * 
+ * @author Niklas Metzger
+ *
+ */
+
 @Test
 public class TestSimpleFlow extends EmptyTestEnvDec {
 	

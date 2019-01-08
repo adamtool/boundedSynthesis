@@ -10,6 +10,12 @@ import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.objectives.Condition;
 import uniolunisaar.adam.util.PNWTTools;
 
+/**
+ * 
+ * @author Niklas Metzger
+ *
+ */
+
 public abstract class EmptyTestEnvDec {
 	
 	protected void testPath (String path, int n, int b, boolean result) throws Exception {

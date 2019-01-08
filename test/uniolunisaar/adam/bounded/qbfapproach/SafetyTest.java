@@ -3,7 +3,12 @@ package uniolunisaar.adam.bounded.qbfapproach;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-// TODO categorize what is tested, look at ALL existing example files
+/**
+ * 
+ * @author Jesko Hecking-Harbusch
+ *
+ * TODO categorize what is tested, look at ALL existing example files
+ */
 
 @Test
 public class SafetyTest extends EmptyTest {

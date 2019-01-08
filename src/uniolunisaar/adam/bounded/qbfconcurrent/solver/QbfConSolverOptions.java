@@ -2,6 +2,12 @@ package uniolunisaar.adam.bounded.qbfconcurrent.solver;
 
 import uniolunisaar.adam.ds.solver.SolverOptions;
 
+/**
+ * 
+ * @author Jesko Hecking-Harbusch
+ *
+ */
+
 public class QbfConSolverOptions extends SolverOptions {
 
 	private int n = 0;

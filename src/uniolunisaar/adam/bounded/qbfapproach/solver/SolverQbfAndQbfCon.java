@@ -38,6 +38,12 @@ import uniolunisaar.adam.ds.solver.SolverOptions;
 import uniolunisaar.adam.ds.objectives.Condition;
 import uniolunisaar.adam.tools.AdamProperties;
 
+/**
+ * 
+ * @author Jesko Hecking-Harbusch
+ *
+ */
+
 public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends SolverOptions> extends Solver<QbfSolvingObject<W>, SOP>{
 
 	// steps of solving

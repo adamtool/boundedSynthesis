@@ -13,6 +13,12 @@ import uniolunisaar.adam.exceptions.pg.NetNotSafeException;
 import uniolunisaar.adam.exceptions.pg.NoSuitableDistributionFoundException;
 import uniolunisaar.adam.ds.objectives.Condition;
 
+/**
+ * 
+ * @author Jesko Hecking-Harbusch
+ *
+ */
+
 public class ForNonDeterministicUnfolder extends NonDeterministicUnfolder {
 
 	Set<String> closed = new HashSet<>();

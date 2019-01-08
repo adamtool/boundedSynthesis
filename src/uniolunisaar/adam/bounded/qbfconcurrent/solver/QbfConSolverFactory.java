@@ -10,7 +10,7 @@ import uniolunisaar.adam.logic.pg.solver.SolverFactory;
 
 /**
  * 
- * @author niklasmetzger
+ * @author Niklas Metzger
  *
  */
 

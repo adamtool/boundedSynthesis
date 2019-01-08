@@ -26,7 +26,7 @@ import uniolunisaar.adam.ds.objectives.Safety;
 /**
  * not working try to have transitions explicit
  * 
- * @author JHH
+ * @author Jesko Hecking-Harbusch
  *
  */
 

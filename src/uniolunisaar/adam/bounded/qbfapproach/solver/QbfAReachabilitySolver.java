@@ -18,6 +18,12 @@ import uniolunisaar.adam.exceptions.pg.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.objectives.Reachability;
 
+/**
+ * 
+ * @author Jesko Hecking-Harbusch
+ *
+ */
+
 public class QbfAReachabilitySolver extends QbfFlowChainSolver<Reachability> {
 
 	private int[] goodPlaces;

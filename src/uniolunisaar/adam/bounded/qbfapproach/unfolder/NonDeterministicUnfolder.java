@@ -11,6 +11,12 @@ import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QbfSolvingObject;
 import uniolunisaar.adam.ds.objectives.Condition;
 
+/**
+ * 
+ * @author Jesko Hecking-Harbusch
+ *
+ */
+
 public abstract class NonDeterministicUnfolder extends Unfolder {
 
 	protected Set<Place> placesWithCopiedTransitions = new HashSet<>(); // Maintained during unfolding in order to afterwards add additional places

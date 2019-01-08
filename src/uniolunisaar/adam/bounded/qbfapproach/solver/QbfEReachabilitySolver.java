@@ -19,6 +19,12 @@ import uniolunisaar.adam.exceptions.pg.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.objectives.Reachability;
 
+/**
+ * 
+ * @author Jesko Hecking-Harbusch
+ *
+ */
+
 public class QbfEReachabilitySolver extends QbfSolver<Reachability> {
 
 	// variable to store keys of calculated components for later use (special to this winning condition)

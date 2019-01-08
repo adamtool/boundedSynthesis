@@ -1,8 +1,13 @@
 package uniolunisaar.adam.bounded.qbfapproach;
 
-
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+
+/**
+ * 
+ * @author Jesko Hecking-Harbusch
+ *
+ */
 
 @Test
 public class ForallBuchiTest extends EmptyTest {

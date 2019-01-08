@@ -17,6 +17,12 @@ import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.exceptions.pg.NoStrategyExistentException;
 import uniolunisaar.adam.exceptions.pg.SolvingException;
 
+/**
+ * 
+ * @author Niklas Metzger
+ *
+ */
+
 public class QbfConSafetySolver extends QbfConSolver<Safety> {
 
 	// variable to store keys of calculated components for later use

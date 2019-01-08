@@ -5,6 +5,12 @@ import java.io.File;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+/**
+ * 
+ * @author Jesko Hecking-Harbusch
+ *
+ */
+
 @Test
 public class BuechiTest extends EmptyTest {
 

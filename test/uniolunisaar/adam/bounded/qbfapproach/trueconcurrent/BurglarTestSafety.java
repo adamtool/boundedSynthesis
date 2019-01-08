@@ -5,6 +5,12 @@ import org.testng.annotations.Test;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.generators.pg.SecuritySystem;
 
+/**
+ * 
+ * @author Niklas Metzger
+ *
+ */
+
 @Test
 public class BurglarTestSafety extends EmptyTestEnvDec {
 

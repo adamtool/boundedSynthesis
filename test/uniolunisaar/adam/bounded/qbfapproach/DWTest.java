@@ -5,9 +5,13 @@ import org.testng.annotations.Test;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.generators.pg.Clerks;
 
-/*
+/**
+ * 
+ * @author Jesko Hecking-Harbusch
+ *
  * NO MEMORY REQUIRED TO SOLVE
  */
+
 @Test
 public class DWTest extends EmptyTest { // Document Workflow / DW
 

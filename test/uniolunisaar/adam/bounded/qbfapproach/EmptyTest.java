@@ -10,6 +10,11 @@ import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.solver.Solver;
 import uniolunisaar.adam.util.PNWTTools;
 
+/**
+ * 
+ * @author Jesko Hecking-Harbusch
+ *
+ */
 
 public abstract class EmptyTest {
 

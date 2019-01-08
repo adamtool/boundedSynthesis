@@ -24,7 +24,7 @@ import uniolunisaar.adam.ds.objectives.Condition;
  * copy original net and then build net in place new
  * Misc note: solvingObj -> PG -> PN
  * 
- * @author JHH
+ * @author Jesko Hecking-Harbusch
  *
  */
 

@@ -5,6 +5,12 @@ import org.testng.annotations.Test;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.generators.pg.ManufactorySystem;
 
+/**
+ * 
+ * @author Jesko Hecking-Harbusch
+ *
+ */
+
 @Test
 public class JPTest extends EmptyTest { // Job Processing
 

@@ -31,6 +31,7 @@ import uniolunisaar.adam.tools.Logger;
  *
  * @author Manuel Gieseking
  */
+
 @Test
 public class ContainerTerminalTest {
 
