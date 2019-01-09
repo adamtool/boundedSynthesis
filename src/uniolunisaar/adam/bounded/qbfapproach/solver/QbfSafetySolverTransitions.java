@@ -92,7 +92,7 @@ public class QbfSafetySolverTransitions extends QbfSolver<Safety> {
 		}
 
 		writer.write(writeExists(exists));
-		writer.write("output(1)" + QbfControl.replaceAfterWardsSpaces + QbfControl.linebreak);
+		writer.write("output(1)" + QbfControl.replaceAfterwardsSpaces + QbfControl.linebreak);
 	}
 	
 	protected Map<Place, String[]> getGenerateToken() {
@@ -484,7 +484,7 @@ public class QbfSafetySolverTransitions extends QbfSolver<Safety> {
 	}
 	
 	protected void writeDeterministic() throws IOException {
-		if (QbfControl.deterministicStrat) {
+		if (QbfControl.deterministicStrategy) {
 			String[] deterministic = getDeterministic();
 			for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 				if (!deterministic[i].matches("")) {
@@ -555,7 +555,7 @@ public class QbfSafetySolverTransitions extends QbfSolver<Safety> {
         
 		initializeAfterUnfolding();
 
-		writer.write("#QCIR-G14" + QbfControl.replaceAfterWardsSpaces + QbfControl.linebreak); // spaces left to add variable count in the end
+		writer.write("#QCIR-G14" + QbfControl.replaceAfterwardsSpaces + QbfControl.linebreak); // spaces left to add variable count in the end
 		addExists();
 		addForall();
 		addPlaces();

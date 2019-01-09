@@ -219,7 +219,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 	}
 	
 	protected void writeDeterministic() throws IOException {
-		if (QbfControl.deterministicStrat) {
+		if (QbfControl.deterministicStrategy) {
 			String[] deterministic = getDeterministic();
 			for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 				if (!deterministic[i].startsWith("and()")) {

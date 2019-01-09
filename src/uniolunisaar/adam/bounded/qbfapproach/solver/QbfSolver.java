@@ -281,6 +281,6 @@ public abstract class QbfSolver<W extends Condition> extends SolverQbfAndQbfCon<
 			}
 		}
 		writer.write(writeForall(forall));
-		writer.write("output(1)" + QbfControl.replaceAfterWardsSpaces + QbfControl.linebreak);
+		writer.write("output(1)" + QbfControl.replaceAfterwardsSpaces + QbfControl.linebreak);
 	}
 }

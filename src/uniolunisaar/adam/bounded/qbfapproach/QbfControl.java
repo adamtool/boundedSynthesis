@@ -14,12 +14,12 @@ import uniolunisaar.adam.util.PGTools;
 
 public class QbfControl {
 
-	public static String linebreak = System.lineSeparator(); // Controller
-	public static String additionalSystemName = "AS___"; // Controller
-	public static String additionalSystemUniqueDivider = "_0_"; // Controller
-	public static String solver = "quabs"; // Controller
-	public static String replaceAfterWardsSpaces = "          "; // Controller
-	public static boolean deterministicStrat = true; // Controller
+	public static String linebreak = System.lineSeparator();
+	public static String additionalSystemName = "AS___";
+	public static String additionalSystemUniqueDivider = "_0_";
+	public static String solver = "quabs";
+	public static String replaceAfterwardsSpaces = "          ";
+	public static boolean deterministicStrategy = true;
 	public static boolean debug = false;
 	public static boolean edacc = false;
 	public static boolean rebuildingUnfolder = false; // in contrast to extending unfolder

@@ -116,7 +116,7 @@ public class QbfEReachabilitySolver extends QbfSolver<Reachability> {
 
 		initializeAfterUnfolding();
 
-		writer.write("#QCIR-G14" + QbfControl.replaceAfterWardsSpaces + QbfControl.linebreak); // spaces left to add variable count in the end
+		writer.write("#QCIR-G14" + QbfControl.replaceAfterwardsSpaces + QbfControl.linebreak); // spaces left to add variable count in the end
 		addExists();
 		addForall();
 
