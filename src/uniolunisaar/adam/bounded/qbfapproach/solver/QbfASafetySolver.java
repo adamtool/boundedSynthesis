@@ -96,6 +96,7 @@ public class QbfASafetySolver extends QbfSolver<Safety> {
 		writer.write("#QCIR-G14" + QbfControl.replaceAfterwardsSpaces + QbfControl.linebreak); // spaces left to add variable count in the end
 		addExists();
 		addForall();
+		writer.write("output(1)" + QbfControl.replaceAfterwardsSpaces + QbfControl.linebreak);
 
 		writeInitial();
 		writeTerminating();

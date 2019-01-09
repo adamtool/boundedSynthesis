@@ -30,16 +30,10 @@ public class QbfSolvingObject<W extends Condition> extends SolvingObject<PetriGa
 
     public QbfSolvingObject(PetriGame game, W winCon) {
         super(game, winCon);
-        for (Transition t : game.getTransitions()) {	// TODO talk with Manuel about this
+        for (Transition t : game.getTransitions()) {	// TODO necessary!
             fl.put(t, new HashSet<>());
         }
-    }
-
-    public QbfSolvingObject(QbfSolvingObject<W> obj) {
-        super(new PetriGame(obj.getGame()), obj.getWinCon().getCopy());
-        this.n = obj.n;
-        this.b = obj.b;
-        // todo: JESKO add how the flows should be copied or if you still need them after the restructuring.
+        // TODO JESKO: add how the flows should be copied or if you still need them after the restructuring.
     }
 
     // Before removing a transition, always check that it has not already been removed, because a single missing place suffices.
@@ -108,6 +102,9 @@ public class QbfSolvingObject<W extends Condition> extends SolvingObject<PetriGa
 
     @Override
     public QbfSolvingObject<W> getCopy() {
-        return new QbfSolvingObject<>(this);
+    	QbfSolvingObject<W> result = new QbfSolvingObject<>(new PetriGame(this.getGame()), this.getWinCon().getCopy());
+        result.setN(this.n);
+        result.setB(this.b);
+        return result;
     }
 }

@@ -20,7 +20,7 @@ public class QbfControl {
 	public static String solver = "quabs";
 	public static String replaceAfterwardsSpaces = "          ";
 	public static boolean deterministicStrategy = true;
-	public static boolean debug = false;
+	public static boolean debug = true;
 	public static boolean edacc = false;
 	public static boolean rebuildingUnfolder = false; // in contrast to extending unfolder
 	

@@ -195,7 +195,6 @@ public class QbfConSafetySolver extends QbfConSolver<Safety> {
 			}
 		}
 		if (!forall.isEmpty()) {
-			writer.write("#Forall env\n");
 			writer.write(writeForall(forall));
 		}
 		// System.out.println(forall);
@@ -229,11 +228,10 @@ public class QbfConSafetySolver extends QbfConSolver<Safety> {
 
 		initializeAfterUnfolding();
 		
-		writer.write("#QCIR-G14          " + QbfControl.linebreak); // spaces left to add variable count in the
-		// end
+		writer.write("#QCIR-G14" + QbfControl.replaceAfterwardsSpaces + QbfControl.linebreak); // spaces left to add variable count in the end
 		addExists();
 		addForall();
-		writer.write("output(1)" + QbfControl.linebreak); // 1 = \phi
+		writer.write("output(1)" + QbfControl.replaceAfterwardsSpaces + QbfControl.linebreak);
 		writeDetEnv();
 		writeStrongDet(); // strong determinism for additional system places enforced
 		writeInitial();
@@ -288,14 +286,19 @@ public class QbfConSafetySolver extends QbfConSolver<Safety> {
 		phi.add(seqImpliesWin[getSolvingObject().getN()]);
 		int phi_number = createUniqueID();
 		writer.write(phi_number + " = " + writeAnd(phi));
-		if (!getSolvingObject().getGame().getEnvPlaces().isEmpty() && (detAdditionalSys != 0)) // with strongdet
-			writer.write("1 = " + "and(" + detAdditionalSys + "," + writeImplication(detenv, phi_number) + ")");
-		else if (!getSolvingObject().getGame().getEnvPlaces().isEmpty()) // without strongdet (no additional system places)
-			writer.write("1 = " + "and(" + writeImplication(detenv, phi_number) + ")");
-		else // no env places
-			writer.write("1 = and(" + phi_number + ")");
+		int output = -1;
+		if (!getSolvingObject().getGame().getEnvPlaces().isEmpty() && (detAdditionalSys != 0)) { // with strongdet
+			output = createUniqueID();
+			writer.write(output + " = " + "and(" + detAdditionalSys + "," + writeImplication(detenv, phi_number) + ")");
+		} else if (!getSolvingObject().getGame().getEnvPlaces().isEmpty()) { // without strongdet (no additional system places)
+			output = writeImplication(detenv, phi_number);
+		} else { // no env places
+			output = phi_number;
+		}
 		writer.close();
 
+		// Total number of gates is only calculated during encoding and added to the file afterwards
+		
 		RandomAccessFile raf = new RandomAccessFile(file, "rw");
 		for (int i = 0; i < 10; ++i) { // read "#QCIR-G14 "
 			raf.readByte();
@@ -305,6 +308,19 @@ public class QbfConSafetySolver extends QbfConSolver<Safety> {
 		for (char c : counter_char) {
 			raf.writeByte(c);
 		}
+		
+		raf.readLine(); // Read remaining first line
+		raf.readLine(); // Read exists line
+		raf.readLine(); // Read forall line
+		for (int i = 0; i < 7; ++i) { // read "output(" and thus overwrite "1)"
+			raf.readByte();
+		}
+		counter_str += ")";
+		counter_char = counter_str.toCharArray();
+		for (char c : counter_char) {
+			raf.writeByte(c);
+		}
+		
 		raf.close();
 
 		if (QbfControl.debug) {

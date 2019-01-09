@@ -77,7 +77,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 	
 	// solving
 	protected BufferedWriter writer;
-	protected int variablesCounter = 2; // 1 reserved for phi TODO why does sequential work with 1?!
+	protected int variablesCounter = 1;
 	protected Map<String, Integer> numbersForVariables = new HashMap<>(); // map for storing keys and the corresponding value
 
 	protected Map<Transition, Integer> transitionKeys = new HashMap<>();

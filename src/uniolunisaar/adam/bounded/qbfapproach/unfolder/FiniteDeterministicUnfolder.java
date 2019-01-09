@@ -13,10 +13,10 @@ import uniol.apt.adt.pn.Transition;
 import uniol.apt.analysis.exception.UnboundedException;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QbfSolvingObject;
+import uniolunisaar.adam.ds.objectives.Condition;
+import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.exceptions.pg.NoSuitableDistributionFoundException;
 import uniolunisaar.adam.exceptions.pg.NotSupportedGameException;
-import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.ds.objectives.Condition;
 
 /**
  * 
@@ -39,7 +39,7 @@ public class FiniteDeterministicUnfolder extends Unfolder {
 	public FiniteDeterministicUnfolder(QbfSolvingObject<? extends Condition> petriGame, Map<String, Integer> max) throws NotSupportedGameException {
 		super(petriGame, max);
 		
-		originalSolvingObj = new QbfSolvingObject<>(petriGame);
+		originalSolvingObj = petriGame.getCopy();
 		originalGame = originalSolvingObj.getGame();
 		
 		for (Transition t : new HashSet<>(pn.getTransitions())) {
