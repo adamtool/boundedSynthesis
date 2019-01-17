@@ -248,8 +248,7 @@ public abstract class Unfolder {
 
 	protected boolean unfoldConditionSatisfied(Place p) {
 		boolean boundNotReached = getCurrentValue(p) < getLimitValue(p);
-		boolean preset = p.getPreset().size() >= 2
-				|| (p.getPreset().size() == 1 && p.getInitialToken().getValue() == 1);
+		boolean preset = p.getPreset().size() >= 2 || (p.getPreset().size() == 1 && p.getInitialToken().getValue() == 1);
 		boolean postset = p.getPostset().size() >= 1;
 		return boundNotReached && postset && preset;
 	}
