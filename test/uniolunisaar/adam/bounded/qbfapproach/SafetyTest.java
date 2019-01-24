@@ -3,6 +3,9 @@ package uniolunisaar.adam.bounded.qbfapproach;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import uniolunisaar.adam.generators.pnwt.util.acencoding.OfficeBenchmark;
+import uniolunisaar.adam.util.PNWTTools;
+
 /**
  * 
  * @author Jesko Hecking-Harbusch
@@ -63,6 +66,8 @@ public class SafetyTest extends EmptyTest {
 	
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testGeneralExamples() throws Exception {
+		PNWTTools.saveAPT("deploy/accesscontrolToy", OfficeBenchmark.generateOfficeToy(), false);
+		PNWTTools.saveAPT("deploy/accesscontrolSmall", OfficeBenchmark.generateOfficeSmall(), false);
 		//oneTest("tests/watchdog5", 15, 3, true);		// TODO search for bounds
 		//oneTest("container/container", 10, 2, true);	// TODO search for bounds
 		//oneTest("notConcurrencyPreservingTests/toMakeCP", 20, 2, false);	// TODO nets are unsafe, making them safe defeats their purpose
