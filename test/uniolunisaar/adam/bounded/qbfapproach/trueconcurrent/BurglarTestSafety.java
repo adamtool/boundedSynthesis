@@ -17,7 +17,7 @@ public class BurglarTestSafety extends EmptyTestEnvDec {
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testSecSys() throws Exception {
 		oneTest(2, 7, 2, true);
-		oneTest(2, 6, 2, false);
+		oneTest(2, 5, 2, false);
 		oneTest(2, 7, 1, false);
 	}
 	

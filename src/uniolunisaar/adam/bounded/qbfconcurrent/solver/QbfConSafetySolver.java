@@ -9,8 +9,11 @@ import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 
+import uniol.apt.adt.IGraph;
+import uniol.apt.adt.pn.Node;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
+import uniol.apt.analysis.connectivity.Connectivity;
 import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.ds.objectives.Safety;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
@@ -31,7 +34,10 @@ public class QbfConSafetySolver extends QbfConSolver<Safety> {
 	private int detenv;
 	private int detAdditionalSys;
 	private int strongdet;
+	
 
+	
+	
 	public QbfConSafetySolver(PetriGame game, Safety winCon, QbfConSolverOptions so) throws SolvingException {
 		super(game, winCon, so);
 		bad = new int[getSolvingObject().getN() + 1];
@@ -43,6 +49,35 @@ public class QbfConSafetySolver extends QbfConSolver<Safety> {
 			writer.write(detenv + " = " + getDetEnv());
 	}
 
+	/**
+	 * Filters the strongComponent places into the strongComponents field
+	 */
+	private void getLoopingPlaces(){
+		Set<? extends Set<Node>> components = Connectivity.getStronglyConnectedComponents(getSolvingObject().getGame());
+		strongComponents = new HashSet<Set<Place>>();
+		for (Set<Node> currentSet : components) {
+			Set<Place> newSet = new HashSet<Place>();
+			for (Node currentNode : currentSet) {
+				if (currentNode.getClass() == Place.class) {
+					newSet.add((Place)currentNode);
+				}
+			}
+			strongComponents.add(newSet);
+		}
+	}
+	/**
+	 * True, if places can be reached > 1 times, false otherwise
+	 * 
+	 * @param components: strong components of the petri net
+	 * @return
+	 */
+	private boolean checkLocalLoops(Set<Set<Place>> components) {
+		for (Set<Place> currentSet : components)
+			if (currentSet.size() > 1)
+				return true;
+		return false;
+	}
+	
 	/**
 	 * Strong determinism for additional System places, since nondeterminism can never be legal for additional system places
 	 * @throws IOException
@@ -168,6 +203,8 @@ public class QbfConSafetySolver extends QbfConSolver<Safety> {
 				// System.out.println(number + " = " + p.getId() + "." + i);
 			}
 		}
+		int loopBound = checkLocalLoops(strongComponents) ? getSolvingObject().getN() : 1;//Optimize for finite PG
+		System.out.println("Bound: " + loopBound);
 		for (Place p : getSolvingObject().getGame().getPlaces()) {
 			if (getSolvingObject().getGame().getEnvPlaces().contains(p)) {
 				Set<String> truncatedIDs = new HashSet<>();
@@ -175,7 +212,8 @@ public class QbfConSafetySolver extends QbfConSolver<Safety> {
 					String truncatedID = getTruncatedId(t.getId());
 					if (!truncatedIDs.contains(truncatedID)) {
 						truncatedIDs.add(truncatedID);
-						for (int i = 1; i <= 1; ++i) { //getSolvingObject().getN() //TODO
+						
+						for (int i = 1; i <= loopBound; ++i) { 
 							int number = createVariable(p.getId() + "**" + truncatedID + "**" + i);
 							forall.add(number);
 						}
@@ -227,7 +265,7 @@ public class QbfConSafetySolver extends QbfConSolver<Safety> {
 		}
 
 		initializeAfterUnfolding();
-		
+		getLoopingPlaces();
 		writer.write("#QCIR-G14" + QbfControl.replaceAfterwardsSpaces + QbfControl.linebreak); // spaces left to add variable count in the end
 		addExists();
 		addForall();

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import uniol.apt.adt.pn.Node;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
@@ -28,6 +29,8 @@ public abstract class QbfConSolver<W extends Condition> extends SolverQbfAndQbfC
 	protected List<Map<Integer,Integer>> enabledlist; // First setindex, then iteration index
 	protected Map<Transition, Integer> transitionmap; 
 	protected List<Transition> setlist;
+	protected Set<Set<Place>> strongComponents;
+
 	
 	protected QbfConSolver(PetriGame game, W winCon, QbfConSolverOptions so) throws SolvingException {
 		super(new QbfSolvingObject<>(game, winCon), so);
@@ -254,4 +257,35 @@ public abstract class QbfConSolver<W extends Condition> extends SolverQbfAndQbfC
 	public int addEnvStall(Transition t){
 		return getVarNr((getTruncatedId(t.getId()) + "**" + "stall"), true);
 	}
+	
+	protected String getLoopIJ() throws IOException {
+		System.out.println("HIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII");
+		Set<Integer> and = new HashSet<>();
+		for (Set<Place> currentSet: strongComponents) {
+			Set<Integer> or = new HashSet<>();
+			for (int i = 1; i < getSolvingObject().getN(); ++i) {
+				for (int j = i + 1; j <= getSolvingObject().getN(); ++j) {
+					Set<Integer> and2 = new HashSet<>();
+					for (Place p : currentSet) {
+						// additional system places cannot leave their places, they always loop
+						if (!p.getId().startsWith(QbfControl.additionalSystemName)) {
+							int p_i = getVarNr(p.getId() + "." + i, true);
+							int p_j = getVarNr(p.getId() + "." + j, true);
+							and2.add(writeImplication(p_i, p_j));
+							and2.add(writeImplication(p_j, p_i));
+						}
+					}
+					int andNumber = createUniqueID();
+					writer.write(andNumber + " = " + writeAnd(and2));
+					or.add(andNumber);
+				}
+			}
+			int orNumber = createUniqueID();
+			writer.write(orNumber + " = " + writeOr(or));
+			and.add(orNumber);
+		}
+		return writeAnd(and);
+	}
+	
+	
 }
