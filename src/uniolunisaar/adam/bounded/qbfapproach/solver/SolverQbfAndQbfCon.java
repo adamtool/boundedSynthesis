@@ -36,6 +36,7 @@ import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.solver.Solver;
 import uniolunisaar.adam.ds.solver.SolverOptions;
 import uniolunisaar.adam.ds.objectives.Condition;
+import uniolunisaar.adam.exceptions.pg.CalculationInterruptedException;
 import uniolunisaar.adam.tools.AdamProperties;
 
 /**
@@ -665,7 +666,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 		return unfolder.systemHasToDecideForAtLeastOne;
 	}
 	
-	protected PetriGame calculateStrategy(boolean trueConcurrent) throws NoStrategyExistentException {
+	protected PetriGame calculateStrategy(boolean trueConcurrent) throws NoStrategyExistentException, CalculationInterruptedException {
 		if (existsWinningStrategy()) {
 			for (String outputCAQE_line : outputQBFsolver.split("\n")) {
 				if (outputCAQE_line.startsWith("V")) {

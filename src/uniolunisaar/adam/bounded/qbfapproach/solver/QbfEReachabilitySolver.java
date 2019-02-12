@@ -18,6 +18,7 @@ import uniolunisaar.adam.exceptions.pg.NoStrategyExistentException;
 import uniolunisaar.adam.exceptions.pg.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.objectives.Reachability;
+import uniolunisaar.adam.exceptions.pg.CalculationInterruptedException;
 
 /**
  * 
@@ -190,7 +191,7 @@ public class QbfEReachabilitySolver extends QbfSolver<Reachability> {
 	}
 	
 	@Override
-	protected PetriGame calculateStrategy() throws NoStrategyExistentException {
+	protected PetriGame calculateStrategy() throws NoStrategyExistentException, CalculationInterruptedException {
 		return calculateStrategy(false);
 	}
 }
