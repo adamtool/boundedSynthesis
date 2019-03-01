@@ -7,8 +7,6 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
-import org.antlr.v4.runtime.misc.Triple;
-
 import uniol.apt.adt.pn.Marking;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
@@ -27,7 +25,6 @@ import uniolunisaar.adam.exceptions.pg.NoSuitableDistributionFoundException;
  */
 
 public class McMillianUnfolder extends Unfolder {
-
 	// unfolded result Petri game and Petri net
 	private QbfSolvingObject<? extends Condition> originalSolvingObject;
 	private PetriGame originalGame;
@@ -63,11 +60,10 @@ public class McMillianUnfolder extends Unfolder {
 			Set<Place> marking  = extension.a;
 			Transition t = extension.b;
 			Set<Place> preset = extension.c;
-			System.out.println(marking);
 			if (closed.contains(new Pair<>(t, preset))) {
 				// do not add transition but continue with updated marking
 				Transition alreadyAdded = null;
-				for (Transition trans : originalGame.getTransitions()) {
+				for (Transition trans : pn.getTransitions()) {
 					if (trans.getPreset().equals(preset)) {
 						alreadyAdded = trans;
 						break;		// should be unique and always present when reaching this part of the code
@@ -109,34 +105,28 @@ public class McMillianUnfolder extends Unfolder {
 	// we calculate all newly enabled transitions in the original PG and return them together with the preset in the branching process
 	private Queue<Triple<Set<Place>, Transition, Set<Place>>> possExt (Set<Place> marking, Set<Place> postset) {
 		Queue<Triple<Set<Place>, Transition, Set<Place>>> possibleExtensions = new LinkedList<>();
-		// iterate over newly added places in branching process:
-		for (Place postPlace : postset) {
-			Place originalPostPlace = originalGame.getPlace(getOriginalPlaceId(postPlace.getId()));
-			// check the following transitions in the original game:
-			for (Transition originalPostTransition : originalPostPlace.getPostset()) {
-				Set<Place> preset = new HashSet<>();
-				boolean isEnabled = true;
-				// search for fitting places in the branching process for each original place in the preset of the transition
-				for (Place originalPresetPlace : originalPostTransition.getPreset()) {
-					boolean found = false;
-					for (Place place : marking) {
-						if (getOriginalPlaceId(originalPresetPlace.getId()).equals(getOriginalPlaceId(place.getId()))) {
-							preset.add(place);
-							found = true;
-							break;
-						}
-					}
-					if (!found) {
-						isEnabled = false;
+		// iterate over ALL original transitions as progress somewhere else in the net may enable other transitions
+		for (Transition originalPostTransition : originalGame.getTransitions()) {
+			Set<Place> preset = new HashSet<>();
+			boolean isEnabled = true;
+			// search for fitting places in the branching process for each original place in the preset of the transition
+			for (Place originalPresetPlace : originalPostTransition.getPreset()) {
+				boolean found = false;
+				for (Place place : marking) {
+					if (getOriginalPlaceId(originalPresetPlace.getId()).equals(getOriginalPlaceId(place.getId()))) {
+						preset.add(place);
+						found = true;
 						break;
 					}
 				}
-				if (isEnabled) {
-					// check for causal past AFTER enabledness as it should be cheaper?
-					if (!isCausalPast(originalPostTransition.getId(), marking)) {
-						possibleExtensions.add(new Triple<>(new HashSet<>(marking), originalPostTransition, preset));
-					}
+				if (!found) {
+					isEnabled = false;
+					break;
 				}
+			}
+			// check for causal past AFTER enabledness as it should be cheaper?
+			if (isEnabled && !isCausalPast(originalPostTransition.getId(), preset)) {
+				possibleExtensions.add(new Triple<>(new HashSet<>(marking), originalPostTransition, preset));	
 			}
 		}
 		return possibleExtensions;
@@ -149,7 +139,7 @@ public class McMillianUnfolder extends Unfolder {
 				if (getOriginalTransitionId(pre.getId()).equals(transitionId)) {
 					return true;
 				} else {
-					isCausalPast = isCausalPast(transitionId, pre.getPreset()) || isCausalPast;  
+					isCausalPast = isCausalPast || isCausalPast(transitionId, pre.getPreset());  
 				}
 			}
 		}
