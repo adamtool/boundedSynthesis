@@ -3,9 +3,6 @@ package uniolunisaar.adam.bounded.qbfapproach;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import uniolunisaar.adam.generators.pnwt.util.acencoding.OfficeBenchmark;
-import uniolunisaar.adam.util.PNWTTools;
-
 /**
  * 
  * @author Jesko Hecking-Harbusch

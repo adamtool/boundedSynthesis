@@ -14,12 +14,13 @@ import uniolunisaar.adam.ds.objectives.Condition;
 /**
  * quick and dirty
  * 
- * 
+ * does not do anthing "clever"; will be removed
  * 
  * @author Jesko Hecking-Harbusch
  *
  */
 
+@Deprecated
 public class OldDeterministicUnfolder extends Unfolder {
 
 	public OldDeterministicUnfolder(QbfSolvingObject<? extends Condition> QBFPetriGame, Map<String, Integer> max) {

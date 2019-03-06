@@ -26,17 +26,16 @@ import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.exceptions.BoundedParameterMissingException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.PGSimplifier;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QbfSolvingObject;
-import uniolunisaar.adam.bounded.qbfapproach.unfolder.FiniteDeterministicUnfolder;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.ForNonDeterministicUnfolder;
+import uniolunisaar.adam.bounded.qbfapproach.unfolder.McMillianUnfolder;
 import uniolunisaar.adam.bounded.qbfapproach.unfolder.Unfolder;
-import uniolunisaar.adam.exceptions.pg.NoStrategyExistentException;
-import uniolunisaar.adam.exceptions.pg.NotSupportedGameException;
-import uniolunisaar.adam.exceptions.pg.SolvingException;
+import uniolunisaar.adam.ds.objectives.Condition;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.solver.Solver;
 import uniolunisaar.adam.ds.solver.SolverOptions;
-import uniolunisaar.adam.ds.objectives.Condition;
 import uniolunisaar.adam.exceptions.pg.CalculationInterruptedException;
+import uniolunisaar.adam.exceptions.pg.NoStrategyExistentException;
+import uniolunisaar.adam.exceptions.pg.SolvingException;
 import uniolunisaar.adam.tools.AdamProperties;
 
 /**
@@ -271,7 +270,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 
 	protected int writeOneMissingPre(Transition t1, Transition t2, int i) throws IOException {
 		Set<Integer> or = new HashSet<>();
-		
+	
 		// old alternative:
 		/*int strat;
 		for (Place p : t1.getPreset()) {
@@ -646,11 +645,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 		
 		Unfolder unfolder = null;
 		if (QbfControl.rebuildingUnfolder) {
-			try {
-				unfolder = new FiniteDeterministicUnfolder(getSolvingObject(), null);
-			} catch (NotSupportedGameException e2) {
-				e2.printStackTrace();
-			}
+			unfolder = new McMillianUnfolder(getSolvingObject(), null);
 		} else {
 			unfolder = new ForNonDeterministicUnfolder(getSolvingObject(), null); // null forces unfolder to use b as bound for every place
 		}
