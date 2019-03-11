@@ -43,8 +43,9 @@ public abstract class EmptyTest {
 		PNWTTools.savePnwt2PDF("unfolding", sol.getGame(), false);
 		if (sol.existsWinningStrategy()) {
 			PNWTTools.savePnwt2PDF("strategy", sol.getStrategy(), false);
-			Assert.assertEquals(QbfControl.checkStrategy(originalGame, sol.getStrategy()), true);
+			// check correctness of strategy:
+			//Assert.assertEquals(QbfControl.checkStrategy(originalGame, sol.getStrategy()), true);
 		}
-		//Assert.assertEquals(sol.existsWinningStrategy(), result);  // TODO fix recognition of finite strategies
+		Assert.assertEquals(sol.existsWinningStrategy(), result);
 	}
 }

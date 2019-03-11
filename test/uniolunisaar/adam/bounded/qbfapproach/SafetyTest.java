@@ -69,7 +69,10 @@ public class SafetyTest extends EmptyTest {
 		//oneTest("container/container", 10, 2, true);	// TODO search for bounds
 		//oneTest("notConcurrencyPreservingTests/toMakeCP", 20, 2, false);	// TODO nets are unsafe, making them safe defeats their purpose
 		//oneTest("notConcurrencyPreservingTests/madeCP", 20, 2, true);		// TODO nets are unsafe, making them safe defeats their purpose
-		oneTest("ndet/nondet_motivationForSchedulingChange", 20, 0, false);
+		oneTest("boundedunfolding/firstTry", 15, 0, true);
+		oneTest("boundedunfolding/secondTry", 15, 0, true);
+		/*oneTest("ndet/nondet_motivationForSchedulingChange", 20, 0, false);
+		oneTest("boundedunfolding/finiteWithBad", 10, 2, true);
 		oneTest("jhh/myexample1", 10, 0, false);
 		oneTest("ndet/nondet_s3_noStrat", 15, 2, false);
 		oneTest("ndet/nondet_unnecessarily_noStrat", 15, 3, false);
@@ -86,8 +89,8 @@ public class SafetyTest extends EmptyTest {
 		oneTest("jhh/myexample4", 10, 2, false);
 		oneTest("jhh/myexample5", 20, 0, true);
 		oneTest("ndet/nondet", 5, 2, false);
-		//oneTest("burglar/burglar", 7, 3, true);
-		//oneTest("burglar/burglar", 6, 2, false);
+		oneTest("burglar/burglar", 7, 3, true);
+		oneTest("burglar/burglar", 6, 2, false);
 		//oneTest("container/container", 20, 0, false);
 		int bound = 4;
 		//if (trueconcurrent) bound = 3; // TODO why did i think an error is here?

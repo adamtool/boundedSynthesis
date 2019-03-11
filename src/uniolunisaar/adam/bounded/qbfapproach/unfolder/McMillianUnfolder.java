@@ -68,7 +68,7 @@ public class McMillianUnfolder extends Unfolder {
 				// do not add transition but continue with updated marking
 				Transition alreadyAdded = null;
 				for (Transition trans : pn.getTransitions()) {
-					if (trans.getPreset().equals(preset)) {
+					if (getOriginalTransitionId(trans.getId()).equals(t.getId()) && trans.getPreset().equals(preset)) {
 						alreadyAdded = trans;
 						break;		// should be unique and always present when reaching this part of the code
 					}
@@ -93,6 +93,7 @@ public class McMillianUnfolder extends Unfolder {
 					}
 					pn.createFlow(newT, newPost);
 				}
+				closed.add(new Pair<>(t, preset));
 			}
 			// add ORIGINAL marking to cutOff iff ALL outgoing transitions have been added
 			boolean allAdded = true;
@@ -122,19 +123,20 @@ public class McMillianUnfolder extends Unfolder {
 			if (allAdded) {
 				cutOff.add(originalMarking);
 			}
+			
 			Set<Place> originalPostMarking = new HashSet<>();
 			for (Place p : postMarking) {
 				originalPostMarking.add(originalGame.getPlace(getOriginalPlaceId(p.getId())));
 			}
+			// TODO mabye think about only once calling possExt for each postMarking as OPTIMIZATION
 			if (!cutOff.contains(originalPostMarking)) { // reduced to original marking and check for membership in cutOff
 				possibleExtensions.addAll(possExt(postMarking));
 			}
-			closed.add(new Pair<>(t, preset));
 		}	
 	}
 	
 	// Somewhat clever search strategy:
-	// Given a marking (and the postset of the last fired transition) in the branching process, 
+	// Given a marking in the branching process, 
 	// we calculate all newly enabled transitions in the original PG and return them together with the preset in the branching process
 	private Queue<Triple<Set<Place>, Transition, Set<Place>>> possExt (Set<Place> marking) {
 		Queue<Triple<Set<Place>, Transition, Set<Place>>> possibleExtensions = new LinkedList<>();
@@ -149,7 +151,6 @@ public class McMillianUnfolder extends Unfolder {
 					if (getOriginalPlaceId(originalPresetPlace.getId()).equals(getOriginalPlaceId(place.getId()))) {
 						preset.add(place);
 						found = true;
-						break;
 					}
 				}
 				if (!found) {
