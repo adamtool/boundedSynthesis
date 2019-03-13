@@ -97,10 +97,7 @@ public class McMillianUnfolder extends Unfolder {
 			}
 			// add ORIGINAL marking to cutOff iff ALL outgoing transitions have been added
 			boolean allAdded = true;
-			Set<Place> originalMarking = new HashSet<>();
-			for (Place p : marking) {
-				originalMarking.add(originalGame.getPlace(getOriginalPlaceId(p.getId())));
-			}
+			Set<Place> originalMarking = getOriginalMarking(marking);
 			for (Transition originalTransition : originalGame.getTransitions()) {	// for all enabled original transitions search for copy in branching process
 				if (originalMarking.containsAll(originalTransition.getPreset())) {	// check enabledness
 					boolean found = false;
@@ -124,12 +121,8 @@ public class McMillianUnfolder extends Unfolder {
 				cutOff.add(originalMarking);
 			}
 			
-			Set<Place> originalPostMarking = new HashSet<>();
-			for (Place p : postMarking) {
-				originalPostMarking.add(originalGame.getPlace(getOriginalPlaceId(p.getId())));
-			}
-			// TODO mabye think about only once calling possExt for each postMarking as OPTIMIZATION
-			if (!cutOff.contains(originalPostMarking)) { // reduced to original marking and check for membership in cutOff
+			// only once calling possExt for each postMarking seems to be possible as OPTIMIZATION but no good intuition why 
+			if (!cutOff.contains(getOriginalMarking(postMarking))) {
 				possibleExtensions.addAll(possExt(postMarking));
 			}
 		}	
@@ -158,25 +151,19 @@ public class McMillianUnfolder extends Unfolder {
 					break;
 				}
 			}
-			if (isEnabled /*&& !isCausalPast(originalPostTransition.getId(), preset)*/) {		// definition of causal past based on places and transitions does not work
+			if (isEnabled) {		// definition of causal past based on places and transitions does not work
 				possibleExtensions.add(new Triple<>(new HashSet<>(marking), originalPostTransition, preset));	
 			}
 		}
 		return possibleExtensions;
 	}
 	
-	private boolean isCausalPast(String transitionId, Set<Place> marking) {
-		boolean isCausalPast = false;
+	private Set<Place> getOriginalMarking(Set<Place> marking) {
+		Set<Place> originalMarking = new HashSet<>();
 		for (Place p : marking) {
-			for (Transition pre : p.getPreset()) {
-				if (getOriginalTransitionId(pre.getId()).equals(transitionId)) {
-					return true;
-				} else {
-					isCausalPast = isCausalPast || isCausalPast(transitionId, pre.getPreset());  
-				}
-			}
+			originalMarking.add(originalGame.getPlace(getOriginalPlaceId(p.getId())));
 		}
-		return isCausalPast;
+		return originalMarking;
 	}
 
 	public static String getOriginalPlaceId(String id) {
