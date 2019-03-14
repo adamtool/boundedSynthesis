@@ -104,21 +104,6 @@ public class Place extends Node {
 	}
 	
 	@Override
-	public boolean equals(Object ob) {
-	   if (ob == null) {
-	       return false;
-	   }
-	   if (this == ob) {
-	       return true;
-	   }
-	   if (ob instanceof Place) {
-	       Place other = (Place) ob;
-	       return this.id.equals(other.getId());
-	   }
-	   return false;
-	}
-	
-	@Override
     public int hashCode() {
 		return id.hashCode();
 	}
