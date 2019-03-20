@@ -17,6 +17,7 @@ import uniol.apt.analysis.connectivity.Connectivity;
 import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.ds.objectives.Safety;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
+import uniolunisaar.adam.exceptions.pg.CalculationInterruptedException;
 import uniolunisaar.adam.exceptions.pg.NoStrategyExistentException;
 import uniolunisaar.adam.exceptions.pg.SolvingException;
 
@@ -369,7 +370,7 @@ public class QbfConSafetySolver extends QbfConSolver<Safety> {
 	}
 
 	@Override
-	protected PetriGame calculateStrategy() throws NoStrategyExistentException {
+	protected PetriGame calculateStrategy() throws NoStrategyExistentException, CalculationInterruptedException {
 		return calculateStrategy(true);
 	}
 }

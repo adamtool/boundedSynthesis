@@ -1,23 +1,24 @@
 package uniolunisaar.adam.bounded.qbfapproach.unfolder;
 
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 
+import org.antlr.v4.runtime.misc.Triple;
+
 import uniol.apt.adt.pn.Marking;
-import uniol.apt.adt.pn.PetriNet;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.analysis.exception.UnboundedException;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QbfSolvingObject;
 import uniolunisaar.adam.ds.objectives.Condition;
+import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.exceptions.pg.NetNotSafeException;
 import uniolunisaar.adam.exceptions.pg.NoSuitableDistributionFoundException;
-import uniolunisaar.adam.exceptions.pg.NotSupportedGameException;
 
 /**
  * 
@@ -26,181 +27,147 @@ import uniolunisaar.adam.exceptions.pg.NotSupportedGameException;
  */
 
 public class McMillianUnfolder extends Unfolder {
-
 	// unfolded result Petri game and Petri net
-	public QbfSolvingObject<? extends Condition> unfolding;
-	public PetriNet unfoldingNet;
-
-	// Pair<Place, Transition>
-	// Pair<Transition, Set<Place>>
-
-	Set<Pair<String, String>> conflicts = new HashSet<>(); // TODO never added
+	private QbfSolvingObject<? extends Condition> originalSolvingObject;
+	private PetriGame originalGame;
 
 	Set<Pair<Transition, Set<Place>>> closed = new HashSet<>();
+	Set<Set<Place>> cutOff = new HashSet<>();
 
-	int counter = 0;
+	int counterPlaces = 0;
+	int counterTransitions = 0;
 
-	public McMillianUnfolder(QbfSolvingObject<? extends Condition> petriGame, Map<String, Integer> max) throws NotSupportedGameException {
+	public McMillianUnfolder(QbfSolvingObject<? extends Condition> petriGame, Map<String, Integer> max) {
 		super(petriGame, max);
 
-		unfoldingNet = new PetriNet(pn.getName() + "_unfolding");
-		unfolding = petriGame.getCopy();
+		originalSolvingObject = petriGame.getCopy();
+		originalGame = originalSolvingObject.getGame();
 
+		for (Transition t : originalGame.getTransitions()) {
+			pn.removeTransition(t.getId());
+		}
+		
 		Marking initial = pn.getInitialMarking();
-		for (Place p : pn.getPlaces()) {
-			if (initial.getToken(p).getValue() == 1) {
-				Place newP = unfoldingNet.createPlace(p.getId() + "_P_EMPTY");
-				newP.setInitialToken(1);
-				if (pg.getGame().getEnvPlaces().contains(p)) {
-					unfolding.getGame().getEnvPlaces().add(newP);
-				}
-				for (Pair<String, Object> pair : p.getExtensions()) {
-					newP.putExtension(pair.getFirst(), pair.getSecond());
-				}
-			} else if (initial.getToken(p).getValue() > 1) {
-				throw new NetNotSafeException(p.getId(), "initial");
+		for (Place p : originalGame.getPlaces()) {
+			if (initial.getToken(p.getId()).getValue() < 1) {
+				pn.removePlace(p.getId());
 			}
 		}
 	}
 
 	@Override
 	public void createUnfolding() throws NetNotSafeException, NoSuitableDistributionFoundException, UnboundedException, FileNotFoundException {
-		Set<Pair<Transition, Set<Place>>> possibleExtensions = possibleExtensions();
-		while (true) {
-			Pair<Transition, Set<Place>> extension = possibleExtensions.iterator().next();
-			possibleExtensions.remove(extension);
-			closed.add(extension);
-
-			Transition newT = unfoldingNet.createTransition(extension.getFirst().getId() + "_T_" + counter++);
-			for (Place pre : extension.getSecond()) {
-				unfoldingNet.createFlow(pre, newT);
-			}
-			for (Place post : extension.getFirst().getPostset()) {
-				Place newPost = unfoldingNet.createPlace(post.getId() + "_P_" + newT.getId());
-				if (pg.getGame().getEnvPlaces().contains(post)) {
-					unfolding.getGame().getEnvPlaces().add(newPost);
+		Queue<Triple<Set<Place>, Transition, Set<Place>>> possibleExtensions = possExt(pn.getPlaces());
+		while (!possibleExtensions.isEmpty()) {
+			Triple<Set<Place>, Transition, Set<Place>> extension = possibleExtensions.poll();
+			Set<Place> marking  = extension.a;
+			Transition t = extension.b;
+			Set<Place> preset = extension.c;
+			Set<Place> postMarking = new HashSet<>(marking);
+			if (closed.contains(new Pair<>(t, preset))) {
+				// do not add transition but continue with updated marking
+				Transition alreadyAdded = null;
+				for (Transition trans : pn.getTransitions()) {
+					if (getOriginalTransitionId(trans.getId()).equals(t.getId()) && trans.getPreset().equals(preset)) {
+						alreadyAdded = trans;
+						break;		// should be unique and always present when reaching this part of the code
+					}
 				}
-				for (Pair<String, Object> pair : post.getExtensions()) {
-					newPost.putExtension(pair.getFirst(), pair.getSecond());
+				postMarking.removeAll(alreadyAdded.getPreset());
+				postMarking.addAll(alreadyAdded.getPostset());
+			} else {
+				// add transition
+				Transition newT = pn.createTransition(t.getId() + "__" + counterPlaces++);
+				for (Place pre : preset) {
+					pn.createFlow(pre, newT);
+					postMarking.remove(pre);
 				}
-				unfoldingNet.createFlow(newT, newPost);
-			}
-			if (possibleExtensions.isEmpty()) {
-				// POWERSET CANT HANDLE LARGER SETS8
-				// if (unfoldingNet.getPlaces().size() <= 20) {
-				possibleExtensions = possibleExtensions();
-				// }
-				if (possibleExtensions.isEmpty()) {
-					break;
+				for (Place post : t.getPostset()) {
+					Place newPost = pn.createPlace(post.getId() + "__" + counterTransitions++);
+					postMarking.add(newPost);
+					if (originalGame.getEnvPlaces().contains(post)) {
+						pg.getGame().getEnvPlaces().add(newPost);
+					}
+					for (Pair<String, Object> pair : post.getExtensions()) {
+						newPost.putExtension(pair.getFirst(), pair.getSecond());
+					}
+					pn.createFlow(newT, newPost);
 				}
+				closed.add(new Pair<>(t, preset));
 			}
-		}
-
-		// TODO this probably wont work anymomre..
-		unfolding.setN(pg.getN());
-		unfolding.setB(pg.getB());
-		pg = unfolding;
-		pn = unfoldingNet;
-	}
-
-	// TODO NAIVE AND STUPID implementation
-	private Set<Pair<Transition, Set<Place>>> possibleExtensions() {
-		Set<Pair<Transition, Set<Place>>> possibleExtensions = new HashSet<Pair<Transition, Set<Place>>>();
-		// System.out.println(unfoldingNet.getPlaces().size());
-		Set<Place> places = new HashSet<>(unfoldingNet.getPlaces());
-
-		for (Place p : unfoldingNet.getPlaces()) {
-			if (pn.getPlace(getOriginalPlaceId(p.getId())).getPostset().isEmpty()) {
-				places.remove(p);
-			}
-		}
-
-		for (Set<Place> element : myPowerset(places)) {
-			Set<String> idPlaces = new HashSet<>();
-			Set<String> preTrans = new HashSet<>();
-			for (Place p : element) {
-				// same place more than once in set
-				if (idPlaces.contains(getOriginalPlaceId(p.getId()))) {
-					idPlaces = null;
-					break;
-				}
-				idPlaces.add(getOriginalPlaceId(p.getId()));
-				preTrans.add(getPreTransitionForPlace(p.getId()));
-			}
-			if (idPlaces == null) {
-				continue;
-			}
-			for (String id1 : preTrans) {
-				for (String id2 : preTrans) {
-					if (conflicts.contains(new Pair<>(getOriginalTransitionId(id1), getOriginalTransitionId(id2)))) {
-						idPlaces = null;
+			// add ORIGINAL marking to cutOff iff ALL outgoing transitions have been added
+			boolean allAdded = true;
+			Set<Place> originalMarking = getOriginalMarking(marking);
+			for (Transition originalTransition : originalGame.getTransitions()) {	// for all enabled original transitions search for copy in branching process
+				if (originalMarking.containsAll(originalTransition.getPreset())) {	// check enabledness
+					boolean found = false;
+					for (Place p : marking) {
+						for (Transition trans : p.getPostset()) {
+							if (originalTransition.getId().equals(getOriginalTransitionId(trans.getId())) && marking.containsAll(trans.getPreset())) {
+								found = true;
+								break;
+							}
+						}
+						if (found) break;
+					}
+					if (!found) {
+						allAdded = false;
 						break;
 					}
 				}
-				if (idPlaces == null) {
+			}
+			
+			if (allAdded) {
+				cutOff.add(originalMarking);
+			}
+			
+			// only once calling possExt for each postMarking seems to be possible as OPTIMIZATION but no good intuition why 
+			if (!cutOff.contains(getOriginalMarking(postMarking))) {
+				possibleExtensions.addAll(possExt(postMarking));
+			}
+		}	
+	}
+	
+	// Somewhat clever search strategy:
+	// Given a marking in the branching process, 
+	// we calculate all newly enabled transitions in the original PG and return them together with the preset in the branching process
+	private Queue<Triple<Set<Place>, Transition, Set<Place>>> possExt (Set<Place> marking) {
+		Queue<Triple<Set<Place>, Transition, Set<Place>>> possibleExtensions = new LinkedList<>();
+		// iterate over ALL original transitions as progress somewhere else in the net may enable other transitions
+		for (Transition originalPostTransition : originalGame.getTransitions()) {
+			Set<Place> preset = new HashSet<>();
+			boolean isEnabled = true;
+			// search for fitting places in the branching process for each original place in the preset of the transition
+			for (Place originalPresetPlace : originalPostTransition.getPreset()) {
+				boolean found = false;
+				for (Place place : marking) {
+					if (getOriginalPlaceId(originalPresetPlace.getId()).equals(getOriginalPlaceId(place.getId()))) {
+						preset.add(place);
+						found = true;
+					}
+				}
+				if (!found) {
+					isEnabled = false;
 					break;
 				}
 			}
-			if (idPlaces == null) {
-				continue;
-			}
-			for (Transition t : pn.getTransitions()) {
-				Set<String> prePlaces = new HashSet<>();
-				for (Place pre : t.getPreset()) {
-					prePlaces.add(pre.getId());
-				}
-				if (idPlaces.equals(prePlaces)) {
-					if (!closed.contains(new Pair<>(t, element))) {
-						possibleExtensions.add(new Pair<>(t, element));
-					}
-				}
+			if (isEnabled) {		// definition of causal past based on places and transitions does not work
+				possibleExtensions.add(new Triple<>(new HashSet<>(marking), originalPostTransition, preset));	
 			}
 		}
 		return possibleExtensions;
 	}
-
-	public static int max = 2;
-
-	public static <T> Set<Set<T>> myPowerset(Set<T> originalSet) {
-		Set<Set<T>> result = new HashSet<>();
-		result.add(new HashSet<>());
-		for (int i = 1; i <= max; ++i) {
-			for (Set<T> elementResult : result) {
-				Set<Set<T>> addList = new HashSet<>();
-				for (T element : originalSet) {
-					Set<T> add = new HashSet<>(elementResult);
-					add.add(element);
-					addList.add(add);
-				}
-				addList.addAll(result);
-				result = addList;
-			}
+	
+	private Set<Place> getOriginalMarking(Set<Place> marking) {
+		Set<Place> originalMarking = new HashSet<>();
+		for (Place p : marking) {
+			originalMarking.add(originalGame.getPlace(getOriginalPlaceId(p.getId())));
 		}
-		// System.out.println("REDUCED POWERSET SIZE: " + result.size());
-		return result;
-	}
-
-	public static <T> Set<Set<T>> powerset(Set<T> originalSet) {
-		Set<Set<T>> sets = new HashSet<Set<T>>();
-		if (originalSet.isEmpty()) {
-			sets.add(new HashSet<T>());
-			return sets;
-		}
-		List<T> list = new ArrayList<T>(originalSet);
-		T head = list.get(0);
-		Set<T> rest = new HashSet<T>(list.subList(1, list.size()));
-		for (Set<T> set : powerset(rest)) {
-			Set<T> newSet = new HashSet<T>();
-			newSet.add(head);
-			newSet.addAll(set);
-			sets.add(newSet);
-			sets.add(set);
-		}
-		return sets;
+		return originalMarking;
 	}
 
 	public static String getOriginalPlaceId(String id) {
-		int index = id.indexOf("_P_");
+		int index = id.indexOf("__");
 		if (index != -1) {
 			id = id.substring(0, index);
 		}
@@ -208,17 +175,9 @@ public class McMillianUnfolder extends Unfolder {
 	}
 
 	public static String getOriginalTransitionId(String id) {
-		int index = id.indexOf("_T_");
+		int index = id.indexOf("__");
 		if (index != -1) {
 			id = id.substring(0, index);
-		}
-		return id;
-	}
-
-	public static String getPreTransitionForPlace(String id) {
-		int index = id.indexOf("_P_");
-		if (index != -1) {
-			id = id.substring(index + 3, id.length());
 		}
 		return id;
 	}

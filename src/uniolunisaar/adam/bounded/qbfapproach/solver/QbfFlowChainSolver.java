@@ -16,6 +16,7 @@ import uniolunisaar.adam.exceptions.pg.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.petrinetwithtransits.Transit;
 import uniolunisaar.adam.ds.objectives.Condition;
+import uniolunisaar.adam.exceptions.pg.CalculationInterruptedException;
 
 /**
  * 
@@ -363,7 +364,7 @@ public abstract class QbfFlowChainSolver<W extends Condition> extends QbfSolver<
 	}
 
 	@Override
-	protected PetriGame calculateStrategy() throws NoStrategyExistentException {
+	protected PetriGame calculateStrategy() throws NoStrategyExistentException, CalculationInterruptedException {
 		return calculateStrategy(false);
 	}
 }
