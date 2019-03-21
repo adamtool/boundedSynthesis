@@ -11,6 +11,7 @@ import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.solver.SolvingObject;
+import uniolunisaar.adam.exceptions.pg.NetNotSafeException;
 import uniolunisaar.adam.util.AdamExtensions;
 import uniolunisaar.adam.ds.objectives.Condition;
 
@@ -28,10 +29,16 @@ public class QbfSolvingObject<W extends Condition> extends SolvingObject<PetriGa
     private int b; // number of unfoldings per place in the bounded unfolding
     private Map<Transition, Set<Pair<Place, Place>>> fl = new HashMap<>(); // tokenflow
 
-    public QbfSolvingObject(PetriGame game, W winCon) {
+    public QbfSolvingObject(PetriGame game, W winCon, boolean skipChecks) throws NetNotSafeException {
         super(game, winCon);
         for (Transition t : game.getTransitions()) {	// TODO necessary!
             fl.put(t, new HashSet<>());
+        }
+
+        if (!skipChecks) {
+        	if (!game.getBounded().isSafe()) {
+        		throw new NetNotSafeException(game.getBounded().unboundedPlace.toString(), game.getBounded().sequence.toString());
+        	}
         }
         // TODO JESKO: add how the flows should be copied or if you still need them after the restructuring.
     }
@@ -102,7 +109,12 @@ public class QbfSolvingObject<W extends Condition> extends SolvingObject<PetriGa
 
     @Override
     public QbfSolvingObject<W> getCopy() {
-    	QbfSolvingObject<W> result = new QbfSolvingObject<>(new PetriGame(this.getGame()), this.getWinCon().getCopy());
+    	QbfSolvingObject<W> result = null;
+		try {
+			result = new QbfSolvingObject<>(new PetriGame(this.getGame()), this.getWinCon().getCopy(), true);
+		} catch (NetNotSafeException e) {
+			// cannot be thrown as it was tested for safe on initialisation
+		}
         result.setN(this.n);
         result.setB(this.b);
         return result;

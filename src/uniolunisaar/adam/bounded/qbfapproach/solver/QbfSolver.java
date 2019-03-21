@@ -27,7 +27,7 @@ public abstract class QbfSolver<W extends Condition> extends SolverQbfAndQbfCon<
 	private Map<Transition, Set<Place>> preMinusPostCache = new HashMap<>();
 
 	public QbfSolver(PetriGame game, W winCon, QbfSolverOptions so) throws SolvingException {
-		super(new QbfSolvingObject<>(game, winCon), so);
+		super(new QbfSolvingObject<>(game, winCon, false), so);
 		
 		// initializing bounded parameters n and b
 		initializeNandB(so.getN(), so.getB());

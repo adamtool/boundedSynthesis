@@ -30,7 +30,7 @@ public abstract class QbfConSolver<W extends Condition> extends SolverQbfAndQbfC
 	protected List<Transition> setlist;
 	
 	protected QbfConSolver(PetriGame game, W winCon, QbfConSolverOptions so) throws SolvingException {
-		super(new QbfSolvingObject<>(game, winCon), so);
+		super(new QbfSolvingObject<>(game, winCon, false), so);
 		
 		// initializing bounded parameters n and b
 		initializeNandB(so.getN(), so.getB());
