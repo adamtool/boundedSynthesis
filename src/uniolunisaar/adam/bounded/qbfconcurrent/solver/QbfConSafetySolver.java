@@ -111,8 +111,7 @@ public class QbfConSafetySolver extends QbfConSolver<Safety> {
 			and.clear();
 			and.add(in);
 			for (int j = 1; j <= i - 1; ++j) {
-				// and.add(-dl[j]); // performance evaluation showed that leaving this out makes
-				// program faster as it is redundant
+
 				and.add(fl[j]);
 			}
 			seq[i] = createUniqueID();
@@ -171,7 +170,6 @@ public class QbfConSafetySolver extends QbfConSolver<Safety> {
 					for (Transition t : p.getPostset()) {
 						int number = createVariable(p.getId() + ".." + t.getId());
 						exists.add(number);
-						// System.out.println(number + " = " + p.getId() + ".." + t.getId());
 						exists_transitions.put(number, p.getId() + ".." + t.getId());
 					}
 				} else {
@@ -182,7 +180,6 @@ public class QbfConSafetySolver extends QbfConSolver<Safety> {
 							truncatedIDs.add(truncatedID);
 							int number = createVariable(p.getId() + ".." + truncatedID);
 							exists.add(number);
-							// System.out.println(number + " = " + p.getId() + ".." + truncatedID);
 							exists_transitions.put(number, p.getId() + ".." + truncatedID);
 						}
 					}
@@ -198,13 +195,10 @@ public class QbfConSafetySolver extends QbfConSolver<Safety> {
 		for (Place p : getSolvingObject().getGame().getPlaces()) {
 			for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 				int number = createVariable(p.getId() + "." + i);
-				// System.out.println(p.getId() + "." + i + " : number: " +
-				// number);
 				forall.add(number);
-				// System.out.println(number + " = " + p.getId() + "." + i);
 			}
 		}
-		int loopBound = checkLocalLoops(strongComponents) ? getSolvingObject().getN() : 1;//Optimize for finite PG
+		loopBound = checkLocalLoops(strongComponents) ? getSolvingObject().getN() : 1;
 		System.out.println("Bound: " + loopBound);
 		for (Place p : getSolvingObject().getGame().getPlaces()) {
 			if (getSolvingObject().getGame().getEnvPlaces().contains(p)) {
@@ -223,35 +217,26 @@ public class QbfConSafetySolver extends QbfConSolver<Safety> {
 
 			}
 		}
-		//Add environment stalling for all transtition including env transitions
+		//Add environment stalling transitions that are not purely environmental
 		//Truncated transitions behave equally
 		Set<String> testSet = new HashSet<>();
 		for (Transition t : getSolvingObject().getGame().getTransitions()){
+			Set<Place> sysPrePlaces = new HashSet<Place>(t.getPreset());
+			sysPrePlaces.removeAll(getSolvingObject().getGame().getEnvPlaces());
+			if (!sysPrePlaces.isEmpty()) { //At least one preplace has to be system
 			String truncatedID = getTruncatedId(t.getId());
 			if (!testSet.contains(truncatedID)){
 				testSet.add(truncatedID);
-				forall.add(createVariable(truncatedID + "**" + "stall"));//Make this pretty again
+				forall.add(createVariable(truncatedID + "**" + "stall"));
+				}
 			}
 		}
 		if (!forall.isEmpty()) {
 			writer.write(writeForall(forall));
 		}
-		// System.out.println(forall);
-
+		
 	}
 
-	protected void addForallEnvStall() throws IOException{
-		Set<Integer> forall = new HashSet<>();
-		Set<String> testSet = new HashSet<>();
-
-		for (Transition t : getSolvingObject().getGame().getTransitions()){
-			String truncatedID = getTruncatedId(t.getId());
-			if (!testSet.contains(truncatedID)){
-				testSet.add(truncatedID);
-				forall.add(createVariable(truncatedID + "**" + "stall"));//Make this pretty again
-			}
-		}
-	}
 	
 	@Override
 	protected void writeQCIR() throws IOException {

@@ -30,6 +30,8 @@ public abstract class QbfConSolver<W extends Condition> extends SolverQbfAndQbfC
 	protected Map<Transition, Integer> transitionmap; 
 	protected List<Transition> setlist;
 	protected Set<Set<Place>> strongComponents;
+	protected int loopBound;
+
 
 	
 	protected QbfConSolver(PetriGame game, W winCon, QbfConSolverOptions so) throws SolvingException {
@@ -61,7 +63,7 @@ public abstract class QbfConSolver<W extends Condition> extends SolverQbfAndQbfC
 				for (Transition t : p.getPostset()) {
 					truncatedPostSet.add(getTruncatedId(t.getId()));
 				}
-				for (int i = 1; i <= 1; i++) {//getSolvingObject().getN() //TODO
+				for (int i = 1; i <= loopBound; i++) {//getSolvingObject().getN() //TODO
 					for (String t : truncatedPostSet) {
 						post_transitions.addAll(truncatedPostSet);
 						post_transitions.remove(t);
@@ -240,7 +242,12 @@ public abstract class QbfConSolver<W extends Condition> extends SolverQbfAndQbfC
 			if (strat != 0)
 				outerAnd.add(strat);
 		}
-		outerAnd.add(addEnvStall(t));
+		//Only transitions with sys place in preset can be stalled by env
+		Set<Place> sysPrePlaces = new HashSet<Place>(t.getPreset());
+		sysPrePlaces.removeAll(getSolvingObject().getGame().getEnvPlaces());
+		if (!sysPrePlaces.isEmpty()) {
+			outerAnd.add(addEnvStall(t));
+		}
 		writer.write(outer_and_number + " = " + writeAnd(outerAnd));
 		
 		return outer_and_number;
@@ -259,7 +266,6 @@ public abstract class QbfConSolver<W extends Condition> extends SolverQbfAndQbfC
 	}
 	
 	protected String getLoopIJ() throws IOException {
-		System.out.println("HIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII");
 		Set<Integer> and = new HashSet<>();
 		for (Set<Place> currentSet: strongComponents) {
 			Set<Integer> or = new HashSet<>();
