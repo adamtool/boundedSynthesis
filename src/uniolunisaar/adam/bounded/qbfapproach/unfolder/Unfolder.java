@@ -88,12 +88,10 @@ public abstract class Unfolder {
 		Pair<Set<Place>, Integer> p;
 		int i;
 		while ((p = queue.poll()) != null) {
-			System.out.println(p);
 			Set<Place> m = p.getFirst();
 			i = p.getSecond();
 			if (closed.contains(m)) {
 				closed.add(new HashSet<>(m));
-				System.out.println(i + " " + pg.getN() + " " + queue.size() + " " + closed.size() + " " + m.size());
 				for (Place pp : m) {
 					for (Transition t : pp.getPostset()) {
 						if (m.containsAll(t.getPreset())) {
