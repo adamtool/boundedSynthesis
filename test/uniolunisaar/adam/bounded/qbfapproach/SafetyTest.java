@@ -64,11 +64,12 @@ public class SafetyTest extends EmptyTest {
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testGeneralExamples() throws Exception {
 		//PNWTTools.saveAPT("deploy/accesscontrolToy", OfficeBenchmark.generateOfficeToy(), false);
-		//PNWTTools.saveAPT("deploy/accesscontrolSmall", OfficeBenchmark.generateOfficeSmall(), false);
+		//PNWTTools.saveAPT("deploy/accesscontrolSmall", OfficeBenchmark.generateOfficeSmall(), false);	
 		//oneTest("tests/watchdog5", 15, 3, true);		// TODO search for bounds
 		//oneTest("container/container", 10, 2, true);	// TODO search for bounds
 		//oneTest("notConcurrencyPreservingTests/toMakeCP", 20, 2, false);	// TODO nets are unsafe, making them safe defeats their purpose
 		//oneTest("notConcurrencyPreservingTests/madeCP", 20, 2, true);		// TODO nets are unsafe, making them safe defeats their purpose
+		oneTest("boundedunfolding/counterexample", 10, 0, true);
 		oneTest("boundedunfolding/firstTry", 15, 0, true);
 		oneTest("boundedunfolding/secondTry", 15, 0, true);
 		oneTest("ndet/nondet_motivationForSchedulingChange", 20, 0, false);

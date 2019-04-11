@@ -73,38 +73,46 @@ public abstract class Unfolder {
 
 	protected Map<String, LinkedList<Integer>> calculateOrderOfUnfoldingBasedOnGameSimulation() {
 		Map<String, LinkedList<Integer>> orderOfUnfolding = new HashMap<>();
-		Marking initial = pn.getInitialMarking();
-
+		Set<Place> initial = new HashSet<>();
+		Marking marking = pn.getInitialMarking();
 		for (Place p : pn.getPlaces()) {
-			LinkedList<Integer> list = new LinkedList<>();
-			orderOfUnfolding.put(p.getId(), list);
+			if (marking.getToken(p).getValue() >= 1) {
+				initial.add(p);
+			}
+			
+			orderOfUnfolding.put(p.getId(), new LinkedList<>());
 		}
-		Queue<Pair<Marking, Integer>> queue = new LinkedList<>();
+		Queue<Pair<Set<Place>, Integer>> queue = new LinkedList<>();
 		queue.add(new Pair<>(initial, 1));
-		Set<Marking> closed = new HashSet<>();
-		Pair<Marking, Integer> p;
+		Set<Set<Place>> closed = new HashSet<>();
+		Pair<Set<Place>, Integer> p;
 		int i;
 		while ((p = queue.poll()) != null) {
-			Marking m = p.getFirst();
+			Set<Place> m = p.getFirst();
 			i = p.getSecond();
-			closed.add(m);
-			for (Transition t : pn.getTransitions()) {
-				if (t.isFireable(m)) {
-					Marking next = t.fire(m);
-					if (!closed.contains(next)) {
-						// local SYS transition (i.e. pre- and postset <= 1) cannot produce history, but
-						// they CAN TRANSPORT history
-						if (t.getPreset().size() > 1 || pg.getGame().getEnvTransitions().contains(t)
-								|| transportHistory(t, orderOfUnfolding)) {
-							for (Place place : t.getPostset()) {
-								// only unfold places with outgoing transitions
-								if (place.getPostset().size() > 0) {
-									orderOfUnfolding.get(place.getId()).add(i + 1);
+			if (closed.contains(m)) {
+				closed.add(new HashSet<>(m));
+				for (Place pp : m) {
+					for (Transition t : pp.getPostset()) {
+						if (m.containsAll(t.getPreset())) {
+							Set<Place> next = new HashSet<>(m);
+							next.removeAll(t.getPreset());
+							next.addAll(t.getPostset());
+							if (!closed.contains(next)) {
+								// local SYS transition (i.e. pre- and postset <= 1) cannot produce history, but
+								// they CAN TRANSPORT history
+								if (t.getPreset().size() > 1 || pg.getGame().getEnvTransitions().contains(t) || transportHistory(t, orderOfUnfolding)) {
+									for (Place place : t.getPostset()) {
+										// only unfold places with outgoing transitions
+										if (place.getPostset().size() > 0) {
+											orderOfUnfolding.get(place.getId()).add(i + 1);
+										}
+									}
+								}
+								if (i + 1 < pg.getN()) {
+									queue.add(new Pair<>(next, i + 1));
 								}
 							}
-						}
-						if (i + 1 < pg.getN()) {
-							queue.add(new Pair<>(next, i + 1));
 						}
 					}
 				}
