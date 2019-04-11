@@ -20,7 +20,7 @@ public class IndependentNets extends EmptyTest {
 	public void testIndependentNets() throws Exception {
 		for (int i = 3; i <= 3; i++) {
 			PetriGame pg = SCC.generatePetriNet(i);
-			testGame(pg,25,0, true); // i+3 for tc, seq: 2 -> 7
+			testGame(pg,25,0, true); // i+3 for tc, seq: 2 -> 7  maybe bound is (n+1)! where ! is the faculty operator
 		}
 	}
 
