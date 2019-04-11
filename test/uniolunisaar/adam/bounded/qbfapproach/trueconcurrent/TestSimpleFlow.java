@@ -5,6 +5,8 @@ import org.testng.annotations.Test;
 
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.generators.pg.ManufactorySystem;
+import uniolunisaar.adam.generators.pg.SCC;
+import uniolunisaar.adam.util.PNWTTools;
 
 /**
  * 
@@ -15,14 +17,8 @@ import uniolunisaar.adam.generators.pg.ManufactorySystem;
 @Test
 public class TestSimpleFlow extends EmptyTestEnvDec {
 	
-	@BeforeClass
-    public void setProperties() {
-        if (System.getProperty("examplesfolder") == null) {
-        	System.setProperty("examplesfolder", "examples");
-        }
-    }
 	
-	@Test(timeOut = 1800 * 1000) // 30 min
+	//@Test(timeOut = 1800 * 1000) // 30 min
 	public void testNiklas() throws Exception {
 		/*oneTest("nm/multipleEnvDecision",4,2,false);
 		oneTest("nm/minimal", 5, 2	, false);
@@ -33,19 +29,16 @@ public class TestSimpleFlow extends EmptyTestEnvDec {
 		//oneTest2("nm/oneenv",10,0,true);
 	}
 	
-	private void oneTest2(String str, int n, int b, boolean result) throws Exception {
-		final String path = System.getProperty("examplesfolder") + "/safety/" + str + ".apt";
-		testPath(path, n, b, result);
-	}
-	
-	
-	
 	@Test(timeOut = 1800 * 1000)
 	private void oneTest() throws Exception {
 		//testPath("examples/safety/nm/testStepNet.apt", 4, 1, true);
 		//testPath("examples/safety/nm/trueconcurrent.apt",10,1,true);
-		testPath("examples/safety/nm/sccbenchmark.apt",20,0,true);
-		
+		//testPath("examples/safety/nm/sccbenchmark.apt",20,0,true);
+		int i = 4;
+		PetriGame pg = SCC.generatePetriNet(i);
+		PNWTTools.saveAPT("examples/safety/nm/sccbenchmark" + i, pg, true);
+		PNWTTools.savePnwt2Dot("test", pg, true);
+		testPath("examples/safety/nm/sccbenchmark" + i +".apt",7,0, true);
 		//PetriGame pg = ManufactorySystem.generate(a, true, true, true);
 		//testGame(pg, n, b, result);
 	}
