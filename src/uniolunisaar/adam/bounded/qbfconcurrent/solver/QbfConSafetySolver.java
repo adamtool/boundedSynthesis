@@ -65,6 +65,21 @@ public class QbfConSafetySolver extends QbfConSolver<Safety> {
 			}
 			strongComponents.add(newSet);
 		}
+		//All single set sccs are translated to one SCC, otherwise 
+		//no progress in a scc is translated to winning!
+		Set<Set<Place>> newComponents = new HashSet<>();
+		Set<Place> singleSets = new HashSet<Place>();
+		for (Set<Place> set : strongComponents) {
+			if (set.size() == 1){
+				singleSets.addAll(set);
+			}
+			if (set.size() > 1){
+				newComponents.add(set);
+			}
+		}
+		newComponents.add(singleSets);
+		strongComponents = newComponents;
+		
 	}
 	/**
 	 * True, if places can be reached > 1 times, false otherwise
@@ -111,7 +126,6 @@ public class QbfConSafetySolver extends QbfConSolver<Safety> {
 			and.clear();
 			and.add(in);
 			for (int j = 1; j <= i - 1; ++j) {
-
 				and.add(fl[j]);
 			}
 			seq[i] = createUniqueID();
