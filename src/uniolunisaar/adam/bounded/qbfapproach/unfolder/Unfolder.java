@@ -105,7 +105,7 @@ public abstract class Unfolder {
 									for (Place place : t.getPostset()) {
 										// only unfold places with outgoing transitions
 										if (place.getPostset().size() > 0) {
-											orderOfUnfolding.get(place.getId()).add(i + 1);
+											orderOfUnfolding.get(place.getId()).add(i + 1); // TODO replace this by min or max calculation
 										}
 									}
 								}

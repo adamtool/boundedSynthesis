@@ -9,7 +9,6 @@ import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 
-import uniol.apt.adt.IGraph;
 import uniol.apt.adt.pn.Node;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
@@ -213,7 +212,6 @@ public class QbfConSafetySolver extends QbfConSolver<Safety> {
 			}
 		}
 		loopBound = checkLocalLoops(strongComponents) ? getSolvingObject().getN() : 1;
-		System.out.println("Bound: " + loopBound);
 		for (Place p : getSolvingObject().getGame().getPlaces()) {
 			if (getSolvingObject().getGame().getEnvPlaces().contains(p)) {
 				Set<String> truncatedIDs = new HashSet<>();
