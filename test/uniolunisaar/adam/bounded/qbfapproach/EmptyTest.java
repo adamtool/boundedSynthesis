@@ -18,7 +18,7 @@ import uniolunisaar.adam.util.PNWTTools;
 
 public abstract class EmptyTest {
 
-	protected boolean trueconcurrent = true;
+	protected boolean trueconcurrent = false;
 
 	protected void testPath (String path, int n, int b, boolean result) throws Exception {
 		if (trueconcurrent) {
