@@ -37,7 +37,7 @@ public class JobProcessingBenchmark {
 	}
 	
 	private void oneBenchmark (int problemSize, int n, int b, String id) throws Exception {
-		PetriNet pn = ManufactorySystem.generate(problemSize, true, true, true);
+		PetriNet pn = ManufactorySystem.generate(problemSize, true, true);
 		pn.setName("Benchmarks/JobProcessing/" + "" + id + String.format("%02d", problemSize) + "-" + String.format("%02d", n) + "-" + b);
 		
 		Tools.saveFile("Benchmarks/JobProcessing/" + "" + id + String.format("%02d", problemSize) + "-" + String.format("%02d", n) + "-" + b + ".apt", Tools.getPN(pn));
