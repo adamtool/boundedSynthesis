@@ -635,7 +635,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 			System.out.println("SAT");
 			return true;
 		} else {
-			System.out.println("QCIR ERROR with FULL output:" + outputQBFsolver);
+			System.out.println("QCIR ERROR with exitcode: " + exitcode + " and FULL output: " + outputQBFsolver);
 			return false;
 		}
 	}

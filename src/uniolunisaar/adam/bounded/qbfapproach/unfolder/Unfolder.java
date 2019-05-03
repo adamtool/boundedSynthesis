@@ -90,7 +90,7 @@ public abstract class Unfolder {
 		while ((p = queue.poll()) != null) {
 			Set<Place> m = p.getFirst();
 			i = p.getSecond();
-			if (closed.contains(m)) {
+			//if (closed.contains(m)) {		// TODO this was called fix for Niklas but prevents unfolding....
 				closed.add(new HashSet<>(m));
 				for (Place pp : m) {
 					for (Transition t : pp.getPostset()) {
@@ -116,7 +116,7 @@ public abstract class Unfolder {
 						}
 					}
 				}
-			}
+			//}
 		}
 		return orderOfUnfolding;
 	}
