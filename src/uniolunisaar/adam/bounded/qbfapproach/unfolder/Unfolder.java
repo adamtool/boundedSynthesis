@@ -90,7 +90,7 @@ public abstract class Unfolder {
 		while ((p = queue.poll()) != null) {
 			Set<Place> m = p.getFirst();
 			i = p.getSecond();
-			if (closed.contains(m)) {		// TODO this was called fix for Niklas but prevents unfolding.... changed to only irterated over transitions once, not all posttransitions of all places
+			//if (closed.contains(m)) {		// TODO this was called fix for Niklas but prevents unfolding.... changed to only irterated over transitions once, not all posttransitions of all places
 				closed.add(new HashSet<>(m));
 				for (Transition t : pg.getGame().getTransitions()) {
 					if (m.containsAll(t.getPreset())) {
@@ -104,7 +104,7 @@ public abstract class Unfolder {
 								for (Place place : t.getPostset()) {
 									// only unfold places with outgoing transitions
 									if (place.getPostset().size() > 0) {
-										orderOfUnfolding.get(place.getId()).add(i + 1); // TODO replace this by min or max calculation
+										orderOfUnfolding.get(place.getId()).add(i + 1); // TODO is sequence of positions really needed
 									}
 								}
 							}
@@ -114,7 +114,7 @@ public abstract class Unfolder {
 						}
 					}
 				}
-			}
+			//}
 		}
 		return orderOfUnfolding;
 	}

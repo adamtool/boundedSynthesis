@@ -18,8 +18,12 @@ import java.util.Random;
 import java.util.Set;
 
 import uniol.apt.adt.pn.Marking;
+import uniol.apt.adt.pn.Node;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
+import uniol.apt.adt.ts.State;
+import uniol.apt.analysis.connectivity.Connectivity;
+import uniol.apt.analysis.coverability.CoverabilityGraph;
 import uniol.apt.analysis.exception.UnboundedException;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
@@ -381,7 +385,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 	// for each place a set of transitions is given of which at least one has to
 	// be activated by the strategy to be deadlock-avoiding
 	protected int enumerateStratForNonDetUnfold(Map<Place, Set<Transition>> additionalInfoForNonDetUnfl) throws IOException {
-		if (additionalInfoForNonDetUnfl.keySet().isEmpty()) {
+		if (additionalInfoForNonDetUnfl == null || additionalInfoForNonDetUnfl.keySet().isEmpty()) {
 			return -1;
 		}
 		Set<Integer> and = new HashSet<>();
@@ -644,21 +648,42 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 		originalGame = new PetriGame(getSolvingObject().getGame());
 		
 		Unfolder unfolder = null;
-		if (QbfControl.rebuildingUnfolder) {
-			unfolder = new McMillianUnfolder(getSolvingObject(), null);
-		} else {
-			unfolder = new ForNonDeterministicUnfolder(getSolvingObject(), null); // null forces unfolder to use b as bound for every place
+		Map<Place, Set<Transition>> result = null;
+		CoverabilityGraph cover = CoverabilityGraph.get(getSolvingObject().getGame());
+		try {
+			Set<Set<State>> components = (Set<Set<State>>) Connectivity.getStronglyConnectedComponents(cover.toReachabilityLTS());
+			System.out.println(components);
+			int max = 1;
+			for (Set<State> s : components) {
+				if (s.size() > max) max = s.size();
+			}
+			if (max <= 1) QbfControl.rebuildingUnfolder = true;
+		} catch (UnboundedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+		// Skip unfolding for b = 0 or b = 1:
+		System.out.println(QbfControl.rebuildingUnfolder);
+		if (getSolvingObject().getB() > 1) {
+			if (QbfControl.rebuildingUnfolder) {
+				System.out.println("FINITE");
+				unfolder = new McMillianUnfolder(getSolvingObject(), null);
+			} else {
+				System.out.println("INFINITE");
+				unfolder = new ForNonDeterministicUnfolder(getSolvingObject(), null); // null forces unfolder to use b as bound for every place
+			}
 		
-        try {
-            unfolder.prepareUnfolding();
-        } catch (SolvingException | UnboundedException | FileNotFoundException e1) {
-            System.out.println("Error: The bounded unfolding of the game failed.");
-            e1.printStackTrace();
-        }
+			try {
+	            unfolder.prepareUnfolding();
+	        } catch (SolvingException | UnboundedException | FileNotFoundException e1) {
+	            System.out.println("Error: The bounded unfolding of the game failed.");
+	            e1.printStackTrace();
+	        }
+			result = unfolder.systemHasToDecideForAtLeastOne;
+		}
         
 		unfolding = new PetriGame(getSolvingObject().getGame());
-		return unfolder.systemHasToDecideForAtLeastOne;
+		return result;
 	}
 	
 	protected PetriGame calculateStrategy(boolean trueConcurrent) throws NoStrategyExistentException, CalculationInterruptedException {
