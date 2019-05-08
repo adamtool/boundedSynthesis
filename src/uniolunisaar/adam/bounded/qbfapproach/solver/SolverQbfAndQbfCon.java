@@ -18,7 +18,6 @@ import java.util.Random;
 import java.util.Set;
 
 import uniol.apt.adt.pn.Marking;
-import uniol.apt.adt.pn.Node;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.adt.ts.State;
@@ -652,7 +651,6 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 		CoverabilityGraph cover = CoverabilityGraph.get(getSolvingObject().getGame());
 		try {
 			Set<Set<State>> components = (Set<Set<State>>) Connectivity.getStronglyConnectedComponents(cover.toReachabilityLTS());
-			System.out.println(components);
 			int max = 1;
 			for (Set<State> s : components) {
 				if (s.size() > max) max = s.size();
@@ -663,13 +661,10 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 			e.printStackTrace();
 		}
 		// Skip unfolding for b = 0 or b = 1:
-		System.out.println(QbfControl.rebuildingUnfolder);
 		if (getSolvingObject().getB() > 1) {
 			if (QbfControl.rebuildingUnfolder) {
-				System.out.println("FINITE");
 				unfolder = new McMillianUnfolder(getSolvingObject(), null);
 			} else {
-				System.out.println("INFINITE");
 				unfolder = new ForNonDeterministicUnfolder(getSolvingObject(), null); // null forces unfolder to use b as bound for every place
 			}
 		
