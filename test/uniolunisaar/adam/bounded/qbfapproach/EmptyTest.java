@@ -8,7 +8,7 @@ import uniolunisaar.adam.bounded.qbfconcurrent.solver.QbfConSolverFactory;
 import uniolunisaar.adam.bounded.qbfconcurrent.solver.QbfConSolverOptions;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.solver.Solver;
-import uniolunisaar.adam.util.PNWTTools;
+import uniolunisaar.adam.util.PGTools;
 
 /**
  * 
@@ -19,6 +19,7 @@ import uniolunisaar.adam.util.PNWTTools;
 public abstract class EmptyTest {
 
 	protected boolean trueconcurrent = true;
+	protected static boolean fast = true;
 
 	protected void testPath (String path, int n, int b, boolean result) throws Exception {
 		if (trueconcurrent) {
@@ -37,14 +38,14 @@ public abstract class EmptyTest {
 	}
  
 	protected void testSolver (Solver<?,?> sol, int n, int b, boolean result) throws Exception {
-		PNWTTools.savePnwt2PDF("originalGame", sol.getGame(), false);
+		PGTools.savePG2PDF("originalGame", sol.getGame(), false);
 		PetriGame originalGame = new PetriGame(sol.getGame());		// true copy of original game to check strategy for correctness later
         sol.existsWinningStrategy();								// solve game
-		PNWTTools.savePnwt2PDF("unfolding", sol.getGame(), false);
+        PGTools.savePG2PDF("unfolding", sol.getGame(), false);
 		if (sol.existsWinningStrategy()) {
-			PNWTTools.savePnwt2PDF("strategy", sol.getStrategy(), false);
+			PGTools.savePG2PDF("strategy", sol.getStrategy(), false);
 			// check correctness of strategy:
-			//Assert.assertEquals(QbfControl.checkStrategy(originalGame, sol.getStrategy()), true);
+			// Assert.assertEquals(QbfControl.checkStrategy(originalGame, sol.getStrategy()), true);
 		}
 		Assert.assertEquals(sol.existsWinningStrategy(), result);
 	}

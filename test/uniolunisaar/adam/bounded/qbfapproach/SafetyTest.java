@@ -7,7 +7,6 @@ import org.testng.annotations.Test;
  * 
  * @author Jesko Hecking-Harbusch
  *
- * TODO categorize what is tested, look at ALL existing example files
  */
 
 @Test
@@ -18,6 +17,7 @@ public class SafetyTest extends EmptyTest {
         if (System.getProperty("examplesfolder") == null) {
         	System.setProperty("examplesfolder", "examples");
         }
+		//Logger.getInstance().setVerbose(true);
     }
 	
 	@Test(timeOut = 1800 * 1000) // 30 min
@@ -63,17 +63,16 @@ public class SafetyTest extends EmptyTest {
 	
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testGeneralExamples() throws Exception {
-		//PNWTTools.saveAPT("deploy/accesscontrolToy", OfficeBenchmark.generateOfficeToy(), false);
-		//PNWTTools.saveAPT("deploy/accesscontrolSmall", OfficeBenchmark.generateOfficeSmall(), false);	
 		//oneTest("tests/watchdog5", 15, 3, true);		// TODO search for bounds
 		//oneTest("container/container", 10, 2, true);	// TODO search for bounds
-		//oneTest("notConcurrencyPreservingTests/toMakeCP", 20, 2, false);	// TODO nets are unsafe, making them safe defeats their purpose
-		//oneTest("notConcurrencyPreservingTests/madeCP", 20, 2, true);		// TODO nets are unsafe, making them safe defeats their purpose
-		//oneTest("boundedunfolding/counterexample", 10, 0, true);
-		//oneTest("boundedunfolding/firstTry", 15, 0, true);
-		//oneTest("boundedunfolding/secondTry", 15, 0, true);
+		//oneTest("notConcurrencyPreservingTests/madeCP", 30, 0, true); // TODO why not solvable by SEQ?!
+		oneTest("boundedunfolding/counterexample", 10, 0, true);
+		if (!fast) {
+			oneTest("boundedunfolding/firstTry", 9, 3, true);
+			oneTest("boundedunfolding/secondTry", 9, 2, true);
+		}
 		oneTest("ndet/nondet_motivationForSchedulingChange", 20, 0, false);
-		//oneTest("boundedunfolding/finiteWithBad", 10, 2, true);
+		oneTest("boundedunfolding/finiteWithBad", 10, 2, true);
 		oneTest("jhh/myexample1", 10, 0, false);
 		oneTest("ndet/nondet_s3_noStrat", 15, 2, false);
 		oneTest("ndet/nondet_unnecessarily_noStrat", 15, 3, false);
@@ -90,13 +89,13 @@ public class SafetyTest extends EmptyTest {
 		oneTest("jhh/myexample4", 10, 2, false);
 		oneTest("jhh/myexample5", 20, 0, true);
 		oneTest("ndet/nondet", 5, 2, false);
-		//oneTest("burglar/burglar", 7, 3, true);
-		//oneTest("burglar/burglar", 6, 2, false);
-		//oneTest("container/container", 20, 0, false);
-		int bound = 4;
-		//if (trueconcurrent) bound = 3; // TODO why did i think an error is here?
-		oneTest("firstExamplePaper/firstExamplePaper", bound, 3, false);
-		//oneTest("firstExamplePaper/firstExamplePaper", bound + 1, 3, true);
+		int bound = 7;
+		if (trueconcurrent) bound = 6;
+		oneTest("burglar/burglar", bound, 2, true);
+		oneTest("burglar/burglar", bound, 1, false);
+		oneTest("container/container", 20, 0, false);
+		oneTest("firstExamplePaper/firstExamplePaper", 4, 3, false);
+		oneTest("firstExamplePaper/firstExamplePaper", 5, 3, true);
 		oneTest("firstExamplePaper/firstExamplePaper_extended", 10, 0, false);
 		oneTest("firstExamplePaper/firstExamplePaper_extended", 10, 3, false);
 		oneTest("firstExamplePaper/firstExamplePaper_extended", 10, 10, false);
@@ -108,10 +107,12 @@ public class SafetyTest extends EmptyTest {
 		oneTest("ndet/nondet_jhh2", 20, 0, true);
 		oneTest("ndet/nondet_jhh3", 20, 0, false);
 		oneTest("testingNets/envSkipsSys", 15, 3, false);
-		/*oneTest("nm/sendingprotocol", 6, 2, true);
-		oneTest("nm/sendingprotocol", 5, 2, false);
-		oneTest("nm/sendingprotocolTwo", 12, 2, true);
-		oneTest("nm/sendingprotocolTwo", 11, 2, false);*/
+		oneTest("nm/sendingprotocol", 7, 2, true);
+		oneTest("nm/sendingprotocol", 6, 2, false);
+		bound = 13;
+		if (trueconcurrent) bound = 9;
+		oneTest("nm/sendingprotocolTwo", bound, 2, true);
+		oneTest("nm/sendingprotocolTwo", bound - 1, 2, false);
 	}
 	
 	private void oneTest(String str, int n, int b, boolean result) throws Exception {
