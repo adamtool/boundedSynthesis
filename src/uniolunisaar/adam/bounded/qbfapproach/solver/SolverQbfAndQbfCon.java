@@ -650,12 +650,17 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 		Map<Place, Set<Transition>> result = null;
 		CoverabilityGraph cover = CoverabilityGraph.get(getSolvingObject().getGame());
 		try {
+			@SuppressWarnings("unchecked")
 			Set<Set<State>> components = (Set<Set<State>>) Connectivity.getStronglyConnectedComponents(cover.toReachabilityLTS());
 			int max = 1;
 			for (Set<State> s : components) {
 				if (s.size() > max) max = s.size();
 			}
-			if (max <= 1) QbfControl.rebuildingUnfolder = true;
+			if (max <= 1) {
+				QbfControl.rebuildingUnfolder = true;
+			} else {
+				QbfControl.rebuildingUnfolder = false;
+			}
 		} catch (UnboundedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
