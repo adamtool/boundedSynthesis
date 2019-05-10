@@ -35,6 +35,7 @@ public class PGSimplifier {
 		this.solvingObject = solvingObject;
 		this.removeAdditionalPlaces = removeAdditionalPlaces;
 		this.removeUnreachablePlaces = removeUnreachablePlaces;
+		this.trueConcurrent = trueConcurrent;
 	}
 
 	public void simplifyPG() {
