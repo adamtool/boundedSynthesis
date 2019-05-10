@@ -57,24 +57,51 @@ public class PGSimplifier {
 			Marking marking = pair.getFirst();
 			int i = pair.getSecond();
 			closed.add(marking);
+			Set<Set<Transition>> tcTransitionsSet = new HashSet<>();
 			for (Transition transition : solvingObject.getGame().getTransitions()) {
 				if (transition.isFireable(marking)) {
-					Marking nextMarking = transition.fire(marking);
-					firedTransitions.add(transition);
 					if (trueConcurrent) {
-						// fire all enabled transitions in the true concurrent case
-						Transition further;
-						while ((further = findFurtherTransition(marking, nextMarking)) != null) {
-							nextMarking = further.fire(nextMarking);
-							firedTransitions.add(transition);
+						// True Concurrent: search for all sets of tc transitions to fire afterwards
+						Set<Transition> tctransitions = new HashSet<>();
+						tctransitions.add(transition);
+						Marking nextMarking = transition.fire(marking);
+						Transition t;
+						while ((t = findFurtherTransition(marking, nextMarking)) != null) {
+							tctransitions.add(t);
+							nextMarking = t.fire(nextMarking);
+						}
+						tcTransitionsSet.add(tctransitions);
+					} else {
+						// not True Concurrent: fire transition
+						Marking nextMarking = transition.fire(marking);
+						firedTransitions.add(transition);
+						if (!closed.contains(nextMarking)) {
+							if (removeUnreachablePlaces) {
+								addReachedPlaces(nextMarking, reachedPlaces);
+							}
+							if (i + 1 <= solvingObject.getN()) {
+								queue.add(new Pair<>(nextMarking, i + 1));
+							}
 						}
 					}
-					if (!closed.contains(nextMarking)) {
-						if (removeUnreachablePlaces) {
-							addReachedPlaces(nextMarking, reachedPlaces);
+				}
+			}
+			// True Concurrent: fire all set of tc transitions afterwards
+			if (trueConcurrent) {
+				for (Set<Transition> tctransitions : tcTransitionsSet) {
+					if (!tctransitions.isEmpty()) {
+						Marking firing = new Marking(marking);
+						for (Transition tc : tctransitions) {
+							firing = tc.fire(firing);
+							firedTransitions.add(tc);
+							if (removeUnreachablePlaces) {
+								addReachedPlaces(firing, reachedPlaces);
+							}
 						}
-						if (i + 1 <= solvingObject.getN()) {
-							queue.add(new Pair<>(nextMarking, i + 1));
+						if (!closed.contains(firing)) {
+							if (i + 1 <= solvingObject.getN()) {
+								queue.add(new Pair<>(firing, i + 1));
+							}
 						}
 					}
 				}

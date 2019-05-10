@@ -65,11 +65,12 @@ public class SafetyTest extends EmptyTest {
 	public void testGeneralExamples() throws Exception {
 		//oneTest("tests/watchdog5", 15, 3, true);		// TODO search for bounds
 		//oneTest("container/container", 10, 2, true);	// TODO search for bounds
-		//oneTest("notConcurrencyPreservingTests/madeCP", 20, 0, true); // TODO why solvable by TC, strategy is not deadlock-avoiding?
+		oneTest("notConcurrencyPreservingTests/madeCP", 6, 0, false);
+		//oneTest("2env/paul", 10, 0, true);	// TODO continue including more examples
 		oneTest("boundedunfolding/counterexample", 10, 0, true);
 		if (!fast) {
-			//oneTest("boundedunfolding/firstTry", 10, 3, true); // TODO why not working for SEQ? TC strategy rejected because of env transition
-			//oneTest("boundedunfolding/secondTry", 15, 2, true);
+			oneTest("boundedunfolding/firstTry", 10, 3, true); // TODO why not working for SEQ? TC strategy rejected because of env transition
+			oneTest("boundedunfolding/secondTry", 15, 2, true);
 		}
 		oneTest("ndet/nondet_motivationForSchedulingChange", 20, 0, false);
 		//oneTest("boundedunfolding/finiteWithBad", 10, 2, true); unreachable env removed?
@@ -88,6 +89,7 @@ public class SafetyTest extends EmptyTest {
 		oneTest("jhh/myexample4", 10, 0, false);
 		oneTest("jhh/myexample4", 10, 2, false);
 		oneTest("jhh/myexample5", 20, 0, true);
+		//oneTest("jhh/myexample8", 10, 0, true);  unreachable env removed?
 		oneTest("ndet/nondet", 5, 2, false);
 		int bound = 7;
 		if (trueconcurrent) bound = 6;
@@ -112,7 +114,7 @@ public class SafetyTest extends EmptyTest {
 		if (!fast) {
 			bound = 12;
 			if (trueconcurrent) bound = 10;
-			//oneTest("nm/sendingprotocolTwo", bound, 2, true);	// TODO wrong strategy for TC; strategy is not deadlock-avoiding?
+			oneTest("nm/sendingprotocolTwo", bound, 2, true);	// TODO wrong strategy for TC; strategy is not deadlock-avoiding?
 			oneTest("nm/sendingprotocolTwo", bound - 1, 2, false);
 		}
 	}

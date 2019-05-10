@@ -152,7 +152,7 @@ public abstract class QbfConSolver<W extends Condition> extends SolverQbfAndQbfC
 			for (Transition t : transitions) {
 				Set<Integer> or = new HashSet<>();
 				or.add(-enabledlist.get(transitionmap.get(t)).get(i));
-				or.add(fireOneTransition(i,transitionmap.get(t)));
+				or.add(fireOneTransition(i, transitionmap.get(t)));
 				int or_number = createUniqueID();
 				writer.write(or_number + " = " + writeOr(or));
 				and.add(or_number);
@@ -238,7 +238,7 @@ public abstract class QbfConSolver<W extends Condition> extends SolverQbfAndQbfC
 			if (strat != 0) {
 				outerAnd.add(strat);
 			}
-			strat = addEnvStrategy(p, t.getId(), 1); //TODO i
+			strat = addEnvStrategy(p, t.getId(), i); //TODO i
 			if (strat != 0)
 				outerAnd.add(strat);
 		}
