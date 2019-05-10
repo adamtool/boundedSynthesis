@@ -36,6 +36,6 @@ public class QbfControl {
 		for (Transition t : strat.getTransitions()) {
 			t.setLabel(Unfolder.getTruncatedId(t.getId()));
 		}
-		return PGTools.checkStrategy(origNet, strat);
+		return PGTools.checkStrategy(origNet, strat, true);
 	}
 }
