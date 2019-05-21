@@ -57,6 +57,7 @@ public class McMillianUnfolder extends Unfolder {
 
 	@Override
 	public void createUnfolding() throws NetNotSafeException, NoSuitableDistributionFoundException, UnboundedException, FileNotFoundException {
+		// marking ---transition--> extension
 		Queue<Triple<Set<Place>, Transition, Set<Place>>> possibleExtensions = possExt(pn.getPlaces());
 		while (!possibleExtensions.isEmpty()) {
 			Triple<Set<Place>, Transition, Set<Place>> extension = possibleExtensions.poll();
@@ -128,6 +129,8 @@ public class McMillianUnfolder extends Unfolder {
 		}	
 	}
 	
+	// TODO maybe utilize that when bad place is reached no more unfolding is needed?
+	
 	// Somewhat clever search strategy:
 	// Given a marking in the branching process, 
 	// we calculate all newly enabled transitions in the original PG and return them together with the preset in the branching process
@@ -181,4 +184,6 @@ public class McMillianUnfolder extends Unfolder {
 		}
 		return id;
 	}
+	
+	// TODO go from small to big strategy
 }

@@ -593,27 +593,9 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 
 			ProcessBuilder pb = new ProcessBuilder(AdamProperties.getInstance().getProperty(AdamProperties.QUABS), "--partial-assignment"/* , "--preprocessing", "0" */, file.getAbsolutePath());
 			// Run solver on problem
-//			String os = System.getProperty("os.name");
-//
-//			if (os.startsWith("Mac")) {
-//				// pb = new ProcessBuilder("./" + solver + "_mac", "--partial-assignment", file.getAbsolutePath());
-//				pb = new ProcessBuilder(AdamProperties.LIBRARY_FOLDER + File.separator + QbfControl.solver + "_mac", "--partial-assignment"/* , "--preprocessing", "0" */, file.getAbsolutePath());
-//			} else if (os.startsWith("Linux")) {
-//				if (QbfControl.edacc) {
-//                	// for use with EDACC
-//					pb = new ProcessBuilder("./" + QbfControl.solver + "_unix", "--partial-assignment", file.getAbsolutePath());
-//				} else {
-//                	// for use with WEBSITE
-//					pb = new ProcessBuilder(AdamProperties.LIBRARY_FOLDER + File.separator + QbfControl.solver + "_unix", "--partial-assignment", file.getAbsolutePath());
-//				}
-//			} else {
-//				System.out.println("You are using " + os + ".");
-//				System.out.println("Your operation system is not supported.");
-//				return false;
-//			}
-//			if (QbfControl.debug) {
-//				System.out.println("A temporary file is saved to \"" + file.getAbsolutePath() + "\".");
-//			}
+			if (QbfControl.debug) {
+				System.out.println("A temporary file is saved to \"" + file.getAbsolutePath() + "\".");
+			}
 
 			Process pr = pb.start();
 			// Read caqe's output

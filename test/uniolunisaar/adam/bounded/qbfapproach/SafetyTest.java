@@ -14,9 +14,6 @@ public class SafetyTest extends EmptyTest {
 	
 	@BeforeClass
     public void setProperties() {
-        if (System.getProperty("examplesfolder") == null) {
-        	System.setProperty("examplesfolder", "examples");
-        }
 		//Logger.getInstance().setVerbose(true);
     }
 	
@@ -65,15 +62,23 @@ public class SafetyTest extends EmptyTest {
 	public void testGeneralExamples() throws Exception {
 		//oneTest("tests/watchdog5", 15, 3, true);		// TODO search for bounds
 		//oneTest("container/container", 10, 2, true);	// TODO search for bounds
+		//oneTest("2env/paul", 10, 4, true);			// TODO search for bounds
+		//TODO continue including more examples
 		oneTest("notConcurrencyPreservingTests/madeCP", 6, 0, false);
-		//oneTest("2env/paul", 10, 0, true);	// TODO continue including more examples
+		oneTest("boundedunfolding/finite1", 10, 2, true); // TODO why not DLA for TC?
+		oneTest("boundedunfolding/finite2", 10, 2, true); // TODO why not DLA for TC?
+		oneTest("boundedunfolding/finite3", 10, 2, true); 
 		oneTest("boundedunfolding/counterexample", 10, 0, true);
+		oneTest("boundedunfolding/finiteWithBad", 10, 2, true); // TODO why not DLA for TC
+		// TODO debug these two?
+		//oneTest("boundedunfolding/unfolding1", 15, 2, true);
+		//oneTest("boundedunfolding/unfolding2", 15, 2, true);
 		if (!fast) {
-			//oneTest("boundedunfolding/firstTry", 10, 3, true); // TODO why not working for SEQ? TC strategy rejected because of env transition
-			//oneTest("boundedunfolding/secondTry", 15, 2, true);
+			// TODO debug these two?
+			//oneTest("boundedunfolding/firstTry", 15, 3, true); // TODO why not working for SEQ? TC strategy rejected because of env transition
+			//oneTest("boundedunfolding/secondTry", 15, 3, true);
 		}
 		oneTest("ndet/nondet_motivationForSchedulingChange", 20, 0, false);
-		//oneTest("boundedunfolding/finiteWithBad", 10, 2, true); //not DLA for TC
 		oneTest("jhh/myexample1", 10, 0, false);
 		oneTest("ndet/nondet_s3_noStrat", 15, 2, false);
 		oneTest("ndet/nondet_unnecessarily_noStrat", 15, 3, false);
@@ -90,6 +95,7 @@ public class SafetyTest extends EmptyTest {
 		oneTest("jhh/myexample4", 10, 2, false);
 		oneTest("jhh/myexample5", 20, 0, true);
 		oneTest("cornercases/unreachableEnvTransition", 10, 0, true);
+		oneTest("cornercases/unreachableEnvTransition2", 10, 0, true);
 		oneTest("ndet/nondet", 5, 2, false);
 		int bound = 7;
 		if (trueconcurrent) bound = 6;
