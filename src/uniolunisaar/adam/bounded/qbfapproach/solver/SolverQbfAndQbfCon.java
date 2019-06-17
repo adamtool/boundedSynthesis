@@ -39,6 +39,7 @@ import uniolunisaar.adam.ds.solver.SolverOptions;
 import uniolunisaar.adam.exceptions.pg.CalculationInterruptedException;
 import uniolunisaar.adam.exceptions.pg.NoStrategyExistentException;
 import uniolunisaar.adam.exceptions.pg.SolvingException;
+import uniolunisaar.adam.exceptions.pnwt.NetNotSafeException;
 import uniolunisaar.adam.tools.AdamProperties;
 
 /**
@@ -657,7 +658,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 		
 			try {
 	            unfolder.prepareUnfolding();
-	        } catch (SolvingException | UnboundedException | FileNotFoundException e1) {
+	        } catch (NetNotSafeException | SolvingException | UnboundedException | FileNotFoundException e1) {
 	            System.out.println("Error: The bounded unfolding of the game failed.");
 	            e1.printStackTrace();
 	        }
