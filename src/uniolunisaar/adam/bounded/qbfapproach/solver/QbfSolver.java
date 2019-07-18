@@ -8,6 +8,7 @@ import java.util.Set;
 
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
+import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QbfSolvingObject;
 import uniolunisaar.adam.exceptions.pg.SolvingException;
@@ -273,13 +274,88 @@ public abstract class QbfSolver<W extends Condition> extends SolverQbfAndQbfCon<
 
 	protected void addForall() throws IOException {
 		Set<Integer> forall = new HashSet<>();
+		Map<Integer, Set<Place>> slices;
+		if (QbfControl.binaryPlaceEncoding && (slices = sliceable()) != null) { 					// TODO remove QbfControl boolean? Explicitly encode NOT varnr
+			for (int slice : slices.keySet()) {
+				Set<Place> places = slices.get(slice);
+				int vars = (int) Math.ceil(Math.log(places.size() + 1)/Math.log(2));
+				for (int j = 1; j <= vars; ++j) {
+					for (int i = 1; i <= getSolvingObject().getN(); ++i) {
+						int number = createVariable(slice + "." + j + "." + i);			// slice number . binary position (vars to 1) . 1 to n
+						forall.add(number);
+						// System.out.println(number + " = " + p.getId() + "." + i);
+					}
+				}
+			}
+			writer.write(writeForall(forall));
+			writer.write("output(1)" + QbfControl.replaceAfterwardsSpaces + QbfControl.linebreak);
+			for (int sliceNumber : slices.keySet()) {
+				Set<Place> placesOfSlice = slices.get(sliceNumber);
+				int binaryMax = (int) Math.ceil(Math.log(placesOfSlice.size() + 1)/Math.log(2));
+				int counter = 1;
+				for (Place p : placesOfSlice) {
+					String binaryEncoding = Integer.toBinaryString(counter);
+					@SuppressWarnings("unchecked")
+					Set<Integer>[] variables = new Set[getSolvingObject().getN() + 1];
+					for (int k = 1; k < getSolvingObject().getN() + 1; ++k) {
+						variables[k] = new HashSet<>();
+					}
+					for (int j = 0; j < (binaryMax - binaryEncoding.length()); ++j) {
+						for (int k = 1; k < getSolvingObject().getN() + 1; ++k) {
+							variables[k].add(-getVarNr(sliceNumber + "." + (j + 1) + "." + k, true));
+						}
+					}
+					for (int j = binaryMax - binaryEncoding.length(); j < binaryMax; ++j) {
+						for (int k = 1; k < getSolvingObject().getN() + 1; ++k) {
+							if (Character.getNumericValue(binaryEncoding.charAt(j - (binaryMax - binaryEncoding.length()))) > 0) {
+								variables[k].add(getVarNr(sliceNumber + "." + (j + 1) + "." + k, true));
+							} else {
+								variables[k].add(-getVarNr(sliceNumber + "." + (j + 1) + "." + k, true));
+							}
+						}
+					}
+					
+					for (int k = 1; k < getSolvingObject().getN() + 1; ++k) {
+						int number = createVariable(p.getId() + "." + k);
+						writer.write(number + " = " + writeAnd(variables[k]));
+					}
+					
+					counter++;
+				}
+			}
+		} else {
+			for (Place p : getSolvingObject().getGame().getPlaces()) {
+				for (int i = 1; i <= getSolvingObject().getN(); ++i) {
+					int number = createVariable(p.getId() + "." + i);
+					forall.add(number);
+					// System.out.println(number + " = " + p.getId() + "." + i);
+				}
+			}
+			writer.write(writeForall(forall));
+		}
+	}
+	
+	private Map<Integer, Set<Place>> sliceable() {
+		Map<Integer, Set<Place>> slices = new HashMap<> ();
 		for (Place p : getSolvingObject().getGame().getPlaces()) {
-			for (int i = 1; i <= getSolvingObject().getN(); ++i) {
-				int number = createVariable(p.getId() + "." + i);
-				forall.add(number);
-				// System.out.println(number + " = " + p.getId() + "." + i);
+			boolean found = false;
+			for (Pair<String, Object> ext : p.getExtensions()) {
+				if (ext.getFirst().matches("token")) {
+					int index = (int) ext.getSecond();
+					Set<Place> set = slices.get(index);
+					if (set == null) {
+						set = new HashSet<> ();
+					}
+					set.add(p);
+					slices.put(index, set);
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				return null;
 			}
 		}
-		writer.write(writeForall(forall));
+		return slices;
 	}
 }

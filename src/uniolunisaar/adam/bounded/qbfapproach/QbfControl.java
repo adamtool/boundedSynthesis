@@ -23,6 +23,7 @@ public class QbfControl {
 	public static boolean debug = false;
 	public static boolean edacc = false;
 	public static boolean rebuildingUnfolder = false; // in contrast to extending unfolder
+	public static boolean binaryPlaceEncoding = false; // based on slice (in contrast to original P x n copies)
 	
 	// Check winning strategy for validity
 	public static boolean checkStrategy(PetriGame origNet, PetriGame strat) {

@@ -80,6 +80,7 @@ public class SafetyTest extends EmptyTest {
 		}
 		oneTest("ndet/nondet_motivationForSchedulingChange", 20, 0, false);
 		oneTest("jhh/myexample1", 10, 0, false);
+		oneTest("jhh/onlySysCPandSliceable", 10, 0, true);		// TODO used for testing the new binary encoding
 		oneTest("ndet/nondet_s3_noStrat", 15, 2, false);
 		oneTest("ndet/nondet_unnecessarily_noStrat", 15, 3, false);
 		oneTest("ndet/nondet_withBad", 12, 2, false);
