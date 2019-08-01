@@ -17,10 +17,17 @@ public class PhilosopherTest extends EmptyTest {
 
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testPhilosopher() throws Exception {
-
-		for (int i = 2; i <= 8; ++i) {
+		int max = 12;
+		if (fast) {max = 8;}
+		for (int i = 2; i <= max; ++i) {
 			PetriGame pg = Philosopher.generateGuided(i, true, true);
-			testGame(pg, i + 2, 0, true);
+			if (trueconcurrent) {
+				testGame(pg, 2, 0, false);
+				testGame(pg, 3, 0, true);
+			} else {
+				testGame(pg, i + 1, 0, false);
+				testGame(pg, i + 2, 0, true);
+			}
 		}
 	}
 
