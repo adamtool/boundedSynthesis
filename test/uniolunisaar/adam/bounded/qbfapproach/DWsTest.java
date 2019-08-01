@@ -15,23 +15,15 @@ import uniolunisaar.adam.generators.pg.Clerks;
 @Test
 public class DWsTest extends EmptyTest { // Document Workflow / DW
 
-	// j = 4 -> UNSAT; j = 5 -> SAT
-	// ADAM bis 20
 	
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testDWs() throws Exception {
-		//oneTestTrue(2,5,0);
-		runTest(true, 2, 5);
-		//runTest(false, 5, 4);  
-	}
-
-	private void runTest (boolean tf, int max, int n) throws Exception {
-		int j = n; 
+		int max = 8;
+		if (fast) {max = 5;}
+		int j = 5; 	// j = 4 -> UNSAT; j = 5 -> SAT
 		for (int i = 1; i <= max; ++i) {
-			if (tf)
-				oneTestTrue(i, j, 0);
-			else
-				oneTestFalse(i, j, 0);
+			oneTestTrue(i, j, 0);
+			oneTestFalse(i, j - 1, 0);
 			j += 2;
 		}
 	}

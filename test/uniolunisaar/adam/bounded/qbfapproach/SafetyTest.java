@@ -65,11 +65,13 @@ public class SafetyTest extends EmptyTest {
 		//oneTest("2env/paul", 10, 4, true);			// TODO search for bounds
 		//TODO continue including more examples
 		oneTest("notConcurrencyPreservingTests/madeCP", 6, 0, false);
-		oneTest("boundedunfolding/finite1", 10, 2, true); // TODO why not DLA for TC?
-		oneTest("boundedunfolding/finite2", 10, 2, true); // TODO why not DLA for TC?
+		if (!trueconcurrent) {
+			oneTest("boundedunfolding/finite1", 10, 2, true); // TODO why not DLA for TC?
+			oneTest("boundedunfolding/finite2", 10, 2, true); // TODO why not DLA for TC?
+			oneTest("boundedunfolding/finiteWithBad", 10, 2, true); // TODO why not DLA for TC
+		}
 		oneTest("boundedunfolding/finite3", 10, 2, true); 
 		oneTest("boundedunfolding/counterexample", 10, 0, true);
-		oneTest("boundedunfolding/finiteWithBad", 10, 2, true); // TODO why not DLA for TC
 		// TODO debug these two?
 		//oneTest("boundedunfolding/unfolding1", 15, 2, true);
 		//oneTest("boundedunfolding/unfolding2", 15, 2, true);
