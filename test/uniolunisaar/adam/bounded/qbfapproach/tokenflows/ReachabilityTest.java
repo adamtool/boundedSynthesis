@@ -1,9 +1,11 @@
-package uniolunisaar.adam.bounded.qbfapproach;
+package uniolunisaar.adam.bounded.qbfapproach.tokenflows;
 
 import java.io.File;
 
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+
+import uniolunisaar.adam.bounded.qbfapproach.EmptyTest;
 
 /**
  * 
