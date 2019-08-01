@@ -1,4 +1,4 @@
-package uniolunisaar.adam.bounded.qbfapproach;
+package uniolunisaar.adam.bounded.qbfapproach.tokenflows;
 
 import java.io.File;
 import org.testng.Assert;
