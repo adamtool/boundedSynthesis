@@ -16,10 +16,19 @@ public class BurglarTestSafety extends EmptyTest {
 
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testSecSys() throws Exception {
-		oneTest(2, 6, 2, true);
-		//oneTest(2, 5, 2, false);
-		//oneTest(2, 5, 2, false);
-		//oneTest(2, 7, 1, false);
+		if (trueconcurrent) {
+			oneTest(2, 5, 2, false);
+			oneTest(2, 6, 2, true);
+			if (!fast) {
+				oneTest(3, 6, 2, true);
+			}
+		} else {
+			oneTest(2, 6, 2, false);
+			oneTest(2, 7, 2, true);
+			if (!fast) {
+				oneTest(3, 10, 2, true);
+			}
+		}
 	}
 	
 	private void oneTest(int problemSize, int n, int b, boolean result) throws Exception {

@@ -27,7 +27,7 @@ public class EBTest extends EmptyTest {
 
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testEB() throws Exception {
-		//oneTest(1, 1, 13, 2);
+		oneTest(1, 1, 13, 2);
 	}
 
 	private void oneTest(int ps1, int ps2, int n, int b) throws Exception {
