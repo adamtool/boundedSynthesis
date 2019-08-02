@@ -32,7 +32,7 @@ public class McMillianUnfolder extends Unfolder {
 	private PetriGame originalGame;
 
 	Set<Pair<Transition, Set<Place>>> closed = new HashSet<>();
-	Set<Set<Place>> cutOffOriginal = new HashSet<>();	// cutOff based on markings in the original net
+	//Set<Set<Place>> cutOffOriginal = new HashSet<>();	// cutOff based on markings in the original net
 	Set<Set<Place>> cutOffUnfolding = new HashSet<>(); // cutOff based on markings in the build unfolding
 
 	int counterPlaces = 0;
@@ -93,7 +93,7 @@ public class McMillianUnfolder extends Unfolder {
 				closed.add(new Pair<>(t, preset));
 			}
 			// add ORIGINAL marking to cutOff iff ALL outgoing transitions have been added
-			boolean allAdded = true;
+			/*boolean allAdded = true;
 			Set<Place> originalMarking = getOriginalMarking(marking);
 			for (Transition originalTransition : originalGame.getTransitions()) {	// for all enabled original transitions search for copy in branching process
 				if (originalMarking.containsAll(originalTransition.getPreset())) {	// check enabledness
@@ -116,10 +116,10 @@ public class McMillianUnfolder extends Unfolder {
 			
 			if (allAdded) {
 				cutOffOriginal.add(originalMarking);
-			}
+			}*/
 			
 			// only once calling possExt for each postMarking seems to be possible as possible extensions of postmarking seem independent of currently build unfolding
-			if (!cutOffUnfolding.contains(postMarking) && !cutOffOriginal.contains(getOriginalMarking(postMarking))) {
+			if (!cutOffUnfolding.contains(postMarking) /*&& !cutOffOriginal.contains(getOriginalMarking(postMarking))*/) {
 				possibleExtensions.addAll(possExt(postMarking));
 				cutOffUnfolding.add(postMarking);
 			}

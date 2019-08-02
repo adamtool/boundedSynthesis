@@ -23,10 +23,6 @@ import uniolunisaar.adam.ds.objectives.Condition;
  */
 public abstract class QbfSolver<W extends Condition> extends SolverQbfAndQbfCon<W, QbfSolverOptions> {
 
-	// caches for getOneTransition()
-	private Map<Transition, Set<Place>> restCache = new HashMap<>(); // proven to be slightly useful in terms of performance
-	private Map<Transition, Set<Place>> preMinusPostCache = new HashMap<>();
-
 	public QbfSolver(PetriGame game, W winCon, QbfSolverOptions so) throws SolvingException {
 		super(new QbfSolvingObject<>(game, winCon, false), so);
 		
@@ -75,34 +71,29 @@ public abstract class QbfSolver<W extends Condition> extends SolverQbfAndQbfCon<
 			//new alternative:
 			and.add(-deadlockSubFormulas[transitionKeys.get(t)][i]);
 			
+			// post(t)
 			for (Place p : t.getPostset()) {
 				and.add(getVarNr(p.getId() + "." + (i + 1), true));
 			}
-			// Slight performance gain by using these caches
-			Set<Place> rest = restCache.get(t);
-			if (rest == null) {
-				rest = new HashSet<>(getSolvingObject().getGame().getPlaces());
-				rest.removeAll(t.getPreset());
-				rest.removeAll(t.getPostset());
-				restCache.put(t, rest);
+			
+			// places \ (pre(t) U post(t))
+			for (Place p : getSolvingObject().getGame().getPlaces()) {
+				if (!t.getPreset().contains(p)) {
+					if (!t.getPostset().contains(p)) {
+						int p_i = getVarNr(p.getId() + "." + i, true);
+						int p_iSucc = getVarNr(p.getId() + "." + (i + 1), true);
+						and.add(writeImplication(p_i, p_iSucc));
+						and.add(writeImplication(p_iSucc, p_i));
+					}
+				}
 			}
 
-			for (Place p : rest) {
-				int p_i = getVarNr(p.getId() + "." + i, true);
-				int p_iSucc = getVarNr(p.getId() + "." + (i + 1), true);
-				and.add(writeImplication(p_i, p_iSucc));
-				and.add(writeImplication(p_iSucc, p_i));
+			// pre(t) \ post(t)
+			for (Place p : t.getPreset()) {
+				if (!t.getPostset().contains(p))
+					and.add(-getVarNr(p.getId() + "." + (i + 1), true));
 			}
-
-			Set<Place> preMinusPost = preMinusPostCache.get(t);
-			if (preMinusPost == null) {
-				preMinusPost = new HashSet<>(t.getPreset());
-				preMinusPost.removeAll(t.getPostset());
-				preMinusPostCache.put(t, preMinusPost);
-			}
-			for (Place p : preMinusPost) {
-				and.add(-getVarNr(p.getId() + "." + (i + 1), true));
-			}
+			
 			int number = createUniqueID();
 			writer.write(number + " = " + writeAnd(and));
 			oneTransitionFormulas[transitionKeys.get(t)][i] = number;
