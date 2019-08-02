@@ -92,7 +92,7 @@ public class QbfASafetySolver extends QbfSolver<Safety> {
 			}
 		}
 		
-		initializeAfterUnfolding();
+		initializeCaches();
 
 		writer.write("#QCIR-G14" + QbfControl.replaceAfterwardsSpaces + QbfControl.linebreak); // spaces left to add variable count in the end
 		addExists();

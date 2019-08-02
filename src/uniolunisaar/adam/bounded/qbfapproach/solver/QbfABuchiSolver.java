@@ -366,7 +366,7 @@ public class QbfABuchiSolver extends QbfFlowChainSolver<Buchi> {
 	protected void writeQCIR() throws IOException {
 		Map<Place, Set<Transition>> systemHasToDecideForAtLeastOne = unfoldPG();
 
-		initializeAfterUnfolding();
+		initializeCaches();
 
 		writer.write("#QCIR-G14          " + QbfControl.linebreak); // spaces left to add variable count in the end
 		addExists();
