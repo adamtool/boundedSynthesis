@@ -85,7 +85,7 @@ public abstract class NonDeterministicUnfolder extends Unfolder {
 						for (Transition trans : otherTransitions) {
 							pn.createFlow(newSysPlace, trans);
 							pn.createFlow(trans, newSysPlace);
-                                                        Map<Transition, Set<Pair<Place, Place>>> map = pg.getFl();
+							Map<Transition, Set<Pair<Place, Place>>> map = pg.getFl();
 							map.get(trans).add(new Pair<> (newSysPlace, newSysPlace));
 						}
 					}
@@ -130,9 +130,6 @@ public abstract class NonDeterministicUnfolder extends Unfolder {
 			Place newP = pg.getGame().createPlace(p_id + "__" + current.get(p_id));
 			copies.add(newP);
 			current.put(p_id, current.get(p_id) + 1);
-			for (Pair<String, Object> pair : p.getExtensions()) {
-				newP.putExtension(pair.getFirst(), pair.getSecond());
-			}
 			copyEnv(newP, p);
 			// copyTotalSelfLoops(newP, totalSelfLoops);
 			// copy incoming transitions (except self-loops)

@@ -13,11 +13,11 @@ import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QCIRconsistency;
+import uniolunisaar.adam.ds.objectives.Safety;
+import uniolunisaar.adam.ds.petrigame.PetriGame;
+import uniolunisaar.adam.exceptions.pg.CalculationInterruptedException;
 import uniolunisaar.adam.exceptions.pg.NoStrategyExistentException;
 import uniolunisaar.adam.exceptions.pg.SolvingException;
-import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.ds.objectives.Safety;
-import uniolunisaar.adam.exceptions.pg.CalculationInterruptedException;
 
 /**
  *
@@ -84,9 +84,9 @@ public class QbfASafetySolver extends QbfSolver<Safety> {
 	protected void writeQCIR() throws IOException {
 		Map<Place, Set<Transition>> systemHasToDecideForAtLeastOne = unfoldPG();
 		
+		Set<Place> oldBad = new HashSet<>(getSolvingObject().getWinCon().getBadPlaces());
+		getWinningCondition().buffer(getSolvingObject().getGame()); 
 		if (getSolvingObject().getB() > 1 && QbfControl.rebuildingUnfolder) {
-			Set<Place> oldBad = new HashSet<>(getSolvingObject().getWinCon().getBadPlaces());
-			getWinningCondition().buffer(getSolvingObject().getGame()); 
 			for (Place old : oldBad) {
 				getSolvingObject().getWinCon().getBadPlaces().remove(old); 
 			}

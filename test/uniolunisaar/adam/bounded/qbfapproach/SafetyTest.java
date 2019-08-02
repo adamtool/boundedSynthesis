@@ -63,6 +63,7 @@ public class SafetyTest extends EmptyTest {
 		//oneTest("tests/watchdog5", 15, 3, true);		// TODO search for bounds
 		//oneTest("container/container", 10, 2, true);	// TODO search for bounds
 		//oneTest("2env/paul", 10, 4, true);			// TODO search for bounds
+		oneTest("boundedunfolding/causalmemory", 10, 2, false); // TODO McMillian erronously finds strategy -> look in the past; TC does find winning strategy for ndet unfolding
 		//TODO continue including more examples
 		oneTest("notConcurrencyPreservingTests/madeCP", 6, 0, false);
 		if (!trueconcurrent) {
@@ -110,7 +111,6 @@ public class SafetyTest extends EmptyTest {
 		oneTest("firstExamplePaper/firstExamplePaper_extended", 10, 0, false);
 		oneTest("firstExamplePaper/firstExamplePaper_extended", 10, 3, false);
 		oneTest("firstExamplePaper/firstExamplePaper_extended", 10, 10, false);
-		oneTest("ma_vsp/vsp_1_withBadPlaces", 2, 0, false);
 		oneTest("ndet/nondet_s3_noStrat", 15, 2, false);
 		oneTest("ndet/nondet_unnecessarily_noStrat", 15, 3, false);
 		oneTest("ndet/nondet_withBad", 12, 2, false);

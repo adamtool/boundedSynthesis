@@ -87,12 +87,7 @@ public class McMillianUnfolder extends Unfolder {
 				for (Place post : t.getPostset()) {
 					Place newPost = pn.createPlace(post.getId() + "__" + counterTransitions++);
 					postMarking.add(newPost);
-					if (originalGame.getEnvPlaces().contains(post)) {
-						pg.getGame().getEnvPlaces().add(newPost);
-					}
-					for (Pair<String, Object> pair : post.getExtensions()) {
-						newPost.putExtension(pair.getFirst(), pair.getSecond());
-					}
+					copyEnv(newPost, post);
 					pn.createFlow(newT, newPost);
 				}
 				closed.add(new Pair<>(t, preset));

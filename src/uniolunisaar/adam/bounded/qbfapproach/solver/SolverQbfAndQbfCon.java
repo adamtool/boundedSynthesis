@@ -90,6 +90,9 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 	protected int[][] deadlockSubFormulas; // (Transition, 1..n) -> deadlockID
 	protected int[][] terminatingSubFormulas; // (Transition, 1..n) -> terminatingID
 	
+	// StringBuilder
+	//private StringBuilder sb = new StringBuilder();
+	
 	protected SolverQbfAndQbfCon(QbfSolvingObject<W> solverObject, SOP options) throws SolvingException {
 		super(solverObject, options);
 		
@@ -475,7 +478,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 		seqImpliesWin = new int[n + 1];
 	}
 	
-	protected void initializeAfterUnfolding() {
+	protected void initializeCaches() {
 		transitions = new Transition[getSolvingObject().getGame().getTransitions().size()];
 		int i = 0;
 		for (Transition t : getSolvingObject().getGame().getTransitions()) {
@@ -558,10 +561,11 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 	}
 
 	private String writeString(String op, Set<Integer> input) {
-		StringBuilder sb = new StringBuilder(op);
-		sb.append("(");
+		StringBuilder sb = new StringBuilder();
+		sb.append(op + "(");
 		String delim = ""; // first element is added without ","
 
+		//System.out.println(input.size()); // TODO
 		for (int i : input) {
 			sb.append(delim);
 			delim = ",";
@@ -569,6 +573,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 		}
 		sb.append(")" + QbfControl.linebreak);
 		String result = sb.toString();
+		//sb.setLength(0);
 		return result;
 	}
 
@@ -648,6 +653,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		// TODO not using static rebuildingUnfolder would allow to only calculate SCC if B > 1?
 		// Skip unfolding for b = 0 or b = 1:
 		if (getSolvingObject().getB() > 1) {
 			if (QbfControl.rebuildingUnfolder) {
@@ -655,7 +661,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 			} else {
 				unfolder = new ForNonDeterministicUnfolder(getSolvingObject(), null); // null forces unfolder to use b as bound for every place
 			}
-		
+			
 			try {
 	            unfolder.prepareUnfolding();
 	        } catch (NetNotSafeException | SolvingException | UnboundedException | FileNotFoundException e1) {
