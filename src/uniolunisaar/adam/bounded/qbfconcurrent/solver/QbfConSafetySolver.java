@@ -262,7 +262,7 @@ public class QbfConSafetySolver extends QbfConSolver<Safety> {
 			}
 		}
 
-		initializeAfterUnfolding();
+		initializeCaches();
 		getLoopingPlaces();
 		writer.write("#QCIR-G14" + QbfControl.replaceAfterwardsSpaces + QbfControl.linebreak); // spaces left to add variable count in the end
 		addExists();
