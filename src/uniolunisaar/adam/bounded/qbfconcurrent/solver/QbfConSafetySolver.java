@@ -216,12 +216,11 @@ public class QbfConSafetySolver extends QbfConSolver<Safety> {
 			if (getSolvingObject().getGame().getEnvPlaces().contains(p)) {
 				Set<String> truncatedIDs = new HashSet<>();
 				for (Transition t : p.getPostset()) {
-					String truncatedID = getTruncatedId(t.getId());
-					if (!truncatedIDs.contains(truncatedID)) {
-						truncatedIDs.add(truncatedID);
-						
+					String ID = t.getId();
+					if (!truncatedIDs.contains(ID)) { 
+						truncatedIDs.add(ID);
 						for (int i = 1; i <= loopBound; ++i) { 
-							int number = createVariable(p.getId() + "**" + truncatedID + "**" + i);
+							int number = createVariable(p.getId() + "**" + ID + "**" + i);
 							forall.add(number);
 						}
 					}

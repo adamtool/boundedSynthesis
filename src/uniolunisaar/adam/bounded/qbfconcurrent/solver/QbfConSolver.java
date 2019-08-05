@@ -60,9 +60,9 @@ public abstract class QbfConSolver<W extends Condition> extends SolverQbfAndQbfC
 			if (!p.getPostset().isEmpty()) {	
 				// only iterate over truncated ID once
 				for (Transition t : p.getPostset()) {
-					truncatedPostSet.add(getTruncatedId(t.getId()));
+					truncatedPostSet.add(t.getId());
 				}
-				for (int i = 1; i <= loopBound; i++) {//getSolvingObject().getN() //TODO
+				for (int i = 1; i <= loopBound; i++) {
 					for (String t : truncatedPostSet) {
 						post_transitions.addAll(truncatedPostSet);
 						post_transitions.remove(t);
@@ -254,7 +254,8 @@ public abstract class QbfConSolver<W extends Condition> extends SolverQbfAndQbfC
 
 	protected int addEnvStrategy(Place p, String t, int i) {
 		if (getSolvingObject().getGame().getEnvPlaces().contains(p)) {
-			return getVarNr(p.getId() + "**" + getTruncatedId(t) + "**" + i, true);
+			return getVarNr(p.getId() + "**" + t + "**" + i, true);
+			
 		} else {
 			return 0;
 		}

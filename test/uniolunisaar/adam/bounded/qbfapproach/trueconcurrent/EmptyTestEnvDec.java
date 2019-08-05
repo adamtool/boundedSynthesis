@@ -42,10 +42,10 @@ public abstract class EmptyTestEnvDec {
  
 	protected void testSolver (QbfConSolver<? extends Condition> sol, int n, int b, boolean result) throws Exception {
         sol.existsWinningStrategy();	// calculate first, then output games, and then check for correctness
-        PNWTTools.savePnwt2PDF("originalGame", sol.originalGame, false);
-		PNWTTools.savePnwt2PDF("unfolding", sol.unfolding, false);
+        PNWTTools.savePnwt2Dot("originalGame", sol.originalGame, false);
+		PNWTTools.savePnwt2Dot("unfolding", sol.unfolding, false);
 		if (sol.existsWinningStrategy()) {
-			PNWTTools.savePnwt2PDF("strategy", sol.getStrategy(), false);
+			PNWTTools.savePnwt2Dot("strategy", sol.getStrategy(), false);
 		}
 		Assert.assertEquals(sol.existsWinningStrategy(), result);
 		

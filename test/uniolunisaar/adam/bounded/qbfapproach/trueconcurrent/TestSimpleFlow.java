@@ -34,11 +34,7 @@ public class TestSimpleFlow extends EmptyTestEnvDec {
 		//testPath("examples/safety/nm/testStepNet.apt", 4, 1, true);
 		//testPath("examples/safety/nm/trueconcurrent.apt",10,1,true);
 		//testPath("examples/safety/nm/sccbenchmark.apt",20,0,true);
-		int i = 4;
-		PetriGame pg = SCC.generatePetriNet(i);
-		PNWTTools.saveAPT("examples/safety/nm/sccbenchmark" + i, pg, true);
-		PNWTTools.savePnwt2Dot("test", pg, true);
-		testPath("examples/safety/nm/sccbenchmark" + i +".apt",7,0, true);
+		testPath("examples/safety/boundedunfolding/causalmemory.apt", 10, 2, false);
 		//PetriGame pg = ManufactorySystem.generate(a, true, true, true);
 		//testGame(pg, n, b, result);
 	}
