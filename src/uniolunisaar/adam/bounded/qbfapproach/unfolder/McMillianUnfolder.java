@@ -92,7 +92,7 @@ public class McMillianUnfolder extends Unfolder {
 				}
 				closed.add(new Pair<>(t, preset));
 			}
-			// add ORIGINAL marking to cutOff iff ALL outgoing transitions have been added
+			// add ORIGINAL marking to cutOff iff ALL outgoing transitions have been added TOO RESTRICTIVE
 			/*boolean allAdded = true;
 			Set<Place> originalMarking = getOriginalMarking(marking);
 			for (Transition originalTransition : originalGame.getTransitions()) {	// for all enabled original transitions search for copy in branching process
@@ -117,7 +117,7 @@ public class McMillianUnfolder extends Unfolder {
 			if (allAdded) {
 				cutOffOriginal.add(originalMarking);
 			}*/
-			
+
 			// only once calling possExt for each postMarking seems to be possible as possible extensions of postmarking seem independent of currently build unfolding
 			if (!cutOffUnfolding.contains(postMarking) /*&& !cutOffOriginal.contains(getOriginalMarking(postMarking))*/) {
 				possibleExtensions.addAll(possExt(postMarking));
@@ -158,13 +158,13 @@ public class McMillianUnfolder extends Unfolder {
 		return possibleExtensions;
 	}
 	
-	private Set<Place> getOriginalMarking(Set<Place> marking) {
+	/*private Set<Place> getOriginalMarking(Set<Place> marking) {
 		Set<Place> originalMarking = new HashSet<>();
 		for (Place p : marking) {
 			originalMarking.add(originalGame.getPlace(getOriginalPlaceId(p.getId())));
 		}
 		return originalMarking;
-	}
+	}*/
 
 	public static String getOriginalPlaceId(String id) {
 		int index = id.indexOf("__");

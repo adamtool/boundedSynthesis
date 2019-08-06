@@ -21,6 +21,7 @@ import uniol.apt.adt.pn.Marking;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.adt.ts.State;
+import uniol.apt.adt.ts.TransitionSystem;
 import uniol.apt.analysis.connectivity.Connectivity;
 import uniol.apt.analysis.coverability.CoverabilityGraph;
 import uniol.apt.analysis.exception.UnboundedException;
@@ -91,7 +92,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 	protected int[][] terminatingSubFormulas; // (Transition, 1..n) -> terminatingID
 	
 	// StringBuilder
-	//private StringBuilder sb = new StringBuilder();
+	private StringBuilder sb = new StringBuilder();
 	
 	protected SolverQbfAndQbfCon(QbfSolvingObject<W> solverObject, SOP options) throws SolvingException {
 		super(solverObject, options);
@@ -561,7 +562,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 	}
 
 	private String writeString(String op, Set<Integer> input) {
-		StringBuilder sb = new StringBuilder();
+		//StringBuilder sb = new StringBuilder();
 		sb.append(op + "(");
 		String delim = ""; // first element is added without ","
 
@@ -573,7 +574,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 		}
 		sb.append(")" + QbfControl.linebreak);
 		String result = sb.toString();
-		//sb.setLength(0);
+		sb.setLength(0);
 		return result;
 	}
 
@@ -630,7 +631,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 			return false;
 		}
 	}
-	
+
 	protected Map<Place, Set<Transition>> unfoldPG() {
 		originalGame = new PetriGame(getSolvingObject().getGame());
 		
@@ -638,12 +639,25 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 		Map<Place, Set<Transition>> result = null;
 		CoverabilityGraph cover = CoverabilityGraph.get(getSolvingObject().getGame());
 		try {
+			TransitionSystem ts = cover.toReachabilityLTS();
 			@SuppressWarnings("unchecked")
-			Set<Set<State>> components = (Set<Set<State>>) Connectivity.getStronglyConnectedComponents(cover.toReachabilityLTS());
+			Set<Set<State>> components = (Set<Set<State>>) Connectivity.getStronglyConnectedComponents(ts);
 			int max = 1;
 			for (Set<State> s : components) {
-				if (s.size() > max) max = s.size();
+				// found loop
+				if (s.size() > max) {
+					max = s.size();
+				}
+				// check that one element component is not a direct self-loop
+				if (s.size() == 1) {
+					for (State state : s) {
+						if (ts.getPostsetNodes(state).contains(state)) {
+							max = 42;
+						}
+					}
+				}
 			}
+			
 			if (max <= 1) {
 				QbfControl.rebuildingUnfolder = true;
 			} else {
