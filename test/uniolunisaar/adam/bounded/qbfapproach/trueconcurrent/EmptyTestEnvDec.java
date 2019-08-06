@@ -1,25 +1,13 @@
 package uniolunisaar.adam.bounded.qbfapproach.trueconcurrent;
 
-import org.antlr.v4.analysis.AnalysisPipeline;
 import org.testng.Assert;
 
-import uniol.apt.adt.IGraph;
-import uniol.apt.adt.pn.PetriNet;
-import uniol.apt.analysis.coverability.*;
-import uniol.apt.analysis.*;
-import uniol.apt.analysis.connectivity.Connectivity;
-import uniol.apt.analysis.connectivity.StrongComponentsModule;
-import uniol.apt.module.AptModule;
-import uniol.apt.ui.AptParameterTransformation;
 import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.bounded.qbfconcurrent.solver.QbfConSolver;
 import uniolunisaar.adam.bounded.qbfconcurrent.solver.QbfConSolverFactory;
 import uniolunisaar.adam.bounded.qbfconcurrent.solver.QbfConSolverOptions;
-import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.tools.Tools;
-import uniolunisaar.adam.ds.graph.Graph;
 import uniolunisaar.adam.ds.objectives.Condition;
-import uniolunisaar.adam.ds.objectives.Reachability;
+import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.util.PNWTTools;
 
 /**

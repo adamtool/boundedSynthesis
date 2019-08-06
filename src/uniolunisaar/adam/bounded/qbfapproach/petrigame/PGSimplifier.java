@@ -66,7 +66,7 @@ public class PGSimplifier {
 						tctransitions.add(transition);
 						Marking nextMarking = transition.fire(marking);
 						Transition t;
-						while ((t = findFurtherTransition(marking, nextMarking)) != null) {
+						while ((t = findFurtherTransition(marking, nextMarking, tctransitions)) != null) {
 							tctransitions.add(t);
 							nextMarking = t.fire(nextMarking);
 						}
@@ -118,10 +118,10 @@ public class PGSimplifier {
 	 * @return
 	 */
 	
-	private Transition findFurtherTransition (Marking start, Marking current) {
+	private Transition findFurtherTransition (Marking start, Marking current, Set<Transition> tctransitions) {
 		for (Transition transition : solvingObject.getGame().getTransitions()) {
 			// transition is now and initially fireable
-			if (transition.isFireable(current) && transition.isFireable(start)) {
+			if (!tctransitions.contains(transition) && transition.isFireable(current) && transition.isFireable(start)) {
 				return transition;
 			}
 		}
