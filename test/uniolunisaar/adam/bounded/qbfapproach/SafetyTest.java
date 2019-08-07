@@ -60,24 +60,21 @@ public class SafetyTest extends EmptyTest {
 	
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testGeneralExamples() throws Exception {
+		//TODO continue including more examples
 		//oneTest("tests/watchdog5", 15, 3, true);		// TODO search for bounds
 		//oneTest("container/container", 10, 2, true);	// TODO search for bounds
 		//oneTest("2env/paul", 10, 4, true);			// TODO search for bounds
-		oneTest("boundedunfolding/causalmemory", 10, 2, false); // TODO McMillian erronously finds strategy -> look in the past
-		//TODO continue including more examples
+		oneTest("boundedunfolding/causalmemory", 10, 2, false);
 		oneTest("notConcurrencyPreservingTests/madeCP", 6, 0, false);
-		if (!trueconcurrent) {
-			oneTest("boundedunfolding/finite1", 10, 2, true); // TODO why not DLA for TC? OLD cutoff is too early
-			oneTest("boundedunfolding/finite2", 10, 2, true); // TODO why not DLA for TC?
-			oneTest("boundedunfolding/finiteWithBad", 10, 2, true); // TODO why not DLA for TC
-		}
+		oneTest("boundedunfolding/finite1", 10, 2, true); // OLD cutoff is too early in McMillianUnfolder
+		oneTest("boundedunfolding/finite2", 10, 2, true);
+		oneTest("boundedunfolding/finiteWithBad", 10, 2, true);
 		oneTest("boundedunfolding/finite3", 10, 2, true); 
 		oneTest("boundedunfolding/counterexample", 10, 0, true);
-		// TODO debug these two?
-		//oneTest("boundedunfolding/unfolding1", 15, 2, true);
-		//oneTest("boundedunfolding/unfolding2", 15, 2, true);
 		if (!fast) {
-			// TODO debug these two?
+			// TODO debug these four? take long and use NondeterministicUnfolder?
+			//oneTest("boundedunfolding/unfolding1", 15, 2, true);
+			//oneTest("boundedunfolding/unfolding2", 15, 2, true);
 			//oneTest("boundedunfolding/firstTry", 15, 3, true); // TODO why not working for SEQ? TC strategy rejected because of env transition
 			//oneTest("boundedunfolding/secondTry", 15, 3, true);
 		}
@@ -123,7 +120,7 @@ public class SafetyTest extends EmptyTest {
 		if (!fast) {
 			bound = 12;
 			if (trueconcurrent) bound = 10;
-			//oneTest("nm/sendingprotocolTwo", bound, 2, true);	// TODO wrong strategy for TC; strategy is not deadlock-avoiding?
+			//oneTest("nm/sendingprotocolTwo", bound, 2, true);	// TODO debug: BOTH encodings are not deadlock-avoiding as there is a loop which is stopped; ForNonDeterministicUnfolder problem?
 			oneTest("nm/sendingprotocolTwo", bound - 1, 2, false);
 		}
 	}

@@ -161,7 +161,8 @@ public class QbfASafetySolver extends QbfSolver<Safety> {
 			FileUtils.copyFile(file, new File(getSolvingObject().getGame().getName() + ".qcir"));
 		}
 
-		assert (QCIRconsistency.checkConsistency(file));
+		// TODO only enable for small files, as reading the entire file might be very expensive OR implement on the fly
+		//assert (QCIRconsistency.checkConsistency(file));
 	}
 
 	@Override

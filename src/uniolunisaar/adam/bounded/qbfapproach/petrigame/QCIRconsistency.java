@@ -14,6 +14,9 @@ import java.util.Set;
  * 
  * @author Jesko Hecking-Harbusch
  */
+
+// TODO should read and use information on the fly
+
 public class QCIRconsistency {
 
 	public static boolean checkConsistency(File qcirFile) throws IOException {
