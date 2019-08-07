@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import gnu.trove.set.hash.TIntHashSet;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
@@ -68,7 +69,10 @@ public abstract class QbfSolver<W extends Condition> extends SolverQbfAndQbfCon<
 
 	protected int getOneTransition(Transition t, int i) throws IOException {
 		if (oneTransitionFormulas[transitionKeys.get(t)][i] == 0) {
-			Set<Integer> and = new HashSet<>();
+			TIntHashSet and = new TIntHashSet();
+			Set<Place> preset = t.getPreset();
+			Set<Place> postset = t.getPostset();
+			
 			//old alternative:
 			/*int strat;
 			for (Place p : t.getPreset()) {
@@ -79,28 +83,27 @@ public abstract class QbfSolver<W extends Condition> extends SolverQbfAndQbfCon<
 				}
 			}
 			*/
+			
 			//new alternative:
 			and.add(-deadlockSubFormulas[transitionKeys.get(t)][i]);
 			
 			// post(t)
-			for (Place p : t.getPostset()) {
+			for (Place p : postset) {
 				and.add(getVarNr(p.getId() + "." + (i + 1), true));
 			}
 			
 			// places \ (pre(t) U post(t))
 			for (Place p : getSolvingObject().getGame().getPlaces()) {
-				if (!t.getPreset().contains(p)) {
-					if (!t.getPostset().contains(p)) {
-						int p_i = getVarNr(p.getId() + "." + i, true);
-						int p_iSucc = getVarNr(p.getId() + "." + (i + 1), true);
-						and.add(writeImplication(p_i, p_iSucc));
-						and.add(writeImplication(p_iSucc, p_i));
-					}
+				if (!preset.contains(p) && !postset.contains(p)) {
+					int p_i = getVarNr(p.getId() + "." + i, true);
+					int p_iSucc = getVarNr(p.getId() + "." + (i + 1), true);
+					and.add(writeImplication(p_i, p_iSucc));
+					and.add(writeImplication(p_iSucc, p_i));
 				}
 			}
 
 			// pre(t) \ post(t)
-			for (Place p : t.getPreset()) {
+			for (Place p : preset) {
 				if (!t.getPostset().contains(p))
 					and.add(-getVarNr(p.getId() + "." + (i + 1), true));
 			}

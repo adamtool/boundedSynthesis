@@ -12,7 +12,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -582,11 +581,9 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 	}
 	
 	protected String writeAnd(TIntHashSet input) {
-		//StringBuilder sb = new StringBuilder();
-		sb.append("and" + "(");
+		//StringBuilder sb = new StringBuilder();	// TODO same as below
+		sb.append("and(");
 		String delim = ""; // first element is added without ","
-
-		//System.out.println(input.size()); // TODO
 		int n = 0;
 		for (TIntIterator i = input.iterator(); i.hasNext(); ) {
 			n = i.next();
@@ -594,24 +591,25 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 			delim = ",";
 			sb.append(n);
 		}
-		sb.append(")" + QbfControl.linebreak);
+		sb.append(")");
+		sb.append(QbfControl.linebreak);
 		String result = sb.toString();
 		sb.setLength(0);
 		return result;
 	}
 
 	private String writeString(String op, Set<Integer> input) {
-		//StringBuilder sb = new StringBuilder();
-		sb.append(op + "(");
+		//StringBuilder sb = new StringBuilder();	// TODO evaluate to reuse or create new
+		sb.append(op);
+		sb.append("(");
 		String delim = ""; // first element is added without ","
-
-		//System.out.println(input.size()); // TODO
 		for (int i : input) {
 			sb.append(delim);
 			delim = ",";
 			sb.append(i);
 		}
-		sb.append(")" + QbfControl.linebreak);
+		sb.append(")");
+		sb.append(QbfControl.linebreak);
 		String result = sb.toString();
 		sb.setLength(0);
 		return result;
@@ -621,10 +619,16 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 		Pair<Boolean, Integer> result = getVarNrWithResult("Variable:" + from + "=>Variable:" + to);
 		int number = result.getSecond();
 		if (result.getFirst()) {
-			Set<Integer> or = new HashSet<>();
-			or.add(-from);
-			or.add(to);
-			writer.write(number + " = " + writeOr(or));
+			// number + " = or(" + -from + "," + to + ")" + QbfControl.linebreak
+			sb.append(number);
+			sb.append(" = or(");
+			sb.append(-from);
+			sb.append(",");
+			sb.append(to);
+			sb.append(")");
+			sb.append(QbfControl.linebreak);
+			writer.write(sb.toString());
+			sb.setLength(0);
 		}
 		return number;
 	}
