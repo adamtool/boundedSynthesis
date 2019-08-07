@@ -12,11 +12,15 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import gnu.trove.iterator.TIntIterator;
+import gnu.trove.map.hash.TObjectIntHashMap;
+import gnu.trove.set.hash.TIntHashSet;
 import uniol.apt.adt.pn.Marking;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
@@ -83,7 +87,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 	// solving
 	protected BufferedWriter writer;
 	protected int variablesCounter = 1;
-	protected Map<String, Integer> numbersForVariables = new HashMap<>(); // map for storing keys and the corresponding value
+	protected TObjectIntHashMap<String> numbersForVariables = new TObjectIntHashMap<String>(); // map for storing keys and the corresponding value
 
 	protected Map<Transition, Integer> transitionKeys = new HashMap<>();
 	// TODO only used for construction?? reuse them?!
@@ -227,7 +231,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 	}
 	
 	protected void writeDeterministic() throws IOException {
-		if (QbfControl.deterministicStrategy) {
+		/*if (QbfControl.deterministicStrategy) {
 			String[] deterministic = getDeterministic();
 			for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 				if (!deterministic[i].startsWith("and()")) {
@@ -241,38 +245,56 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 					det[i] = result.getSecond();
 				}
 			}
-		}
+		}*/
+		getDeterministic();
 	}
 
 	protected String[] getDeterministic() throws IOException { // faster than naive implementation
-		List<Set<Integer>> and = new ArrayList<>(getSolvingObject().getN() + 1);
+		List<TIntHashSet> and = new ArrayList<>(getSolvingObject().getN() + 1);
 		and.add(null); // first element is never accessed
 		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
-			and.add(new HashSet<Integer>());
+			and.add(new TIntHashSet());
 		}
 		Transition t1, t2;
 		Transition[] sys_transitions;
-		for (Place sys : getSolvingObject().getGame().getPlaces()) {
-			// Additional system places ARE FORCED to behave deterministically in getDetAdditionalSys, not here since the true concurrent flow fired every enabled transition
-			if (!getSolvingObject().getGame().isEnvironment(sys) && !sys.getId().startsWith(QbfControl.additionalSystemName)) {
-				if (sys.getPostset().size() > 1) {
-					sys_transitions = sys.getPostset().toArray(new Transition[0]);
-					for (int j = 0; j < sys_transitions.length; ++j) {
-						t1 = sys_transitions[j];
-						for (int k = j + 1; k < sys_transitions.length; ++k) {
-							t2 = sys_transitions[k];
-							for (int i = 1; i <= getSolvingObject().getN(); ++i) {
-								and.get(i).add(writeOneMissingPre(t1, t2, i));
+		if (QbfControl.deterministicStrategy) {
+			for (Place sys : getSolvingObject().getGame().getPlaces()) {
+				// Additional system places ARE FORCED to behave deterministically in getDetAdditionalSys, not here since the true concurrent flow fired every enabled transition
+				if (!getSolvingObject().getGame().isEnvironment(sys) && !sys.getId().startsWith(QbfControl.additionalSystemName)) {
+					if (sys.getPostset().size() > 1) {
+						sys_transitions = sys.getPostset().toArray(new Transition[0]);
+						for (int j = 0; j < sys_transitions.length; ++j) {
+							t1 = sys_transitions[j];
+							for (int k = j + 1; k < sys_transitions.length; ++k) {
+								t2 = sys_transitions[k];
+								for (int i = 1; i <= getSolvingObject().getN(); ++i) {
+									and.get(i).add(writeOneMissingPre(t1, t2, i));
+								}
 							}
 						}
 					}
 				}
 			}
+			
+			for (int i = 1; i <= getSolvingObject().getN(); ++i) {
+				TIntHashSet set = and.get(i);
+				if (!set.isEmpty()) {
+					det[i] = createUniqueID();
+					writer.write(det[i] + " = " + writeAnd(set));
+				} else {
+					Pair<Boolean, Integer> result = getVarNrWithResult("and()");
+					if (result.getFirst()) {
+						writer.write(result.getSecond() + " = " + writeAnd(new HashSet<>()));
+					}
+					det[i] = result.getSecond();
+				}
+			}
 		}
+		
 		String[] deterministic = new String[getSolvingObject().getN() + 1];
-		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
+		/*for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 			deterministic[i] = writeAnd(and.get(i));
-		}
+		}*/
 		return deterministic;
 	}
 
@@ -296,9 +318,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 			}
 		}*/
 		
-		// new alternative: TODO why doesnt this work with true concurrent on robots_true.apt as returned strategy is not deadlock-avoiding?
-		//System.out.println(getSolvingObject().getGame().getName());
-		//System.out.println(deadlockSubFormulas[transitionKeys.get(t1)][i] + " " + deadlockSubFormulas[transitionKeys.get(t2)][i]);
+		// new alternative: 
 		or.add(deadlockSubFormulas[transitionKeys.get(t1)][i]);
 		or.add(deadlockSubFormulas[transitionKeys.get(t2)][i]);
 
@@ -509,7 +529,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 	
 	protected int getVarNr(String id, boolean extraCheck) {
 		Integer ret = numbersForVariables.get(id);
-		if (ret != null) {
+		if (ret != numbersForVariables.getNoEntryValue()) {
 			return ret;
 		} else if (extraCheck) {
 			throw new IllegalArgumentException("Could not but should have found: " + id);
@@ -520,7 +540,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 
 	protected Pair<Boolean, Integer> getVarNrWithResult(String id) {
 		Integer ret = numbersForVariables.get(id);
-		if (ret != null) {
+		if (ret != numbersForVariables.getNoEntryValue()) {
 			return new Pair<>(false, ret);
 		} else {
 			return new Pair<>(true, createVariable(id));
@@ -559,6 +579,25 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 
 	protected String writeAnd(Set<Integer> input) {
 		return writeString("and", input);
+	}
+	
+	protected String writeAnd(TIntHashSet input) {
+		//StringBuilder sb = new StringBuilder();
+		sb.append("and" + "(");
+		String delim = ""; // first element is added without ","
+
+		//System.out.println(input.size()); // TODO
+		int n = 0;
+		for (TIntIterator i = input.iterator(); i.hasNext(); ) {
+			n = i.next();
+			sb.append(delim);
+			delim = ",";
+			sb.append(n);
+		}
+		sb.append(")" + QbfControl.linebreak);
+		String result = sb.toString();
+		sb.setLength(0);
+		return result;
 	}
 
 	private String writeString(String op, Set<Integer> input) {
@@ -735,7 +774,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 							} else {
 								// 0 is the last member
 								// System.out.println("Finished reading strategy.");
-								new PGSimplifier(getSolvingObject(), true, false, trueConcurrent).simplifyPG();
+								new PGSimplifier(getSolvingObject(), true, false, false).simplifyPG();
 								strategy = new PetriGame(getSolvingObject().getGame());
 								return getSolvingObject().getGame();
 							}
@@ -744,7 +783,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 				}
 			}
 			// There were no decision points for the system, thus the previous loop did not leave the method
-			new PGSimplifier(getSolvingObject(), true, false, trueConcurrent).simplifyPG();
+			new PGSimplifier(getSolvingObject(), true, false, false).simplifyPG();
 			strategy = new PetriGame(getSolvingObject().getGame());
 			return getSolvingObject().getGame();
 		}

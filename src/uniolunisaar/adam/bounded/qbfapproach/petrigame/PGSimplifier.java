@@ -86,6 +86,8 @@ public class PGSimplifier {
 					}
 				}
 			}
+			
+			// TODO this seems buggy for deadlock-avoidance for TC
 			// True Concurrent: fire all set of tc transitions afterwards
 			if (trueConcurrent) {
 				for (Set<Transition> tctransitions : tcTransitionsSet) {
