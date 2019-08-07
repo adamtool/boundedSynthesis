@@ -33,16 +33,27 @@ public abstract class QbfSolver<W extends Condition> extends SolverQbfAndQbfCon<
 		initializeBeforeUnfolding(getSolvingObject().getN());
 	}
 
+	// TODO Use initial capacities for HashSets; maybe use Trove TIntHashSet?
 	protected void writeFlow() throws IOException {
-		String[] flow = getFlow();
+		Set<Integer> or = new HashSet<>();
+		for (int i = 1; i < getSolvingObject().getN(); ++i) {
+			or.clear();
+			for (int j = 0; j < getSolvingObject().getGame().getTransitions().size(); ++j) {
+				or.add(getOneTransition(transitions[j], i));
+			}
+			fl[i] = createUniqueID();
+			writer.write(fl[i] + " = " + writeOr(or));
+		}
+		
+		/*String[] flow = getFlow();
 		for (int i = 1; i < getSolvingObject().getN(); ++i) {
 			fl[i] = createUniqueID();
 			writer.write(fl[i] + " = " + flow[i]);
-		}
+		}*/
 
 	}
 
-	protected String[] getFlow() throws IOException {
+	/*protected String[] getFlow() throws IOException {
 		String[] flow = new String[getSolvingObject().getN() + 1];
 		Set<Integer> or = new HashSet<>();
 		for (int i = 1; i < getSolvingObject().getN(); ++i) {
@@ -53,7 +64,7 @@ public abstract class QbfSolver<W extends Condition> extends SolverQbfAndQbfCon<
 			flow[i] = writeOr(or);
 		}
 		return flow;
-	}
+	}*/
 
 	protected int getOneTransition(Transition t, int i) throws IOException {
 		if (oneTransitionFormulas[transitionKeys.get(t)][i] == 0) {
