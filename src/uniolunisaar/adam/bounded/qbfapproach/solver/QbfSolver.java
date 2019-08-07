@@ -35,16 +35,20 @@ public abstract class QbfSolver<W extends Condition> extends SolverQbfAndQbfCon<
 	}
 
 	// TODO Use initial capacities for HashSets; maybe use Trove TIntHashSet?
+	// TODO reimplement to iterate over places fewer times
 	protected void writeFlow() throws IOException {
-		Set<Integer> or = new HashSet<>();
+		TIntHashSet or = new TIntHashSet();
+		Set<Place> places = getSolvingObject().getGame().getPlaces();
 		for (int i = 1; i < getSolvingObject().getN(); ++i) {
 			or.clear();
 			for (int j = 0; j < getSolvingObject().getGame().getTransitions().size(); ++j) {
-				or.add(getOneTransition(transitions[j], i));
+				or.add(getOneTransition(transitions[j], i, places));
 			}
 			fl[i] = createUniqueID();
 			writer.write(fl[i] + " = " + writeOr(or));
 		}
+		
+		
 		
 		/*String[] flow = getFlow();
 		for (int i = 1; i < getSolvingObject().getN(); ++i) {
@@ -67,11 +71,15 @@ public abstract class QbfSolver<W extends Condition> extends SolverQbfAndQbfCon<
 		return flow;
 	}*/
 
-	protected int getOneTransition(Transition t, int i) throws IOException {
+	protected int getOneTransition(Transition t, int i, Set<Place> places) throws IOException {
 		if (oneTransitionFormulas[transitionKeys.get(t)][i] == 0) {
 			TIntHashSet and = new TIntHashSet();
 			Set<Place> preset = t.getPreset();
 			Set<Place> postset = t.getPostset();
+			if (places == null) {
+				// only for usability with getUnfair and so 
+				places = getSolvingObject().getGame().getPlaces();
+			}
 			
 			//old alternative:
 			/*int strat;
@@ -93,7 +101,7 @@ public abstract class QbfSolver<W extends Condition> extends SolverQbfAndQbfCon<
 			}
 			
 			// places \ (pre(t) U post(t))
-			for (Place p : getSolvingObject().getGame().getPlaces()) {
+			for (Place p : places) {
 				if (!preset.contains(p) && !postset.contains(p)) {
 					int p_i = getVarNr(p.getId() + "." + i, true);
 					int p_iSucc = getVarNr(p.getId() + "." + (i + 1), true);
@@ -164,7 +172,7 @@ public abstract class QbfSolver<W extends Condition> extends SolverQbfAndQbfCon<
 							}
 							if (!p.getId().startsWith(QbfControl.additionalSystemName)) {
 								for (Transition tt : p.getPostset()) {
-									innerAnd.add(-getOneTransition(tt, k));
+									innerAnd.add(-getOneTransition(tt, k, null));
 								}
 							}
 						}
@@ -224,7 +232,7 @@ public abstract class QbfSolver<W extends Condition> extends SolverQbfAndQbfCon<
 								// TODO this makes it correct but also expensive
 								for (Place pp : t.getPreset()) {
 									for (Transition tt : pp.getPostset()) {
-										outerAnd.add(-getOneTransition(tt, k));
+										outerAnd.add(-getOneTransition(tt, k, null));
 									}
 								}
 							}

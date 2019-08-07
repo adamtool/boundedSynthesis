@@ -580,6 +580,24 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 		return writeString("and", input);
 	}
 	
+	protected String writeOr(TIntHashSet input) {
+		//StringBuilder sb = new StringBuilder();	// TODO same as below
+		sb.append("or(");
+		String delim = ""; // first element is added without ","
+		int n = 0;
+		for (TIntIterator i = input.iterator(); i.hasNext(); ) {
+			n = i.next();
+			sb.append(delim);
+			delim = ",";
+			sb.append(n);
+		}
+		sb.append(")");
+		sb.append(QbfControl.linebreak);
+		String result = sb.toString();
+		sb.setLength(0);
+		return result;
+	}
+	
 	protected String writeAnd(TIntHashSet input) {
 		//StringBuilder sb = new StringBuilder();	// TODO same as below
 		sb.append("and(");
