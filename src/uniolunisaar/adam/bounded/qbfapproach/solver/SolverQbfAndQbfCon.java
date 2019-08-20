@@ -123,11 +123,6 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 	}
 	
 	protected void writeInitial() throws IOException {
-		in = createUniqueID();
-		writer.write(in + " = " + getInitial());
-	}
-
-	protected String getInitial() {
 		Marking initialMarking = getSolvingObject().getGame().getInitialMarking();
 		Set<Integer> initial = new HashSet<>();
 		for (Place p : getSolvingObject().getGame().getPlaces()) {
@@ -137,82 +132,57 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 				initial.add(-getVarNr(p.getId() + "." + 1, true));
 			}
 		}
-		return writeAnd(initial);
+		in = createUniqueID();
+		writeAnd(in, initial);
 	}
 	
 	protected void writeTerminating() throws IOException {
-		String[] terminating = new String[getSolvingObject().getN() + 1];
-		terminating = getTerminating();
-		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
-			term[i] = createUniqueID();
-			writer.write(term[i] + " = " + terminating[i]);
-		}
-	}
-
-	protected String[] getTerminating() throws IOException {
 		writeTerminatingSubFormulas(1, getSolvingObject().getN());
-		String[] terminating = new String[getSolvingObject().getN() + 1];
 		Set<Integer> and = new HashSet<>();
 		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
-			if (getSolvingObject().getGame().getTransitions().size() >= 1) {
-				and.clear();
-				for (Transition t : getSolvingObject().getGame().getTransitions()) {
-					and.add(terminatingSubFormulas[transitionKeys.get(t)][i]);
-				}
-				terminating[i] = writeAnd(and);
+			and.clear();
+			for (Transition t : getSolvingObject().getGame().getTransitions()) {
+				and.add(terminatingSubFormulas[transitionKeys.get(t)][i]);
 			}
+			term[i] = createUniqueID();
+			writeAnd(term[i], and);
 		}
-		return terminating;
 	}
 
 	protected void writeTerminatingSubFormulas(int s, int e) throws IOException {
 		Set<Integer> or = new HashSet<>();
-		Set<Place> pre;
-		int key;
-		for (int i = s; i <= e; ++i) {
-			for (Transition t : getSolvingObject().getGame().getTransitions()) {
-				pre = t.getPreset();
+		for (Transition t : getSolvingObject().getGame().getTransitions()) {
+			for (int i = s; i <= e; ++i) {
 				or.clear();
-				for (Place p : pre) {
+				for (Place p : t.getPreset()) {
 					if (!p.getId().startsWith(QbfControl.additionalSystemName)) {
 						or.add(-getVarNr(p.getId() + "." + i, true));
 					}
 				}
-				key = createUniqueID();
-				writer.write(key + " = " + writeOr(or));
-				terminatingSubFormulas[transitionKeys.get(t)][i] = key;
+				terminatingSubFormulas[transitionKeys.get(t)][i] = createUniqueID();
+				writeOr(terminatingSubFormulas[transitionKeys.get(t)][i], or);
 			}
 		}
 	}
 	
 	protected void writeDeadlock() throws IOException {
-		String[] deadlock = getDeadlock();
-		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
-			dl[i] = createUniqueID();
-			writer.write(dl[i] + " = " + deadlock[i]);
-		}
-	}
-
-	protected String[] getDeadlock() throws IOException {
 		writeDeadlockSubFormulas(1, getSolvingObject().getN());
-		String[] deadlock = new String[getSolvingObject().getN() + 1];
 		Set<Integer> and = new HashSet<>();
 		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
 			and.clear();
 			for (Transition t : getSolvingObject().getGame().getTransitions()) {
 				and.add(deadlockSubFormulas[transitionKeys.get(t)][i]);
 			}
-			deadlock[i] = writeAnd(and);
+			dl[i] = createUniqueID();
+			writeAnd(dl[i], and);
 		}
-		return deadlock;
 	}
 
 	protected void writeDeadlockSubFormulas(int s, int e) throws IOException {
 		Set<Integer> or = new HashSet<>();
-		int number;
 		int strat;
-		for (int i = s; i <= e; ++i) {
-			for (Transition t : getSolvingObject().getGame().getTransitions()) {
+		for (Transition t : getSolvingObject().getGame().getTransitions()) {
+			for (int i = s; i <= e; ++i) {
 				or.clear();
 				or.add(terminatingSubFormulas[transitionKeys.get(t)][i]);  // ALTERNATIVE reuse terminatingSubFormula TODO decide for one alternative
 				for (Place p : t.getPreset()) {
@@ -222,33 +192,13 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 						or.add(-strat);
 					}
 				}
-				number = createUniqueID();
-				writer.write(number + " = " + writeOr(or));
-				deadlockSubFormulas[transitionKeys.get(t)][i] = number;
+				deadlockSubFormulas[transitionKeys.get(t)][i] = createUniqueID();
+				writer.write(deadlockSubFormulas[transitionKeys.get(t)][i] + " = " + writeOr(or));
 			}
 		}
 	}
 	
 	protected void writeDeterministic() throws IOException {
-		/*if (QbfControl.deterministicStrategy) {
-			String[] deterministic = getDeterministic();
-			for (int i = 1; i <= getSolvingObject().getN(); ++i) {
-				if (!deterministic[i].startsWith("and()")) {
-					det[i] = createUniqueID();
-					writer.write(det[i] + " = " + deterministic[i]);
-				} else {
-					Pair<Boolean, Integer> result = getVarNrWithResult("and()");
-					if (result.getFirst()) {
-						writer.write(result.getSecond() + " = " + writeAnd(new HashSet<>()));
-					}
-					det[i] = result.getSecond();
-				}
-			}
-		}*/
-		getDeterministic();
-	}
-
-	protected String[] getDeterministic() throws IOException { // faster than naive implementation
 		List<TIntHashSet> and = new ArrayList<>(getSolvingObject().getN() + 1);
 		and.add(null); // first element is never accessed
 		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
@@ -283,18 +233,12 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 				} else {
 					Pair<Boolean, Integer> result = getVarNrWithResult("and()");
 					if (result.getFirst()) {
-						writer.write(result.getSecond() + " = " + writeAnd(new HashSet<>()));
+						writeAnd(result.getSecond(), new HashSet<>());
 					}
 					det[i] = result.getSecond();
 				}
 			}
 		}
-		
-		String[] deterministic = new String[getSolvingObject().getN() + 1];
-		/*for (int i = 1; i <= getSolvingObject().getN(); ++i) {
-			deterministic[i] = writeAnd(and.get(i));
-		}*/
-		return deterministic;
 	}
 
 	protected int writeOneMissingPre(Transition t1, Transition t2, int i) throws IOException {
@@ -322,8 +266,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 		or.add(deadlockSubFormulas[transitionKeys.get(t2)][i]);
 
 		int number = createUniqueID();
-		//System.out.println(number);
-		writer.write(number + " = " + writeOr(or));
+		writeOr(number, or);
 		return number;
 	}
 	
@@ -334,17 +277,11 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 			or.add(-dl[i]);
 			or.add(term[i]);
 			dlt[i] = createUniqueID();
-			writer.write(dlt[i] + " = " + writeOr(or));
+			writeOr(dlt[i], or);
 		}
 	}
 	
 	protected void writeLoop() throws IOException {
-		String loop = getLoopIJ();
-		l = createUniqueID();
-		writer.write(l + " = " + loop);
-	}
-
-	protected String getLoopIJ() throws IOException {
 		Set<Integer> or = new HashSet<>();
 		for (int i = 1; i < getSolvingObject().getN(); ++i) {
 			for (int j = i + 1; j <= getSolvingObject().getN(); ++j) {
@@ -359,49 +296,12 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 					}
 				}
 				int andNumber = createUniqueID();
-				writer.write(andNumber + " = " + writeAnd(and));
+				writeAnd(andNumber, and);
 				or.add(andNumber);
 			}
 		}
-		return writeOr(or);
-	}
-	
-	// wahrscheinlich nur hilfreich für deterministic unfolding, macht aber auf jeden fall nichts kaputt, wohl nur langsamer
-	protected String getLoopIJunfolded() throws IOException {
-		Set<Integer> outerOr = new HashSet<>();
-		for (int i = 1; i < getSolvingObject().getN(); ++i) {
-			for (int j = i + 1; j <= getSolvingObject().getN(); ++j) {
-				Set<Integer> and = new HashSet<>();
-				for (Place p : getSolvingObject().getGame().getPlaces()) {
-					// additional system places cannot leave their places, they always loop
-					if (!p.getId().startsWith(QbfControl.additionalSystemName)) {
-						int p_i = getVarNr(p.getId() + "." + i, true);
-						Set<Integer> innerOr = new HashSet<>();
-						for (Place unfoldedP : unfoldingsOf(p)) {
-							innerOr.add(getVarNr(unfoldedP.getId() + "." + j, true));
-						}
-						int innerOrNumber = createUniqueID();
-						writer.write(innerOrNumber + " = " + writeOr(innerOr));
-						and.add(writeImplication(p_i, innerOrNumber));
-						and.add(writeImplication(innerOrNumber, p_i));
-					}
-				}
-				int andNumber = createUniqueID();
-				writer.write(andNumber + " = " + writeAnd(and));
-				outerOr.add(andNumber);
-			}
-		}
-		return writeOr(outerOr);
-	}
-
-	private Set<Place> unfoldingsOf(Place place) {
-		Set<Place> result = new HashSet<>();
-		for (Place p : getSolvingObject().getGame().getPlaces()) {
-			if (/* !p.equals(place) && */getTruncatedId(place.getId()).equals(getTruncatedId(p.getId()))) { // forcing into different unfolded place yields more necessary unfoldings
-				result.add(p);
-			}
-		}
-		return result;
+		l = createUniqueID();
+		writeOr(l, or);
 	}
 	
 	// Additional information from nondeterministic unfolding is utilized:
@@ -638,6 +538,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 		int number = result.getSecond();
 		if (result.getFirst()) {
 			// number + " = or(" + -from + "," + to + ")" + QbfControl.linebreak
+			//StringBuilder sb = new StringBuilder();	// TODO evaluate to reuse or create new
 			sb.append(number);
 			sb.append(" = or(");
 			sb.append(-from);
@@ -649,6 +550,42 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 			sb.setLength(0);
 		}
 		return number;
+	}
+	
+	// NEW writer:
+	
+	protected void writeExists(int id, Set<Integer> input) throws IOException {
+		writeString("exists", id, input);
+	}
+
+	protected void writeForall(int id, Set<Integer> input) throws IOException {
+		writeString("forall", id, input);
+	}
+
+	protected void writeOr(int id, Set<Integer> input) throws IOException {
+		writeString("or", id,  input);
+	}
+
+	protected void writeAnd(int id, Set<Integer> input) throws IOException {
+		writeString("and", id, input);
+	}
+	
+	protected void writeString(String op, int id, Set<Integer> variables) throws IOException {
+		// id = op( , , )
+		sb.append(id);
+		sb.append(" = ");
+		sb.append(op);
+		sb.append("(");
+		String delim = ""; // first element is added without ","
+		for (int i : variables) {
+			sb.append(delim);
+			delim = ",";
+			sb.append(i);
+		}
+		sb.append(")");
+		sb.append(QbfControl.linebreak);
+		writer.write(sb.toString());
+		sb.setLength(0);
 	}
 	
 	protected abstract void writeQCIR() throws IOException;

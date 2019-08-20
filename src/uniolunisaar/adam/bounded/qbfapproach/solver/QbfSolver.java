@@ -70,6 +70,10 @@ public abstract class QbfSolver<W extends Condition> extends SolverQbfAndQbfCon<
 		}
 		return flow;
 	}*/
+	
+	protected int getOneTransition(Transition t, int i) throws IOException {
+		return getOneTransition(t, i, null);
+	}
 
 	protected int getOneTransition(Transition t, int i, Set<Place> places) throws IOException {
 		if (oneTransitionFormulas[transitionKeys.get(t)][i] == 0) {
