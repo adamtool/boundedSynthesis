@@ -37,15 +37,18 @@ public abstract class QbfSolver<W extends Condition> extends SolverQbfAndQbfCon<
 	// TODO Use initial capacities for HashSets; maybe use Trove TIntHashSet?
 	// TODO reimplement to iterate over places fewer times
 	protected void writeFlow() throws IOException {
+		writeTransitions(1, getSolvingObject().getN());
 		TIntHashSet or = new TIntHashSet();
 		Set<Place> places = getSolvingObject().getGame().getPlaces();
+		
+		int size = getSolvingObject().getGame().getTransitions().size();
 		for (int i = 1; i < getSolvingObject().getN(); ++i) {
 			or.clear();
-			for (int j = 0; j < getSolvingObject().getGame().getTransitions().size(); ++j) {
+			for (int j = 0; j < size; ++j) {
 				or.add(getOneTransition(transitions[j], i, places));
 			}
 			fl[i] = createUniqueID();
-			writer.write(fl[i] + " = " + writeOr(or));
+			writeOr(fl[i], or);
 		}
 		
 		
@@ -58,6 +61,62 @@ public abstract class QbfSolver<W extends Condition> extends SolverQbfAndQbfCon<
 
 	}
 
+	protected void writeTransitions(int s, int e) throws IOException {
+		int size = getSolvingObject().getGame().getTransitions().size();
+		Set<Place> places = getSolvingObject().getGame().getPlaces();
+		Transition t;
+		for (int j = 0; j < size; ++j) {
+			t = transitions[j];
+			
+			TIntHashSet[] and = new TIntHashSet[e];
+			for (int i = s; i < e; ++i) {
+				and[i] = new TIntHashSet();
+			}
+			Set<Place> preset = t.getPreset();
+			Set<Place> postset = t.getPostset();
+			
+			int transitionKey = transitionKeys.get(t);
+
+			for (int i = s; i < e; ++i) {
+				and[i].add(-deadlockSubFormulas[transitionKey][i]);
+			}
+			
+			// post(t)
+			for (Place p : postset) {
+				for (int i = s; i < e; ++i) {
+					and[i].add(getVarNr(p.getId() + "." + (i + 1), true));
+				}
+			}
+			
+			// places \ (pre(t) U post(t))
+			int p_i;
+			int p_iSucc;
+			for (Place p : places) {
+				if (!preset.contains(p) && !postset.contains(p)) {
+					for (int i = s; i < e; ++i) {
+						p_i = getVarNr(p.getId() + "." + i, true);
+						p_iSucc = getVarNr(p.getId() + "." + (i + 1), true);
+						and[i].add(writeImplication(p_i, p_iSucc));
+						and[i].add(writeImplication(p_iSucc, p_i));
+					}
+				}
+			}
+
+			// pre(t) \ post(t)
+			for (Place p : preset) {
+				if (!t.getPostset().contains(p)) {
+					for (int i = s; i < e; ++i) {
+						and[i].add(-getVarNr(p.getId() + "." + (i + 1), true));
+					}
+				}
+			}
+			for (int i = s; i < e; ++i) {
+				oneTransitionFormulas[transitionKey][i] = createUniqueID();
+				writeAnd(oneTransitionFormulas[transitionKey][i], and[i]);
+			}
+		}
+	}
+	
 	/*protected String[] getFlow() throws IOException {
 		String[] flow = new String[getSolvingObject().getN() + 1];
 		Set<Integer> or = new HashSet<>();
@@ -72,18 +131,15 @@ public abstract class QbfSolver<W extends Condition> extends SolverQbfAndQbfCon<
 	}*/
 	
 	protected int getOneTransition(Transition t, int i) throws IOException {
-		return getOneTransition(t, i, null);
+		return getOneTransition(t, i, getSolvingObject().getGame().getPlaces());
 	}
 
 	protected int getOneTransition(Transition t, int i, Set<Place> places) throws IOException {
+		int transitionKey = transitionKeys.get(t);
 		if (oneTransitionFormulas[transitionKeys.get(t)][i] == 0) {
 			TIntHashSet and = new TIntHashSet();
 			Set<Place> preset = t.getPreset();
 			Set<Place> postset = t.getPostset();
-			if (places == null) {
-				// only for usability with getUnfair and so 
-				places = getSolvingObject().getGame().getPlaces();
-			}
 			
 			//old alternative:
 			/*int strat;
@@ -97,7 +153,7 @@ public abstract class QbfSolver<W extends Condition> extends SolverQbfAndQbfCon<
 			*/
 			
 			//new alternative:
-			and.add(-deadlockSubFormulas[transitionKeys.get(t)][i]);
+			and.add(-deadlockSubFormulas[transitionKey][i]);
 			
 			// post(t)
 			for (Place p : postset) {
@@ -105,10 +161,12 @@ public abstract class QbfSolver<W extends Condition> extends SolverQbfAndQbfCon<
 			}
 			
 			// places \ (pre(t) U post(t))
+			int p_i;
+			int p_iSucc;
 			for (Place p : places) {
 				if (!preset.contains(p) && !postset.contains(p)) {
-					int p_i = getVarNr(p.getId() + "." + i, true);
-					int p_iSucc = getVarNr(p.getId() + "." + (i + 1), true);
+					p_i = getVarNr(p.getId() + "." + i, true);
+					p_iSucc = getVarNr(p.getId() + "." + (i + 1), true);
 					and.add(writeImplication(p_i, p_iSucc));
 					and.add(writeImplication(p_iSucc, p_i));
 				}
@@ -116,16 +174,16 @@ public abstract class QbfSolver<W extends Condition> extends SolverQbfAndQbfCon<
 
 			// pre(t) \ post(t)
 			for (Place p : preset) {
-				if (!t.getPostset().contains(p))
+				if (!t.getPostset().contains(p)) {
 					and.add(-getVarNr(p.getId() + "." + (i + 1), true));
+				}
 			}
 			
-			int number = createUniqueID();
-			writer.write(number + " = " + writeAnd(and));
-			oneTransitionFormulas[transitionKeys.get(t)][i] = number;
-			return number;
+			oneTransitionFormulas[transitionKey][i] = createUniqueID();
+			writeAnd(oneTransitionFormulas[transitionKey][i], and);
+			return oneTransitionFormulas[transitionKey][i];
 		} else {
-			return oneTransitionFormulas[transitionKeys.get(t)][i];
+			return oneTransitionFormulas[transitionKey][i];
 		}
 
 	}
@@ -176,7 +234,7 @@ public abstract class QbfSolver<W extends Condition> extends SolverQbfAndQbfCon<
 							}
 							if (!p.getId().startsWith(QbfControl.additionalSystemName)) {
 								for (Transition tt : p.getPostset()) {
-									innerAnd.add(-getOneTransition(tt, k, null));
+									innerAnd.add(-getOneTransition(tt, k));
 								}
 							}
 						}
@@ -236,7 +294,7 @@ public abstract class QbfSolver<W extends Condition> extends SolverQbfAndQbfCon<
 								// TODO this makes it correct but also expensive
 								for (Place pp : t.getPreset()) {
 									for (Transition tt : pp.getPostset()) {
-										outerAnd.add(-getOneTransition(tt, k, null));
+										outerAnd.add(-getOneTransition(tt, k));
 									}
 								}
 							}

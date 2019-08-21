@@ -536,6 +536,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 	protected int writeImplication(int from, int to) throws IOException {
 		Pair<Boolean, Integer> result = getVarNrWithResult("Variable:" + from + "=>Variable:" + to);
 		int number = result.getSecond();
+
 		if (result.getFirst()) {
 			// number + " = or(" + -from + "," + to + ")" + QbfControl.linebreak
 			//StringBuilder sb = new StringBuilder();	// TODO evaluate to reuse or create new
@@ -581,6 +582,42 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 			sb.append(delim);
 			delim = ",";
 			sb.append(i);
+		}
+		sb.append(")");
+		sb.append(QbfControl.linebreak);
+		writer.write(sb.toString());
+		sb.setLength(0);
+	}
+	
+	protected void writeExists(int id, TIntHashSet input) throws IOException {
+		writeString("exists", id, input);
+	}
+
+	protected void writeForall(int id, TIntHashSet input) throws IOException {
+		writeString("forall", id, input);
+	}
+
+	protected void writeOr(int id, TIntHashSet input) throws IOException {
+		writeString("or", id,  input);
+	}
+
+	protected void writeAnd(int id, TIntHashSet input) throws IOException {
+		writeString("and", id, input);
+	}
+	
+	protected void writeString(String op, int id, TIntHashSet variables) throws IOException {
+		// id = op( , , )
+		sb.append(id);
+		sb.append(" = ");
+		sb.append(op);
+		sb.append("(");
+		String delim = ""; // first element is added without ","
+		int n = 0;
+		for (TIntIterator i = variables.iterator(); i.hasNext(); ) {
+			n = i.next();
+			sb.append(delim);
+			delim = ",";
+			sb.append(n);
 		}
 		sb.append(")");
 		sb.append(QbfControl.linebreak);

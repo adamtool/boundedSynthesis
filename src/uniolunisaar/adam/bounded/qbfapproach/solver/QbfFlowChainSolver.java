@@ -286,7 +286,7 @@ public abstract class QbfFlowChainSolver<W extends Condition> extends QbfSolver<
 	}
 
 	@Override
-	protected String getLoopIJ() throws IOException {
+	protected void writeLoop() throws IOException {
 		Set<Integer> or = new HashSet<>();
 		for (int i = 1; i < getSolvingObject().getN(); ++i) {
 			for (int j = i + 1; j <= getSolvingObject().getN(); ++j) {
@@ -313,7 +313,8 @@ public abstract class QbfFlowChainSolver<W extends Condition> extends QbfSolver<
 				or.add(andNumber);
 			}
 		}
-		return writeOr(or);
+		l = createUniqueID();
+		writeOr(l, or);
 	}
 
 	// TODO unclear whether this helps

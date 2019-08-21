@@ -44,7 +44,7 @@ public class QbfABuchiSolver extends QbfFlowChainSolver<Buchi> {
 	}
 
 	@Override
-	protected String getInitial() {
+	protected void writeInitial() throws IOException {
 		Marking initialMarking = getSolvingObject().getGame().getInitialMarking();
 		Set<Integer> initial = new HashSet<>();
 		for (Place p : getSolvingObject().getGame().getPlaces()) {
@@ -58,7 +58,8 @@ public class QbfABuchiSolver extends QbfFlowChainSolver<Buchi> {
 				initial.add(getVarNr(p.getId() + "." + 1 + "." + "empty", true));
 			}
 		}
-		return writeAnd(initial);
+		in = createUniqueID();
+		writeAnd(in, initial);
 	}
 
 	@Override

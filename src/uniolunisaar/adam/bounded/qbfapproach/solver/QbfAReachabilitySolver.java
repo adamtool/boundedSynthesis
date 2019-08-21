@@ -39,7 +39,7 @@ public class QbfAReachabilitySolver extends QbfFlowChainSolver<Reachability> {
 	}
 
 	@Override
-	protected String getInitial() {
+	protected void writeInitial() throws IOException {
 		Marking initialMarking = getSolvingObject().getGame().getInitialMarking();
 		Set<Integer> initial = new HashSet<>();
 		for (Place p : getSolvingObject().getGame().getPlaces()) {
@@ -53,7 +53,8 @@ public class QbfAReachabilitySolver extends QbfFlowChainSolver<Reachability> {
 				initial.add(getVarNr(p.getId() + "." + 1 + "." + "empty", true));
 			}
 		}
-		return writeAnd(initial);
+		in = createUniqueID();
+		writeAnd(in, initial);
 	}
 
 	@Override
@@ -185,7 +186,7 @@ public class QbfAReachabilitySolver extends QbfFlowChainSolver<Reachability> {
 	}
 
 	@Override
-	protected String getLoopIJ() throws IOException {
+	protected void writeLoop() throws IOException {
 		Set<Integer> or = new HashSet<>();
 		Set<Integer> innerOr = new HashSet<>();
 		for (int i = 1; i < getSolvingObject().getN(); ++i) {
@@ -231,7 +232,8 @@ public class QbfAReachabilitySolver extends QbfFlowChainSolver<Reachability> {
 				or.add(andNumber);
 			}
 		}
-		return writeOr(or);
+		l = createUniqueID();
+		writeOr(l, or);
 	}
 
 	protected void writeGoodSimultan() throws IOException {
