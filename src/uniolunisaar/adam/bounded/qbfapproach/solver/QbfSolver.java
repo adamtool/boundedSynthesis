@@ -23,6 +23,8 @@ import uniolunisaar.adam.ds.objectives.Condition;
  * @param <W>
  */
 public abstract class QbfSolver<W extends Condition> extends SolverQbfAndQbfCon<W, QbfSolverOptions> {
+	
+	int[][] iff;
 
 	public QbfSolver(PetriGame game, W winCon, QbfSolverOptions so) throws SolvingException {
 		super(new QbfSolvingObject<>(game, winCon, false), so);
@@ -33,9 +35,134 @@ public abstract class QbfSolver<W extends Condition> extends SolverQbfAndQbfCon<
 		// initializing arrays for storing variable IDs
 		initializeBeforeUnfolding(getSolvingObject().getN());
 	}
+	
+	// TODO new alternative
+	protected void writeFlowALTERNATIVE() throws IOException {
+		writeIFF(1, getSolvingObject().getN());
+		writeFired(1, getSolvingObject().getN());
+		TIntHashSet or = new TIntHashSet();
+		int[] fireOne = new int[getSolvingObject().getN() + 1];
+		
+		int size = getSolvingObject().getGame().getTransitions().size();
+		for (int i = 1; i < getSolvingObject().getN(); ++i) {
+			or.clear();
+			for (int j = 0; j < size; ++j) {
+				or.add(oneTransitionFormulas[j][i]);
+			}
+			fireOne[i] = createUniqueID();
+			writeOr(fireOne[i], or);
+		}
+		
+		int orId;
+		Set<Place> places = getSolvingObject().getGame().getPlaces();
+		TIntHashSet and = new TIntHashSet();
+		for (int i = 1; i < getSolvingObject().getN(); ++i) {
+			and.clear();
+			for (Place p : places) {
+				or.clear();
+				for (Transition pre : p.getPreset()) {
+					or.add(oneTransitionFormulas[transitionKeys.get(pre)][i]);
+				}
+				for (Transition post : p.getPostset()) {
+					or.add(oneTransitionFormulas[transitionKeys.get(post)][i]);
+				}
+				
+				or.add(iff[placeKeys.get(p)][i]);
+				
+				orId = createUniqueID();
+				writeOr(orId, or);
+				and.add(orId);
+			}
+			and.add(fireOne[i]);
+			fl[i] = createUniqueID();
+			writeAnd(fl[i], and);
+		}
+	}
 
-	// TODO Use initial capacities for HashSets; maybe use Trove TIntHashSet?
-	// TODO reimplement to iterate over places fewer times
+	protected void writeFired(int s, int e) throws IOException {
+		int size = getSolvingObject().getGame().getTransitions().size();
+		Transition t;
+		for (int j = 0; j < size; ++j) {
+			t = transitions[j];
+			
+			TIntHashSet[] and = new TIntHashSet[e];
+			for (int i = s; i < e; ++i) {
+				and[i] = new TIntHashSet();
+			}
+			Set<Place> preset = t.getPreset();
+			Set<Place> postset = t.getPostset();
+
+			// pre(t)
+			for (Place p : preset) {
+				for (int i = s; i < e; ++i) {
+					and[i].add(getVarNr(p.getId() + "." + i, true));
+					int strat = addSysStrategy(p, t);
+					if (strat != 0) {
+						and[i].add(strat);
+					}
+				}
+			}
+			
+			// post(t)
+			for (Place p : postset) {
+				for (int i = s; i < e; ++i) {
+					and[i].add(getVarNr(p.getId() + "." + (i + 1), true));
+				}
+			}
+
+			// pre(t) \ post(t)
+			for (Place p : preset) {
+				if (!t.getPostset().contains(p)) {
+					for (int i = s; i < e; ++i) {
+						and[i].add(-getVarNr(p.getId() + "." + (i + 1), true));
+					}
+				}
+			}
+			
+			// post(post(pre(t))) \ post(t)
+			Set<Place> pre = t.getPreset();
+			Set<Place> post = t.getPostset();
+			for (Place tpre : t.getPreset()) {
+				for (Transition tprepost : tpre.getPostset()) {
+					for (Place tprepostpost : tprepost.getPostset()) {
+						if (!pre .contains(tprepostpost)) {
+							if (!post.contains(tprepostpost)) {
+								for (int i = s; i < e; ++i) {
+									and[i].add(iff[placeKeys.get(tprepostpost)][i]);
+								}
+							}
+						}
+					}
+				}
+			}
+			
+			for (int i = s; i < e; ++i) {
+				oneTransitionFormulas[j][i] = createUniqueID();
+				writeAnd(oneTransitionFormulas[j][i], and[i]);
+			}
+		}
+	}
+	
+	protected void writeIFF (int s, int e) throws IOException {
+		iff = new int[getSolvingObject().getGame().getPlaces().size()][getSolvingObject().getN()];
+		TIntHashSet and = new TIntHashSet();
+		int p_i, p_iSucc, j;
+		for (Place p : getSolvingObject().getGame().getPlaces()) {
+			for (int i = s; i < e; ++i) {
+				and.clear();
+				p_i = getVarNr(p.getId() + "." + i, true);
+				p_iSucc = getVarNr(p.getId() + "." + (i + 1), true);
+				and.add(writeImplication(p_i, p_iSucc));
+				and.add(writeImplication(p_iSucc, p_i));
+				j = placeKeys.get(p);
+				iff[j][i] = createUniqueID();
+				writeAnd(iff[j][i], and);
+			}
+		}
+	}
+	
+	// TODO re-implement to iterate over places fewer times
+	// TODO old implementation which is quadratic as P * T
 	protected void writeFlow() throws IOException {
 		writeTransitions(1, getSolvingObject().getN());
 		TIntHashSet or = new TIntHashSet();
@@ -74,11 +201,9 @@ public abstract class QbfSolver<W extends Condition> extends SolverQbfAndQbfCon<
 			}
 			Set<Place> preset = t.getPreset();
 			Set<Place> postset = t.getPostset();
-			
-			int transitionKey = transitionKeys.get(t);
 
 			for (int i = s; i < e; ++i) {
-				and[i].add(-deadlockSubFormulas[transitionKey][i]);
+				and[i].add(-deadlockSubFormulas[j][i]);
 			}
 			
 			// post(t)
@@ -111,8 +236,8 @@ public abstract class QbfSolver<W extends Condition> extends SolverQbfAndQbfCon<
 				}
 			}
 			for (int i = s; i < e; ++i) {
-				oneTransitionFormulas[transitionKey][i] = createUniqueID();
-				writeAnd(oneTransitionFormulas[transitionKey][i], and[i]);
+				oneTransitionFormulas[j][i] = createUniqueID();
+				writeAnd(oneTransitionFormulas[j][i], and[i]);
 			}
 		}
 	}

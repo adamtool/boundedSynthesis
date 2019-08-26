@@ -88,6 +88,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 	protected int variablesCounter = 1;
 	protected TObjectIntHashMap<String> numbersForVariables = new TObjectIntHashMap<String>(); // map for storing keys and the corresponding value
 
+	protected Map<Place, Integer> placeKeys = new HashMap<>();
 	protected Map<Transition, Integer> transitionKeys = new HashMap<>();
 	// TODO only used for construction?? reuse them?!
 	protected int[][] oneTransitionFormulas; // (Transition, 1..n) -> fireTransitionID
@@ -399,8 +400,14 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 	}
 	
 	protected void initializeCaches() {
-		transitions = new Transition[getSolvingObject().getGame().getTransitions().size()];
 		int i = 0;
+		for (Place p : getSolvingObject().getGame().getPlaces()) {
+			placeKeys.put(p, i);
+			i++;
+		}
+		
+		transitions = new Transition[getSolvingObject().getGame().getTransitions().size()];
+		i = 0;
 		for (Transition t : getSolvingObject().getGame().getTransitions()) {
 			transitions[i] = t;
 			transitionKeys.put(t, i);
