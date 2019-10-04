@@ -2,10 +2,10 @@ package uniolunisaar.adam.bounded.qbfapproach.solver;
 
 import uniolunisaar.adam.exceptions.pg.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.ds.objectives.Buchi;
-import uniolunisaar.adam.ds.objectives.Reachability;
-import uniolunisaar.adam.ds.objectives.Safety;
-import uniolunisaar.adam.ds.objectives.Condition;
+import uniolunisaar.adam.ds.petrinet.objectives.Buchi;
+import uniolunisaar.adam.ds.petrinet.objectives.Reachability;
+import uniolunisaar.adam.ds.petrinet.objectives.Safety;
+import uniolunisaar.adam.ds.petrinet.objectives.Condition;
 import uniolunisaar.adam.logic.pg.solver.SolverFactory;
 
 /**
