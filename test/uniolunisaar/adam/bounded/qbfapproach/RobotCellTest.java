@@ -23,8 +23,8 @@ public class RobotCellTest extends EmptyTest {
 		int n = 5;		// 5 7 9
 		int increase = 2;
 		if (trueconcurrent) {
-			n = 3;
-			increase = 1;
+			n = 4;
+			increase = 2;
 		} // 3 4 5
 		for (int i = 2; i < max + 2; ++i) {
 			oneTest(i, 1, n, 0);

@@ -108,7 +108,8 @@ public class QbfSolvingObject<W extends Condition> extends SolvingObject<PetriGa
         return getGame().hasExtension(AdamExtensions.b.name());
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public QbfSolvingObject<W> getCopy() {
     	QbfSolvingObject<W> result = null;
 		try {

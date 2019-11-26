@@ -18,8 +18,10 @@ public class SRTest extends EmptyTest {
 	public void testSR() throws Exception { // only with simplifier no timeout
 		oneTest(2, 1, 5, 2, false);
 		oneTest(2, 1, 6, 2, true);
-		//oneTest(3, 1, 6, 2, false);
-		//oneTest(3, 1, 7, 2, true);
+		if (!fast) {
+			oneTest(3, 1, 6, 2, false);
+			oneTest(3, 1, 7, 2, true);
+		}
 		//oneTest(4, 1, 8, 2, true); // TODO debug unfolding
 	}
 

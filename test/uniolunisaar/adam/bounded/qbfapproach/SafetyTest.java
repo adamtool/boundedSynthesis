@@ -64,7 +64,7 @@ public class SafetyTest extends EmptyTest {
 		//oneTest("tests/watchdog5", 15, 3, true);		// TODO search for bounds
 		//oneTest("container/container", 10, 2, true);	// TODO search for bounds
 		//oneTest("2env/paul", 10, 4, true);			// TODO search for bounds
-		oneTest("boundedunfolding/causalmemory", 10, 2, false);
+		oneTest("boundedunfolding/causalmemory", 15, 2, false);
 		oneTest("notConcurrencyPreservingTests/madeCP", 6, 0, false);
 		oneTest("boundedunfolding/finite1", 10, 2, true); // OLD cutoff is too early in McMillianUnfolder
 		oneTest("boundedunfolding/finite2", 10, 2, true);

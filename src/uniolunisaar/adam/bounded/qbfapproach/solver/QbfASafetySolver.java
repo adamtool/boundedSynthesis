@@ -38,25 +38,16 @@ public class QbfASafetySolver extends QbfSolver<Safety> {
 
 	protected void writeNoBadPlaces() throws IOException {
 		if (!getSolvingObject().getWinCon().getBadPlaces().isEmpty()) {
-			String[] nobadplaces = getNoBadPlaces();
+			Set<Integer> and = new HashSet<>();
 			for (int i = 1; i <= getSolvingObject().getN(); ++i) {
+				and.clear();
+				for (Place p : getSolvingObject().getWinCon().getBadPlaces()) {
+					and.add(-getVarNr(p.getId() + "." + i, true));
+				}
 				bad[i] = createUniqueID();
-				writer.write(bad[i] + " = " + nobadplaces[i]);
+				writer.write(bad[i] + " = " + writeAnd(and));
 			}
 		}
-	}
-
-	public String[] getNoBadPlaces() throws IOException {
-		String[] nobadplaces = new String[getSolvingObject().getN() + 1];
-		Set<Integer> and = new HashSet<>();
-		for (int i = 1; i <= getSolvingObject().getN(); ++i) {
-			and.clear();
-			for (Place p : getSolvingObject().getWinCon().getBadPlaces()) {
-				and.add(-getVarNr(p.getId() + "." + i, true));
-			}
-			nobadplaces[i] = writeAnd(and);
-		}
-		return nobadplaces;
 	}
 
 	protected void writeWinning() throws IOException {
@@ -72,7 +63,7 @@ public class QbfASafetySolver extends QbfSolver<Safety> {
 			if (det[i] != 0) {
 				and.add(det[i]);
 			}
-			if (i == getSolvingObject().getN()) { // slightly optimized in the sense that winning and loop are put together for n
+			if (i == getSolvingObject().getN()) { // winning and loop are put together for n
 				and.add(l);
 			}
 			win[i] = createUniqueID();
@@ -160,9 +151,11 @@ public class QbfASafetySolver extends QbfSolver<Safety> {
 		if (QbfControl.debug) {
 			FileUtils.copyFile(file, new File(getSolvingObject().getGame().getName() + ".qcir"));
 		}
-
-		// TODO only enable for small files, as reading the entire file might be very expensive OR implement on the fly
-		//assert (QCIRconsistency.checkConsistency(file));
+		
+		// only check for files smaller than 500mb b/c otherwise bottleneck
+		if (QbfControl.debug && file.length() < 500000000) {
+			assert (QCIRconsistency.checkConsistency(file));
+		}
 	}
 
 	@Override
