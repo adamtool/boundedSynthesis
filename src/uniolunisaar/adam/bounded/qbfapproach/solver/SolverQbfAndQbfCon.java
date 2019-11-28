@@ -90,7 +90,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 
 	protected Map<Place, Integer> placeKeys = new HashMap<>();
 	protected Map<Transition, Integer> transitionKeys = new HashMap<>();
-	// TODO only used for construction?? reuse them?!
+
 	protected int[][] oneTransitionFormulas; // (Transition, 1..n) -> fireTransitionID
 	protected int[][] deadlockSubFormulas; // (Transition, 1..n) -> deadlockID
 	protected int[][] terminatingSubFormulas; // (Transition, 1..n) -> terminatingID
@@ -185,9 +185,8 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 		for (Transition t : getSolvingObject().getGame().getTransitions()) {
 			for (int i = s; i <= e; ++i) {
 				or.clear();
-				or.add(terminatingSubFormulas[transitionKeys.get(t)][i]);  // ALTERNATIVE reuse terminatingSubFormula TODO decide for one alternative
+				or.add(terminatingSubFormulas[transitionKeys.get(t)][i]);
 				for (Place p : t.getPreset()) {
-					//or.add(-getVarNr(p.getId() + "." + i, true)); // "p.i"  // ALTERNATIVE do not reuse terminatingSubFormula
 					strat = addSysStrategy(p, t);
 					if (strat != 0) {
 						or.add(-strat);
@@ -488,7 +487,6 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 	}
 	
 	protected String writeOr(TIntHashSet input) {
-		//StringBuilder sb = new StringBuilder();	// TODO same as below
 		sb.append("or(");
 		String delim = ""; // first element is added without ","
 		int n = 0;
@@ -506,7 +504,6 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 	}
 	
 	protected String writeAnd(TIntHashSet input) {
-		//StringBuilder sb = new StringBuilder();	// TODO same as below
 		sb.append("and(");
 		String delim = ""; // first element is added without ","
 		int n = 0;
@@ -524,7 +521,6 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 	}
 
 	private String writeString(String op, Set<Integer> input) {
-		//StringBuilder sb = new StringBuilder();	// TODO evaluate to reuse or create new
 		sb.append(op);
 		sb.append("(");
 		String delim = ""; // first element is added without ","
@@ -545,8 +541,6 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 		int number = result.getSecond();
 
 		if (result.getFirst()) {
-			// number + " = or(" + -from + "," + to + ")" + QbfControl.linebreak
-			//StringBuilder sb = new StringBuilder();	// TODO evaluate to reuse or create new
 			sb.append(number);
 			sb.append(" = or(");
 			sb.append(-from);

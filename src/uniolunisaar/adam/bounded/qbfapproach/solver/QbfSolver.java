@@ -187,6 +187,19 @@ public abstract class QbfSolver<W extends Condition> extends SolverQbfAndQbfCon<
 		}*/
 
 	}
+	
+	/*protected String[] getFlow() throws IOException {
+		String[] flow = new String[getSolvingObject().getN() + 1];
+		Set<Integer> or = new HashSet<>();
+		for (int i = 1; i < getSolvingObject().getN(); ++i) {
+			or.clear();
+			for (int j = 0; j < getSolvingObject().getGame().getTransitions().size(); ++j) {
+				or.add(getOneTransition(transitions[j], i));
+			}
+			flow[i] = writeOr(or);
+		}
+		return flow;
+	}*/
 
 	protected void writeTransitions(int s, int e) throws IOException {
 		int size = getSolvingObject().getGame().getTransitions().size();
@@ -241,19 +254,7 @@ public abstract class QbfSolver<W extends Condition> extends SolverQbfAndQbfCon<
 			}
 		}
 	}
-	
-	/*protected String[] getFlow() throws IOException {
-		String[] flow = new String[getSolvingObject().getN() + 1];
-		Set<Integer> or = new HashSet<>();
-		for (int i = 1; i < getSolvingObject().getN(); ++i) {
-			or.clear();
-			for (int j = 0; j < getSolvingObject().getGame().getTransitions().size(); ++j) {
-				or.add(getOneTransition(transitions[j], i));
-			}
-			flow[i] = writeOr(or);
-		}
-		return flow;
-	}*/
+
 	
 	protected int getOneTransition(Transition t, int i) throws IOException {
 		return getOneTransition(t, i, getSolvingObject().getGame().getPlaces());
@@ -319,7 +320,6 @@ public abstract class QbfSolver<W extends Condition> extends SolverQbfAndQbfCon<
 			and.clear();
 			and.add(in);
 			for (int j = 1; j <= i - 1; ++j) {
-				// and.add(-dl[j]); // performance evaluation showed that leaving this out makes program faster as it is redundant
 				and.add(fl[j]);
 			}
 			seq[i] = createUniqueID();
