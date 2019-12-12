@@ -695,8 +695,10 @@ public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends Solver
 			}
 			
 			if (max <= 1) {
+				// no loop -> McMillianUnfolder
 				QbfControl.rebuildingUnfolder = true;
 			} else {
+				// loop -> NonDeterministicUnfolder
 				QbfControl.rebuildingUnfolder = false;
 			}
 		} catch (UnboundedException e) {
