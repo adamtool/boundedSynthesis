@@ -73,10 +73,10 @@ public class SafetyTest extends EmptyTest {
 		oneTest("boundedunfolding/counterexample", 10, 0, true);
 		if (!fast) {
 			// TODO debug these four? take long and use NondeterministicUnfolder?
-			//oneTest("boundedunfolding/unfolding1", 15, 2, true);
-			//oneTest("boundedunfolding/unfolding2", 15, 2, true);
-			//oneTest("boundedunfolding/firstTry", 15, 3, true); // TODO why not working for SEQ? TC strategy rejected because of env transition
-			//oneTest("boundedunfolding/secondTry", 15, 3, true);
+			oneTest("boundedunfolding/unfolding1", 15, 2, true);
+			oneTest("boundedunfolding/unfolding2", 15, 2, true);
+			oneTest("boundedunfolding/firstTry", 15, 3, true); // TODO why not working for SEQ? TC strategy rejected because of env transition
+			oneTest("boundedunfolding/secondTry", 15, 3, true);
 		}
 		oneTest("ndet/nondet_motivationForSchedulingChange", 20, 0, false);
 		oneTest("jhh/myexample1", 10, 0, false);

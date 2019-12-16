@@ -1,6 +1,7 @@
 package uniolunisaar.adam.bounded.qbfapproach.unfolder;
 
 import java.io.FileNotFoundException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
@@ -32,11 +33,13 @@ public class McMillianUnfolder extends Unfolder {
 	private PetriGame originalGame;
 
 	Set<Pair<Transition, Set<Place>>> closed = new HashSet<>();
-	//Set<Set<Place>> cutOffOriginal = new HashSet<>();	// cutOff based on markings in the original net
+	Set<Set<Place>> cutOffOriginal = new HashSet<>();  // cutOff based on markings in the original net
 	Set<Set<Place>> cutOffUnfolding = new HashSet<>(); // cutOff based on markings in the build unfolding
 
 	int counterPlaces = 0;
 	int counterTransitions = 0;
+	
+	Map<Set<Place>, Set<Place>> uniqueCuts = new HashMap<>(); // marking in original game to marking in unfolding
 
 	public McMillianUnfolder(QbfSolvingObject<? extends Condition> petriGame, Map<String, Integer> max) {
 		super(petriGame, max);
@@ -48,12 +51,17 @@ public class McMillianUnfolder extends Unfolder {
 			pn.removeTransition(t.getId());
 		}
 		
+		Set<Place> originalInitialMarking = new HashSet<>();
 		Marking initial = pn.getInitialMarking();
 		for (Place p : originalGame.getPlaces()) {
 			if (initial.getToken(p.getId()).getValue() < 1) {
 				pn.removePlace(p.getId());
+			} else {
+				originalInitialMarking.add(p);
 			}
 		}
+		
+		uniqueCuts.put(originalInitialMarking, pn.getPlaces());
 	}
 
 	@Override
@@ -77,23 +85,51 @@ public class McMillianUnfolder extends Unfolder {
 				}
 				postMarking.removeAll(alreadyAdded.getPreset());
 				postMarking.addAll(alreadyAdded.getPostset());
-			} else {
-				// add transition
-				Transition newT = pn.createTransition(t.getId() + "__" + counterPlaces++);
-				for (Place pre : preset) {
-					pn.createFlow(pre, newT);
-					postMarking.remove(pre);
+			}  else {
+				// calculate originalPostMarking because each original marking should be present once in the unfolding
+				Set<Place> originalPostMarking = getOriginalMarking(marking);
+				originalPostMarking.removeAll(t.getPreset());
+				originalPostMarking.addAll(t.getPostset());
+				Set<Place> unfoldingPostMarking = uniqueCuts.get(originalPostMarking);
+				if (unfoldingPostMarking == null) {
+					
+					// add transition
+					Transition newT = pn.createTransition(t.getId() + "__" + counterPlaces++);
+					for (Place pre : preset) {
+						pn.createFlow(pre, newT);
+						postMarking.remove(pre);
+					}
+					for (Place post : t.getPostset()) {
+						Place newPost = pn.createPlace(post.getId() + "__" + counterTransitions++);
+						postMarking.add(newPost);
+						copyEnv(newPost, post);
+						pn.createFlow(newT, newPost);
+					}
+					closed.add(new Pair<>(t, preset));
+					uniqueCuts.put(getOriginalMarking(postMarking), postMarking);
+				} else {
+					// add transition
+					Transition newT = pn.createTransition(t.getId() + "__" + counterPlaces++);
+					for (Place pre : preset) {
+						pn.createFlow(pre, newT);
+						postMarking.remove(pre);
+					}
+					for (Place post : t.getPostset()) {
+						Place newPost = null;
+						for (Place unfoldingPlace : unfoldingPostMarking) {
+							if (getOriginalPlaceId(unfoldingPlace.getId()).matches(post.getId())) {
+								// should be always present and should be unique
+								newPost = unfoldingPlace;
+								break;
+							}
+						}
+						pn.createFlow(newT, newPost);
+					}
+					closed.add(new Pair<>(t, preset));
 				}
-				for (Place post : t.getPostset()) {
-					Place newPost = pn.createPlace(post.getId() + "__" + counterTransitions++);
-					postMarking.add(newPost);
-					copyEnv(newPost, post);
-					pn.createFlow(newT, newPost);
-				}
-				closed.add(new Pair<>(t, preset));
 			}
 			// add ORIGINAL marking to cutOff iff ALL outgoing transitions have been added TOO RESTRICTIVE
-			/*boolean allAdded = true;
+			boolean allAdded = true;
 			Set<Place> originalMarking = getOriginalMarking(marking);
 			for (Transition originalTransition : originalGame.getTransitions()) {	// for all enabled original transitions search for copy in branching process
 				if (originalMarking.containsAll(originalTransition.getPreset())) {	// check enabledness
@@ -116,10 +152,10 @@ public class McMillianUnfolder extends Unfolder {
 			
 			if (allAdded) {
 				cutOffOriginal.add(originalMarking);
-			}*/
+			}
 
 			// only once calling possExt for each postMarking seems to be possible as possible extensions of postmarking seem independent of currently build unfolding
-			if (!cutOffUnfolding.contains(postMarking) /*&& !cutOffOriginal.contains(getOriginalMarking(postMarking))*/) {
+			if (!cutOffUnfolding.contains(postMarking) && !cutOffOriginal.contains(getOriginalMarking(postMarking))) {
 				possibleExtensions.addAll(possExt(postMarking));
 				cutOffUnfolding.add(postMarking);
 			}
@@ -158,13 +194,13 @@ public class McMillianUnfolder extends Unfolder {
 		return possibleExtensions;
 	}
 	
-	/*private Set<Place> getOriginalMarking(Set<Place> marking) {
+	private Set<Place> getOriginalMarking(Set<Place> marking) {
 		Set<Place> originalMarking = new HashSet<>();
 		for (Place p : marking) {
 			originalMarking.add(originalGame.getPlace(getOriginalPlaceId(p.getId())));
 		}
 		return originalMarking;
-	}*/
+	}
 
 	public static String getOriginalPlaceId(String id) {
 		int index = id.indexOf("__");

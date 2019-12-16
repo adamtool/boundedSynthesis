@@ -19,7 +19,7 @@ import uniolunisaar.adam.util.PGTools;
 public abstract class EmptyTest {
 
 	protected boolean trueconcurrent = false;
-	protected static boolean fast = true;
+	protected static boolean fast = false;
 
 	protected void testPath (String path, int n, int b, boolean result) throws Exception {
 		if (trueconcurrent) {
