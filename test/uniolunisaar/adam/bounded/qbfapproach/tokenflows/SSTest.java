@@ -52,7 +52,7 @@ public class SSTest {
         System.out.println("Generate security system ...");
         PetriGame pn = SecuritySystem.createSafetyVersionForBounded(intrudingPoints, true);
         PNWTTools.savePnwt2PDF(path + name, pn, false);
-        QbfSolver<? extends Condition> solv = QbfSolverFactory.getInstance().getSolver(pn, false, new QbfSolverOptions(7, 3));
+        QbfSolver<? extends Condition> solv = QbfSolverFactory.getInstance().getSolver(pn, new QbfSolverOptions(7, 3, false));
         if (hasStrategy) {
             Assert.assertTrue(solv.existsWinningStrategy());
             PNWTTools.savePnwt2PDF(path + name + "_pg", solv.getStrategy(), true);

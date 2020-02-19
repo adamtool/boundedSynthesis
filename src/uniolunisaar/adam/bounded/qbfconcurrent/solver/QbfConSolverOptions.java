@@ -1,6 +1,6 @@
 package uniolunisaar.adam.bounded.qbfconcurrent.solver;
 
-import uniolunisaar.adam.ds.solver.SolverOptions;
+import uniolunisaar.adam.ds.solver.LLSolverOptions;
 
 /**
  * 
@@ -8,7 +8,7 @@ import uniolunisaar.adam.ds.solver.SolverOptions;
  *
  */
 
-public class QbfConSolverOptions extends SolverOptions {
+public class QbfConSolverOptions extends LLSolverOptions {
 
 	private int n = 0;
 	private int b = 0;
@@ -16,7 +16,17 @@ public class QbfConSolverOptions extends SolverOptions {
 	public QbfConSolverOptions() {
 		super("qbfcon");
 	}
-
+        
+	public QbfConSolverOptions(boolean skip) {
+		super(skip, "qbfcon");
+	}
+        
+	public QbfConSolverOptions(int n, int b, boolean skipTests) {
+                super(skipTests,"qbfcon");
+		this.n = n;
+		this.b = b;
+        }
+        
 	public QbfConSolverOptions(int n, int b) {
 		super("qbfcon");
 		this.n = n;

@@ -13,6 +13,7 @@ import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QCIRconsistency;
+import uniolunisaar.adam.bounded.qbfapproach.petrigame.QbfSolvingObject;
 import uniolunisaar.adam.ds.petrinet.objectives.Safety;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.exceptions.pg.CalculationInterruptedException;
@@ -31,8 +32,8 @@ public class QbfASafetySolver extends QbfSolver<Safety> {
 	// variable to store keys of calculated components for later use (special to this winning condition)
 	private int[] bad;
 
-	public QbfASafetySolver(PetriGame game, Safety win, QbfSolverOptions so) throws SolvingException {
-		super(game, win, so);
+	public QbfASafetySolver(QbfSolvingObject<Safety> solObj, QbfSolverOptions so) throws SolvingException {
+		super(solObj, so);
 		bad = new int[getSolvingObject().getN() + 1];
 	}
 

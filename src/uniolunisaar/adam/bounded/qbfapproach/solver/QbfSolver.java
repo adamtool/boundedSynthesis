@@ -13,7 +13,6 @@ import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QbfSolvingObject;
 import uniolunisaar.adam.exceptions.pg.SolvingException;
-import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.petrinet.objectives.Condition;
 
 /**
@@ -22,12 +21,12 @@ import uniolunisaar.adam.ds.petrinet.objectives.Condition;
  *
  * @param <W>
  */
-public abstract class QbfSolver<W extends Condition> extends SolverQbfAndQbfCon<W, QbfSolverOptions> {
+public abstract class QbfSolver<W extends Condition<W>> extends SolverQbfAndQbfCon<W, QbfSolverOptions> {
 	
 	int[][] iff;
 
-	public QbfSolver(PetriGame game, W winCon, QbfSolverOptions so) throws SolvingException {
-		super(new QbfSolvingObject<>(game, winCon, false), so);
+	public QbfSolver(QbfSolvingObject<W> solObj, QbfSolverOptions so) throws SolvingException {
+		super(solObj, so);
 		
 		// initializing bounded parameters n and b
 		initializeNandB(so.getN(), so.getB());

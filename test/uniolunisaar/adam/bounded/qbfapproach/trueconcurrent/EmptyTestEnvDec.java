@@ -24,7 +24,7 @@ public abstract class EmptyTestEnvDec {
 	}
 	
 	protected void testGame (PetriGame pg, int n, int b, boolean result) throws Exception {
-		QbfConSolver<? extends Condition> sol = QbfConSolverFactory.getInstance().getSolver(pg, false, new QbfConSolverOptions(n, b));
+		QbfConSolver<? extends Condition<?>> sol = QbfConSolverFactory.getInstance().getSolver(pg, new QbfConSolverOptions(n, b, false));
 		testSolver(sol, n, b, result);
 	}
  

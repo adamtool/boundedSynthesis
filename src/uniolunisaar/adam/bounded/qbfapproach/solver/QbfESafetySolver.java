@@ -15,8 +15,8 @@ import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QCIRconsistency;
+import uniolunisaar.adam.bounded.qbfapproach.petrigame.QbfSolvingObject;
 import uniolunisaar.adam.exceptions.pg.SolvingException;
-import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.petrinet.objectives.Safety;
 
 /**
@@ -31,8 +31,8 @@ public class QbfESafetySolver extends QbfFlowChainSolver<Safety> {
 	private int[] simultan;
 	private int sFlCE;
 
-	public QbfESafetySolver(PetriGame game, Safety winCon, QbfSolverOptions options) throws SolvingException {
-		super(game, winCon, options);
+	public QbfESafetySolver(QbfSolvingObject<Safety> solObj, QbfSolverOptions options) throws SolvingException {
+		super(solObj, options);
 		bad = new int[getSolvingObject().getN() + 1];
 		simultan = new int[getSolvingObject().getN() + 1];
 		setTokenFlow();

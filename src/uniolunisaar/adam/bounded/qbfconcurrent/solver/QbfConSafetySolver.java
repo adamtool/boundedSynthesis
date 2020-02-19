@@ -14,6 +14,7 @@ import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.analysis.connectivity.Connectivity;
 import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
+import uniolunisaar.adam.bounded.qbfapproach.petrigame.QbfSolvingObject;
 import uniolunisaar.adam.ds.petrinet.objectives.Safety;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.exceptions.pg.CalculationInterruptedException;
@@ -38,8 +39,8 @@ public class QbfConSafetySolver extends QbfConSolver<Safety> {
 
 	
 	
-	public QbfConSafetySolver(PetriGame game, Safety winCon, QbfConSolverOptions so) throws SolvingException {
-		super(game, winCon, so);
+	public QbfConSafetySolver(QbfSolvingObject<Safety> solObj, QbfConSolverOptions so) throws SolvingException {
+		super(solObj, so);
 		bad = new int[getSolvingObject().getN() + 1];
 	}
 

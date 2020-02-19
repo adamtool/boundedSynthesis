@@ -14,6 +14,7 @@ import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QCIRconsistency;
+import uniolunisaar.adam.bounded.qbfapproach.petrigame.QbfSolvingObject;
 import uniolunisaar.adam.exceptions.pg.NoStrategyExistentException;
 import uniolunisaar.adam.exceptions.pg.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
@@ -31,8 +32,8 @@ public class QbfEReachabilitySolver extends QbfSolver<Reachability> {
 	// variable to store keys of calculated components for later use (special to this winning condition)
 	private int[] goodPlaces;
 
-	public QbfEReachabilitySolver(PetriGame game, Reachability win, QbfSolverOptions so) throws SolvingException {
-		super(game, win, so);
+	public QbfEReachabilitySolver(QbfSolvingObject<Reachability> solObj, QbfSolverOptions so) throws SolvingException {
+		super(solObj, so);
 		goodPlaces = new int[getSolvingObject().getN() + 1];
 	}
 

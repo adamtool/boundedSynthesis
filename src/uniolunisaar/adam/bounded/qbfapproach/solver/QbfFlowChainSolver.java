@@ -11,6 +11,7 @@ import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
+import uniolunisaar.adam.bounded.qbfapproach.petrigame.QbfSolvingObject;
 import uniolunisaar.adam.exceptions.pg.NoStrategyExistentException;
 import uniolunisaar.adam.exceptions.pg.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
@@ -24,10 +25,10 @@ import uniolunisaar.adam.exceptions.pg.CalculationInterruptedException;
  *
  */
 
-public abstract class QbfFlowChainSolver<W extends Condition> extends QbfSolver<W> {
+public abstract class QbfFlowChainSolver<W extends Condition<W>> extends QbfSolver<W> {
 
-	protected QbfFlowChainSolver(PetriGame game, W winCon, QbfSolverOptions options) throws SolvingException {
-		super(game, winCon, options);
+	protected QbfFlowChainSolver(QbfSolvingObject<W> solObj, QbfSolverOptions options) throws SolvingException {
+		super(solObj, options);
 	}
 
 	protected void setTokenFlow() {

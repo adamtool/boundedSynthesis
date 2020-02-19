@@ -14,7 +14,6 @@ import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QbfSolvingObject;
 import uniolunisaar.adam.bounded.qbfapproach.solver.SolverQbfAndQbfCon;
 import uniolunisaar.adam.exceptions.pg.SolvingException;
-import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.petrinet.objectives.Condition;
 
 /**
@@ -23,7 +22,7 @@ import uniolunisaar.adam.ds.petrinet.objectives.Condition;
  *
  */
 
-public abstract class QbfConSolver<W extends Condition> extends SolverQbfAndQbfCon<W, QbfConSolverOptions> {
+public abstract class QbfConSolver<W extends Condition<W>> extends SolverQbfAndQbfCon<W, QbfConSolverOptions> {
 
 	protected List<Map<Integer,Integer>> enabledlist; // First setindex, then iteration index
 	protected Map<Transition, Integer> transitionmap; 
@@ -33,8 +32,8 @@ public abstract class QbfConSolver<W extends Condition> extends SolverQbfAndQbfC
 
 
 	
-	protected QbfConSolver(PetriGame game, W winCon, QbfConSolverOptions so) throws SolvingException {
-		super(new QbfSolvingObject<>(game, winCon, false), so);
+	protected QbfConSolver(QbfSolvingObject<W> solObj, QbfConSolverOptions so) throws SolvingException {
+		super(solObj, so);
 		
 		// initializing bounded parameters n and b
 		initializeNandB(so.getN(), so.getB());

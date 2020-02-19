@@ -14,6 +14,7 @@ import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QCIRconsistency;
+import uniolunisaar.adam.bounded.qbfapproach.petrigame.QbfSolvingObject;
 import uniolunisaar.adam.exceptions.pg.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.petrinet.objectives.Reachability;
@@ -30,8 +31,8 @@ public class QbfAReachabilitySolver extends QbfFlowChainSolver<Reachability> {
 	private int[] notUnreachEnded;
 	private int[] goodSimultan;
 
-	public QbfAReachabilitySolver(PetriGame game, Reachability winCon, QbfSolverOptions options) throws SolvingException {
-		super(game, winCon, options);
+	public QbfAReachabilitySolver(QbfSolvingObject<Reachability> solObj, QbfSolverOptions options) throws SolvingException {
+		super(solObj, options);
 		goodPlaces = new int[getSolvingObject().getN() + 1];
 		notUnreachEnded = new int[getSolvingObject().getN() + 1];
 		goodSimultan = new int[getSolvingObject().getN() + 1];

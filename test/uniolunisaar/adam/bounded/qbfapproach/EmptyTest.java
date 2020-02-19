@@ -29,15 +29,18 @@ public abstract class EmptyTest {
 		}
 	}
 	
-	protected void testGame (PetriGame pg, int n, int b, boolean result) throws Exception {
-		if (trueconcurrent) {
-			testSolver(QbfConSolverFactory.getInstance().getSolver(pg, false, new QbfConSolverOptions(n, b)), n, b, result);
-		} else {
-			testSolver(QbfSolverFactory.getInstance().getSolver(pg, false, new QbfSolverOptions(n, b)), n, b, result);
+	protected void testGame (PetriGame pg, int n, int b, boolean result) throws Exception {            
+               
+		if (trueconcurrent) { 
+                        QbfConSolverOptions opts = new QbfConSolverOptions(n,b, false);
+			testSolver(QbfConSolverFactory.getInstance().getSolver(pg, opts), n, b, result);
+		} else { 
+                        QbfSolverOptions opts = new QbfSolverOptions(n,b, false);
+			testSolver(QbfSolverFactory.getInstance().getSolver(pg, opts), n, b, result);
 		}
 	}
  
-	protected void testSolver (Solver<?,?> sol, int n, int b, boolean result) throws Exception {
+	protected void testSolver (Solver<PetriGame,?,?> sol, int n, int b, boolean result) throws Exception {
 		PGTools.savePG2PDF("originalGame", sol.getGame(), false);
 		PetriGame originalGame = new PetriGame(sol.getGame());		// true copy of original game to check strategy for correctness later
         sol.existsWinningStrategy();								// solve game

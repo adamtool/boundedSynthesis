@@ -51,7 +51,7 @@ public class ContainerTerminalTest {
         System.out.println("Generate container terminal...");
         PetriGame pn = ContainerTerminal.createSafetyVersion(containerPlaces, true);
         PNWTTools.savePnwt2PDF(path + name, pn, false);
-        QbfSolver<? extends Condition> solv = QbfSolverFactory.getInstance().getSolver(pn, false, new QbfSolverOptions(15, 3));
+        QbfSolver<? extends Condition> solv = QbfSolverFactory.getInstance().getSolver(pn, new QbfSolverOptions(15, 3, false));
         if (hasStrategy) {
             Assert.assertTrue(solv.existsWinningStrategy());
             PNWTTools.savePnwt2PDF(path + name + "_pg", solv.getStrategy(), true);

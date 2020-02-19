@@ -1,18 +1,21 @@
 package uniolunisaar.adam.bounded.qbfapproach.solver;
 
+import uniolunisaar.adam.bounded.qbfapproach.petrigame.QbfSolvingObject;
 import uniolunisaar.adam.exceptions.pg.SolvingException;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.petrinet.objectives.Buchi;
 import uniolunisaar.adam.ds.petrinet.objectives.Reachability;
 import uniolunisaar.adam.ds.petrinet.objectives.Safety;
 import uniolunisaar.adam.ds.petrinet.objectives.Condition;
-import uniolunisaar.adam.logic.pg.solver.SolverFactory;
+import uniolunisaar.adam.ds.solver.SolvingObject;
+import uniolunisaar.adam.exceptions.pg.NotSupportedGameException;
+import uniolunisaar.adam.logic.pg.solver.LLSolverFactory;
 
 /**
  *
  * @author Manuel Gieseking
  */
-public class QbfSolverFactory extends SolverFactory<QbfSolverOptions, QbfSolver<? extends Condition>> {
+public class QbfSolverFactory extends LLSolverFactory<QbfSolverOptions, QbfSolver<? extends Condition<?>>> {
 
     private static QbfSolverFactory instance = null;
 
@@ -28,33 +31,42 @@ public class QbfSolverFactory extends SolverFactory<QbfSolverOptions, QbfSolver<
     }
 
     @Override
-    protected QbfESafetySolver getESafetySolver(PetriGame game, Safety winCon, boolean skipTests, QbfSolverOptions so) throws SolvingException {
-        return new QbfESafetySolver(game, winCon, so);
+    protected <W extends Condition<W>> SolvingObject<PetriGame, W> createSolvingObject(PetriGame game, W winCon) throws NotSupportedGameException {
+        try {
+            return new QbfSolvingObject<>(game, winCon, false);
+        } catch (SolvingException ex) {
+            throw new NotSupportedGameException("Could not create solving object.", ex);
+        }
     }
 
     @Override
-    protected QbfASafetySolver getASafetySolver(PetriGame game, Safety winCon, boolean skipTests, QbfSolverOptions so) throws SolvingException {
-        return new QbfASafetySolver(game, winCon, so);
+    protected QbfSolver<? extends Condition<?>> getESafetySolver(SolvingObject<PetriGame, Safety> solverObject, QbfSolverOptions options) throws SolvingException {
+        return new QbfESafetySolver((QbfSolvingObject<Safety>) solverObject, options);
     }
 
     @Override
-    protected QbfEReachabilitySolver getEReachabilitySolver(PetriGame game, Reachability winCon, boolean skipTests, QbfSolverOptions so) throws SolvingException {
-        return new QbfEReachabilitySolver(game, winCon, so);
+    protected QbfSolver<? extends Condition<?>> getASafetySolver(SolvingObject<PetriGame, Safety> solverObject, QbfSolverOptions options) throws SolvingException {
+        return new QbfASafetySolver((QbfSolvingObject<Safety>) solverObject, options);
     }
 
     @Override
-    protected QbfAReachabilitySolver getAReachabilitySolver(PetriGame game, Reachability winCon, boolean skipTests, QbfSolverOptions so) throws SolvingException {
-        return new QbfAReachabilitySolver(game, winCon, so);
+    protected QbfSolver<? extends Condition<?>> getEReachabilitySolver(SolvingObject<PetriGame, Reachability> solverObject, QbfSolverOptions options) throws SolvingException {
+        return new QbfEReachabilitySolver((QbfSolvingObject<Reachability>) solverObject, options);
     }
 
     @Override
-    protected QbfEBuchiSolver getEBuchiSolver(PetriGame game, Buchi winCon, boolean skipTests, QbfSolverOptions so) throws SolvingException {
-        return new QbfEBuchiSolver(game, winCon, so);
+    protected QbfSolver<? extends Condition<?>> getAReachabilitySolver(SolvingObject<PetriGame, Reachability> solverObject, QbfSolverOptions options) throws SolvingException {
+        return new QbfAReachabilitySolver((QbfSolvingObject<Reachability>) solverObject, options);
     }
 
     @Override
-    protected QbfABuchiSolver getABuchiSolver(PetriGame game, Buchi winCon, boolean skipTests, QbfSolverOptions so) throws SolvingException {
-        return new QbfABuchiSolver(game, winCon, so);
+    protected QbfSolver<? extends Condition<?>> getEBuchiSolver(SolvingObject<PetriGame, Buchi> solverObject, QbfSolverOptions options) throws SolvingException {
+        return new QbfEBuchiSolver((QbfSolvingObject<Buchi>) solverObject, options);
+    }
+
+    @Override
+    protected QbfSolver<? extends Condition<?>> getABuchiSolver(SolvingObject<PetriGame, Buchi> solverObject, QbfSolverOptions options) throws SolvingException {
+        return new QbfABuchiSolver((QbfSolvingObject<Buchi>) solverObject, options);
     }
 
 }

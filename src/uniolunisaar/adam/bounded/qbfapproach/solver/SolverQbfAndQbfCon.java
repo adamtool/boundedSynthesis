@@ -52,7 +52,7 @@ import uniolunisaar.adam.tools.AdamProperties;
  *
  */
 
-public abstract class SolverQbfAndQbfCon<W extends Condition, SOP extends SolverOptions> extends Solver<QbfSolvingObject<W>, SOP>{
+public abstract class SolverQbfAndQbfCon<W extends Condition<W>, SOP extends SolverOptions> extends Solver<PetriGame, QbfSolvingObject<W>, SOP>{
 
 	// steps of solving
 	public QbfSolvingObject<W> originalSolvingObject;

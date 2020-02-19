@@ -14,8 +14,8 @@ import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QCIRconsistency;
+import uniolunisaar.adam.bounded.qbfapproach.petrigame.QbfSolvingObject;
 import uniolunisaar.adam.exceptions.pg.SolvingException;
-import uniolunisaar.adam.ds.petrigame.PetriGame;
 import uniolunisaar.adam.ds.petrinet.objectives.Buchi;
 
 /**
@@ -33,8 +33,8 @@ public class QbfABuchiSolver extends QbfFlowChainSolver<Buchi> {
 	private int[] resetChoice;
 	private int bl; // buchi loop
 
-	public QbfABuchiSolver(PetriGame game, Buchi winCon, QbfSolverOptions options) throws SolvingException {
-		super(game, winCon, options);
+	public QbfABuchiSolver(QbfSolvingObject<Buchi> solObj, QbfSolverOptions options) throws SolvingException {
+		super(solObj, options);
 		noFlowChainEnded = new int[getSolvingObject().getN() + 1];
 		goodSimultan = new int[getSolvingObject().getN() + 1];
 		buchiPlaces = new int[getSolvingObject().getN() + 1];
