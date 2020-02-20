@@ -24,7 +24,7 @@ import uniolunisaar.adam.exceptions.pg.SolvingException;
  * @author Jesko Hecking-Harbusch
  * @param <W>
  */
-public class QbfSolvingObject<W extends Condition<W>> extends SolvingObject<PetriGame, W> {
+public class QbfSolvingObject<W extends Condition<W>> extends SolvingObject<PetriGame, W, QbfSolvingObject<W>> {
 
     private int n; // length of the simulation, i.e., for n there are n - 1 transitions simulated
     private int b; // number of unfoldings per place in the bounded unfolding

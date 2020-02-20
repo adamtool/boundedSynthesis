@@ -21,7 +21,7 @@ public abstract class NonDeterministicUnfolder extends Unfolder {
 
 	protected Set<Place> placesWithCopiedTransitions = new HashSet<>(); // Maintained during unfolding in order to afterwards add additional places
 	
-	public NonDeterministicUnfolder(QbfSolvingObject<? extends Condition> petriGame, Map<String, Integer> max) {
+	public NonDeterministicUnfolder(QbfSolvingObject<? extends Condition<?>> petriGame, Map<String, Integer> max) {
 		super(petriGame, max);
 	}
 	

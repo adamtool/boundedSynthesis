@@ -24,7 +24,7 @@ import uniolunisaar.adam.ds.petrinet.objectives.Condition;
 
 public class NewDeterministicUnfolder extends Unfolder {
 
-	public NewDeterministicUnfolder(QbfSolvingObject<? extends Condition> petriGame, Map<String, Integer> max) {
+	public NewDeterministicUnfolder(QbfSolvingObject<? extends Condition<?>> petriGame, Map<String, Integer> max) {
 		super(petriGame, max);
 	}
 

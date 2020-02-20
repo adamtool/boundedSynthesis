@@ -30,13 +30,13 @@ import uniolunisaar.adam.exceptions.pg.NotSupportedGameException;
 
 public class FiniteDeterministicUnfolder extends Unfolder {
 	
-	private QbfSolvingObject<? extends Condition> originalSolvingObj;
+	private QbfSolvingObject<? extends Condition<?>> originalSolvingObj;
 	private PetriGame originalGame;
 	
 	public Queue<Pair<Marking, Integer>> queue = new LinkedList<>();
 	public int counter = 0;
 	
-	public FiniteDeterministicUnfolder(QbfSolvingObject<? extends Condition> petriGame, Map<String, Integer> max) throws NotSupportedGameException {
+	public FiniteDeterministicUnfolder(QbfSolvingObject<? extends Condition<?>> petriGame, Map<String, Integer> max) throws NotSupportedGameException {
 		super(petriGame, max);
 		
 		originalSolvingObj = petriGame.getCopy();

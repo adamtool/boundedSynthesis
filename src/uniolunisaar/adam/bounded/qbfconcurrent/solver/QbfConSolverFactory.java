@@ -7,7 +7,6 @@ import uniolunisaar.adam.ds.petrinet.objectives.Buchi;
 import uniolunisaar.adam.ds.petrinet.objectives.Reachability;
 import uniolunisaar.adam.ds.petrinet.objectives.Safety;
 import uniolunisaar.adam.ds.petrinet.objectives.Condition;
-import uniolunisaar.adam.ds.solver.SolvingObject;
 import uniolunisaar.adam.exceptions.pg.NotSupportedGameException;
 import uniolunisaar.adam.logic.pg.solver.LLSolverFactory;
 
@@ -28,7 +27,7 @@ public class QbfConSolverFactory extends LLSolverFactory<QbfConSolverOptions, Qb
     }
 
     @Override
-    protected <W extends Condition<W>> SolvingObject<PetriGame, W> createSolvingObject(PetriGame game, W winCon) throws NotSupportedGameException {
+    protected <W extends Condition<W>> QbfSolvingObject<W> createSolvingObject(PetriGame game, W winCon) throws NotSupportedGameException {
         try {
             return new QbfSolvingObject<>(game, winCon, false);
         } catch (SolvingException ex) {
@@ -37,32 +36,32 @@ public class QbfConSolverFactory extends LLSolverFactory<QbfConSolverOptions, Qb
     }
 
     @Override
-    protected QbfConSolver<? extends Condition<?>> getESafetySolver(SolvingObject<PetriGame, Safety> solverObject, QbfConSolverOptions options) throws SolvingException {
+    protected QbfConSolver<Safety> getESafetySolver(PetriGame game, Safety con, QbfConSolverOptions options) throws SolvingException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    protected QbfConSolver<? extends Condition<?>> getASafetySolver(SolvingObject<PetriGame, Safety> solverObject, QbfConSolverOptions options) throws SolvingException {
-        return new QbfConSafetySolver((QbfSolvingObject<Safety>) solverObject, options);
+    protected QbfConSolver<Safety> getASafetySolver(PetriGame game, Safety con, QbfConSolverOptions options) throws SolvingException {
+        return new QbfConSafetySolver(createSolvingObject(game, con), options);
     }
 
     @Override
-    protected QbfConSolver<? extends Condition<?>> getEReachabilitySolver(SolvingObject<PetriGame, Reachability> solverObject, QbfConSolverOptions options) throws SolvingException {
+    protected QbfConSolver<Reachability> getEReachabilitySolver(PetriGame game, Reachability con, QbfConSolverOptions options) throws SolvingException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    protected QbfConSolver<? extends Condition<?>> getAReachabilitySolver(SolvingObject<PetriGame, Reachability> solverObject, QbfConSolverOptions options) throws SolvingException {
+    protected QbfConSolver<Reachability> getAReachabilitySolver(PetriGame game, Reachability con, QbfConSolverOptions options) throws SolvingException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    protected QbfConSolver<? extends Condition<?>> getEBuchiSolver(SolvingObject<PetriGame, Buchi> solverObject, QbfConSolverOptions options) throws SolvingException {
+    protected QbfConSolver<Buchi> getEBuchiSolver(PetriGame game, Buchi con, QbfConSolverOptions options) throws SolvingException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    protected QbfConSolver<? extends Condition<?>> getABuchiSolver(SolvingObject<PetriGame, Buchi> solverObject, QbfConSolverOptions options) throws SolvingException {
+    protected QbfConSolver<Buchi> getABuchiSolver(PetriGame game, Buchi con, QbfConSolverOptions options) throws SolvingException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

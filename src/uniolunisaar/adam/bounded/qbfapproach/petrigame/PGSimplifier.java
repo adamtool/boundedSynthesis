@@ -26,12 +26,12 @@ import uniolunisaar.adam.ds.petrinet.objectives.Condition;
  */
 public class PGSimplifier {
 	
-	private QbfSolvingObject<? extends Condition> solvingObject;
+	private QbfSolvingObject<? extends Condition<?>> solvingObject;
 	private boolean removeAdditionalPlaces;
 	private boolean removeUnreachablePlaces;
 	private boolean trueConcurrent;
 	
-	public PGSimplifier(QbfSolvingObject<? extends Condition> solvingObject, boolean removeAdditionalPlaces, boolean removeUnreachablePlaces, boolean trueConcurrent) {
+	public PGSimplifier(QbfSolvingObject<? extends Condition<?>> solvingObject, boolean removeAdditionalPlaces, boolean removeUnreachablePlaces, boolean trueConcurrent) {
 		this.solvingObject = solvingObject;
 		this.removeAdditionalPlaces = removeAdditionalPlaces;
 		this.removeUnreachablePlaces = removeUnreachablePlaces;

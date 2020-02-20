@@ -29,7 +29,7 @@ import uniolunisaar.adam.exceptions.pg.NoSuitableDistributionFoundException;
 
 public class McMillianUnfolder extends Unfolder {
 	// unfolded result Petri game and Petri net
-	private QbfSolvingObject<? extends Condition> originalSolvingObject;
+	private QbfSolvingObject<? extends Condition<?>> originalSolvingObject;
 	private PetriGame originalGame;
 
 	Set<Pair<Transition, Set<Place>>> closed = new HashSet<>();
@@ -41,7 +41,7 @@ public class McMillianUnfolder extends Unfolder {
 	
 	Map<Set<Place>, Set<Place>> uniqueCuts = new HashMap<>(); // marking in original game to marking in unfolding
 
-	public McMillianUnfolder(QbfSolvingObject<? extends Condition> petriGame, Map<String, Integer> max) {
+	public McMillianUnfolder(QbfSolvingObject<? extends Condition<?>> petriGame, Map<String, Integer> max) {
 		super(petriGame, max);
 
 		originalSolvingObject = petriGame.getCopy();

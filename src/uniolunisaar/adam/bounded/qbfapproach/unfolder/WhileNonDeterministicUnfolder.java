@@ -27,7 +27,7 @@ import uniolunisaar.adam.ds.petrinet.objectives.Condition;
 public class WhileNonDeterministicUnfolder extends NonDeterministicUnfolder {
 	private Queue<String> placesToUnfold;
 
-	public WhileNonDeterministicUnfolder(QbfSolvingObject<? extends Condition> QBFPetriGame, Map<String, Integer> max) {
+	public WhileNonDeterministicUnfolder(QbfSolvingObject<? extends Condition<?>> QBFPetriGame, Map<String, Integer> max) {
 		super(QBFPetriGame, max);
 	}
 
