@@ -40,7 +40,7 @@ public abstract class EmptyTest {
 		}
 	}
  
-	protected void testSolver (Solver<PetriGame,?,?> sol, int n, int b, boolean result) throws Exception {
+	protected void testSolver (Solver<PetriGame,?,?,?> sol, int n, int b, boolean result) throws Exception {
 		PGTools.savePG2PDF("originalGame", sol.getGame(), false);
 		PetriGame originalGame = new PetriGame(sol.getGame());		// true copy of original game to check strategy for correctness later
         sol.existsWinningStrategy();								// solve game
