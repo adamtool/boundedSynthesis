@@ -16,16 +16,16 @@ public class BurglarTestSafety extends EmptyTest {
 
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testSecSys() throws Exception {
-		if (trueconcurrent) {
+		if (QbfControl.trueConcurrent) {
 			oneTest(2, 5, 2, false);
 			oneTest(2, 6, 2, true);
-			if (!fast) {
+			if (!QbfControl.fastTests) {
 				oneTest(3, 6, 2, true);
 			}
 		} else {
 			oneTest(2, 6, 2, false);
 			oneTest(2, 7, 2, true);
-			if (!fast) {
+			if (!QbfControl.fastTests) {
 				oneTest(3, 10, 2, true);
 			}
 		}

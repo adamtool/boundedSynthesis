@@ -1,7 +1,5 @@
 package uniolunisaar.adam.bounded.qbfapproach.unfolder;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -14,13 +12,10 @@ import org.antlr.v4.runtime.misc.Triple;
 import uniol.apt.adt.pn.Marking;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
-import uniol.apt.analysis.exception.UnboundedException;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QbfSolvingObject;
 import uniolunisaar.adam.ds.objectives.Condition;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.exceptions.pnwt.NetNotSafeException;
-import uniolunisaar.adam.exceptions.pg.NoSuitableDistributionFoundException;
 
 /**
  * 
@@ -30,8 +25,8 @@ import uniolunisaar.adam.exceptions.pg.NoSuitableDistributionFoundException;
 
 public class McMillianUnfolder extends Unfolder {
 	// unfolded result Petri game and Petri net
-	private QbfSolvingObject<? extends Condition<?>> originalSolvingObject;
-	private PetriGame originalGame;
+	private final QbfSolvingObject<? extends Condition<?>> originalSolvingObject;
+	private final PetriGame originalGame;
 
 	private Set<Pair<Transition, Set<Place>>> closed = new HashSet<>(); //add transition only once
 	//private Set<Set<Place>> cutOffOriginal = new HashSet<>(); // cutOff based on markings in the original net
@@ -67,7 +62,7 @@ public class McMillianUnfolder extends Unfolder {
 	}
 
 	@Override
-	public void createUnfolding() throws NetNotSafeException, NoSuitableDistributionFoundException, UnboundedException, FileNotFoundException {
+	public void createUnfolding() {
 		// marking ---transition--> extension
 		Queue<Triple<Set<Place>, Transition, Set<Place>>> possibleExtensions = possExt(pn.getPlaces());
 		while (!possibleExtensions.isEmpty()) {

@@ -16,16 +16,16 @@ public class EBTest extends EmptyTest {
 
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testEB() throws Exception {
-		if (trueconcurrent) {
+		if (QbfControl.trueConcurrent) {
 			// TODO strategies are not accepted, same problem as in safetyTest with DLA?
 			//oneTest(1, 1, 9, 2);
-			if (!fast) {
+			if (!QbfControl.fastTests) {
 				//oneTest(0, 2, 9, 2);
 				//oneTest(2, 0, 9, 2);
 			}
 		} else {
 			oneTest(1, 1, 13, 2);
-			if (!fast) {
+			if (!QbfControl.fastTests) {
 				oneTest(0, 2, 13, 2);
 				oneTest(2, 0, 13, 2);
 			}

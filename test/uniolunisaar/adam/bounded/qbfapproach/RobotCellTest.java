@@ -19,10 +19,10 @@ public class RobotCellTest extends EmptyTest {
 	public void testRobotCell() throws Exception {// constant larger +2
 		// 2/3/4/5/6/7/8/9 0 3 0, 2/3/4/5/6/7 1 5 0, 2/3/4/5 2 7 0, 2/3 3 9 0, 2 4 11 0, 2 5 13 0
 		int max = 6;
-		if (fast) {max = 4;}
+		if (QbfControl.fastTests) {max = 4;}
 		int n = 5;		// 5 7 9
 		int increase = 2;
-		if (trueconcurrent) {
+		if (QbfControl.trueConcurrent) {
 			n = 4;
 			increase = 2;
 		} // 3 4 5

@@ -19,14 +19,14 @@ public class CMTest extends EmptyTest { // Concurrent Machines / WF
 		oneTest(2, 1, 6, 3, true);
 		oneTest(3, 1, 6, 3, true);
 		oneTest(4, 1, 6, 3, true);
-		if (trueconcurrent) {
+		if (QbfControl.trueConcurrent) {
 			oneTest(3, 2, 7, 3, true);
-			if (!fast) {
+			if (!QbfControl.fastTests) {
 				oneTest(4, 2, 7, 3, true);
 			}
 		} else {
 			oneTest(3, 2, 8, 3, true);
-			if (!fast) {
+			if (!QbfControl.fastTests) {
 				oneTest(4, 2, 8, 3, true);
 			}
 		}

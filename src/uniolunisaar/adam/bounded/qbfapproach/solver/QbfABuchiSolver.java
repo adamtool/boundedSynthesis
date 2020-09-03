@@ -26,11 +26,11 @@ import uniolunisaar.adam.ds.objectives.Buchi;
 
 public class QbfABuchiSolver extends QbfFlowChainSolver<Buchi> {
 
-	private int[] noFlowChainEnded;
-	private int[] goodSimultan;
-	private int[] buchiPlaces;
-	private int[] reset;
-	private int[] resetChoice;
+	private final int[] noFlowChainEnded;
+	private final int[] goodSimultan;
+	private final int[] buchiPlaces;
+	private final int[] reset;
+	private final int[] resetChoice;
 	private int bl; // buchi loop
 
 	public QbfABuchiSolver(QbfSolvingObject<Buchi> solObj, QbfSolverOptions options) throws SolvingException {
@@ -209,7 +209,7 @@ public class QbfABuchiSolver extends QbfFlowChainSolver<Buchi> {
 		}
 	}
 
-	protected String[] getBuchiPlaces() throws IOException {
+	protected String[] getBuchiPlaces() {
 		String[] buchi = new String[getSolvingObject().getN() + 1];
 		Set<Integer> and = new HashSet<>();
 		for (int i = 1; i < getSolvingObject().getN(); ++i) {

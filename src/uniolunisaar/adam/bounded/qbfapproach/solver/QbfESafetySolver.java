@@ -27,8 +27,8 @@ import uniolunisaar.adam.ds.objectives.Safety;
 
 public class QbfESafetySolver extends QbfFlowChainSolver<Safety> {
 
-	private int[] bad;
-	private int[] simultan;
+	private final int[] bad;
+	private final int[] simultan;
 	private int sFlCE;
 
 	public QbfESafetySolver(QbfSolvingObject<Safety> solObj, QbfSolverOptions options) throws SolvingException {
@@ -137,7 +137,7 @@ public class QbfESafetySolver extends QbfFlowChainSolver<Safety> {
 		}
 	}
 
-	protected String[] getNoBadPlaces() throws IOException {
+	protected String[] getNoBadPlaces() {
 		String[] nobadplaces = new String[getSolvingObject().getN() + 1];
 		Set<Integer> or = new HashSet<>();
 		for (int i = 1; i <= getSolvingObject().getN(); ++i) {

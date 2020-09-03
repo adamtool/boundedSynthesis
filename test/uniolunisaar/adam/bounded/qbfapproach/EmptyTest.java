@@ -18,11 +18,8 @@ import uniolunisaar.adam.util.PGTools;
 
 public abstract class EmptyTest {
 
-	protected boolean trueconcurrent = false;
-	protected static boolean fast = true;
-
 	protected void testPath (String path, int n, int b, boolean result) throws Exception {
-		if (trueconcurrent) {
+		if (QbfControl.trueConcurrent) {
 			testSolver(QbfConSolverFactory.getInstance().getSolver(path, new QbfConSolverOptions(n, b)), n, b, result);
 		} else {
 			testSolver(QbfSolverFactory.getInstance().getSolver(path, new QbfSolverOptions(n, b)), n, b, result);
@@ -31,7 +28,7 @@ public abstract class EmptyTest {
 	
 	protected void testGame (PetriGame pg, int n, int b, boolean result) throws Exception {            
                
-		if (trueconcurrent) { 
+		if (QbfControl.trueConcurrent) {
                         QbfConSolverOptions opts = new QbfConSolverOptions(n,b, false);
 			testSolver(QbfConSolverFactory.getInstance().getSolver(pg, opts), n, b, result);
 		} else { 

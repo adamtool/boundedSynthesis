@@ -33,7 +33,7 @@ public abstract class Unfolder {
 
 	// how much unfolding of places was done and how much can still be done
 	protected Map<String, Integer> current = new HashMap<>();
-	protected Map<String, Integer> limit = null;
+	protected Map<String, Integer> limit;
 
 	// NewDeterministicUnfolder also uses this
 	public Map<Place, Set<Transition>> systemHasToDecideForAtLeastOne = new HashMap<>(); // Map for QCIRbuilder to include additional information
@@ -41,6 +41,7 @@ public abstract class Unfolder {
 	// Counter to make copied transitions unique, places use numbers from current
 	protected Map<String, Integer> copycounter_map = new HashMap<>();
 
+	// TODO explain
 	protected Set<String> closed = new HashSet<>();
 
 	public Unfolder(QbfSolvingObject<? extends Condition<?>> petriGame, Map<String, Integer> max) {
@@ -56,9 +57,7 @@ public abstract class Unfolder {
 
 		if (limit != null) {
 			for (Place p : pn.getPlaces()) {
-				if (limit.get(p.getId()) == null) {
-					limit.put(p.getId(), 0);
-				}
+				limit.putIfAbsent(p.getId(), 0);
 			}
 		} else {
 			limit = new HashMap<>();
@@ -90,7 +89,7 @@ public abstract class Unfolder {
 		while ((p = queue.poll()) != null) {
 			Set<Place> m = p.getFirst();
 			i = p.getSecond();
-			//if (closed.contains(m)) {		// TODO this was called fix for Niklas but prevents unfolding.... changed to only irterated over transitions once, not all posttransitions of all places
+			//if (closed.contains(m)) {		// TODO this was called fix for Niklas but prevents unfolding.... changed to only iterated over transitions once, not all posttransitions of all places
 				closed.add(new HashSet<>(m));
 				for (Transition t : pg.getGame().getTransitions()) {
 					if (m.containsAll(t.getPreset())) {
@@ -143,21 +142,20 @@ public abstract class Unfolder {
 		// TODO additional test 1 & 2 look similar and probably can be combined
 
 		// **** ADDITIONAL ADD TEST 1 ****
-		// erkennt wenn lokale Transitionen Historie transportieren da sie unfoldet
-		// wurden:
-		// wenn die selbe LOKALE transition (gleiche truncated ID) von 2
-		// unterschiedlichen
-		// UNFOLDETEN plätzen kommt (gleiche truncated ID), dann doch unfold, wenn
-		// partner noch nicht geaddet (EGAL ob env oder sys)
+		// recognizes when a local transition transports history because the
+		// transition was unfolded:
+		// when the same LOCAL transition (same truncated ID) comes from two
+		// different UNFOLDED places (same truncated ID), then DO unfold,
+		// when partner is not added (REGARDLESS whether env or sys)
+		//
 		// second iteration says that this works as intended
 		for (Transition t1 : p.getPreset()) {
-			if (!t1.getId().equals(getTruncatedId(t1.getId()))) { // unfoldete Transition t1
+			if (!t1.getId().equals(getTruncatedId(t1.getId()))) { // unfolded transition t1
 				for (Transition t2 : p.getPreset()) { // search for partner
-					if (getTruncatedId(t1.getId()).equals(getTruncatedId(t2.getId()))) { // LOKALER partner
+					if (getTruncatedId(t1.getId()).equals(getTruncatedId(t2.getId()))) { // LOCAL partner
 						if (t1.getPreset().size() == 1 && t2.getPreset().size() == 1 && // local transition
 								t2.getPostset().size() == 1 && t2.getPostset().size() == 1) {
-							if (!t1.getPreset().toArray()[0].equals(t2.getPreset().toArray()[0])) {// from DIFFERENT
-																									// places
+							if (!t1.getPreset().toArray()[0].equals(t2.getPreset().toArray()[0])) {// from DIFFERENT places
 								p_originalPreset.add(t1);
 								break;
 							}
@@ -168,11 +166,10 @@ public abstract class Unfolder {
 		}
 
 		// **** ADDITIONAL ADD TEST 2 ****
-		// soll erkennen wenn von lokaler transition transportierte Historie von system
-		// genutzt wird
+		// should recognize when history transported by local transition can be used by sys
 		Set<Transition> already_added = new HashSet<>();
 		for (Transition t1 : p.getPreset()) {
-			if (!t1.getId().equals(getTruncatedId(t1.getId()))) { // unfoldete Transition
+			if (!t1.getId().equals(getTruncatedId(t1.getId()))) { // unfolded transition
 				for (Transition t2 : p.getPreset()) {
 					if (getTruncatedId(t1.getId()).equals(getTruncatedId(t2.getId()))) { // original partner
 						if (!already_added.contains(t1) && !already_added.contains(t2)) {
@@ -191,13 +188,12 @@ public abstract class Unfolder {
 		}
 
 		// **** ADDITIONAL ADD TEST 3 ****
-		// soll erkennen wenn sync-Transitionen (mit Einschränkung zum nicht unendlich
-		// often Feuern)
-		// Historie transportieren, test basiert auf original transition
-		// scheint evtl den Sinn von originalPreset zu neglecten
+		// should recognize when sync-transition (with restriction to not fire infinitely often)
+		// transports history, test is based on original transition
+		// TODO maybe neglects the reasoning behind originalPreset
 		for (Transition t : p.getPreset()) {
-			if (!t.getId().equals(getTruncatedId(t.getId()))) { // unfoldete Transition
-				if (t.getPreset().size() == t.getPostset().size() + 1) { // TODO 1 hardcoden oder mehr erlauben
+			if (!t.getId().equals(getTruncatedId(t.getId()))) { // unfolded transition
+				if (t.getPreset().size() == t.getPostset().size() + 1) { // TODO hardcode 1 or allow more
 					String tTruncID = getTruncatedId(t.getId());
 					Transition truncT = pn.getTransition(tTruncID);
 					boolean check = true;
@@ -230,8 +226,10 @@ public abstract class Unfolder {
 				// system
 				boolean sysMatch = false;
 				for (Place p2 : t2.getPreset()) {
-					if (p1.equals(p2))
+					if (p1.equals(p2)) {
 						sysMatch = true;
+						break;
+					}
 				}
 				if (!sysMatch) {
 					return false;
@@ -351,11 +349,10 @@ public abstract class Unfolder {
 	}
 
 	protected boolean isEnvTransition(Transition t) {
-		boolean result = true;
 		for (Place p : t.getPreset()) {
 			if (!pg.getGame().getEnvPlaces().contains(p))
 				return false;
 		}
-		return result;
+		return true;
 	}
 }

@@ -49,10 +49,10 @@ public class QbfSolvingObject<W extends Condition<W>> extends SolvingObject<Petr
         if (getGame().getTransitions().contains(t)) {
             Set<Place> followingPlaces = new HashSet<>(t.getPostset());
             getGame().removeTransition(t);
-            Marking inintialMarking = getGame().getInitialMarking();
+            Marking initialMarking = getGame().getInitialMarking();
             for (Place p : followingPlaces) {
                 // remove place p if all transition leading to it are removed or all incoming transitions are also outgoing from p but don't remove place if part of initial marking
-                if (getGame().getPlaces().contains(p) && inintialMarking.getToken(p).getValue() == 0 && (p.getPreset().isEmpty() || p.getPostset().containsAll(p.getPreset()))) {
+                if (getGame().getPlaces().contains(p) && initialMarking.getToken(p).getValue() == 0 && (p.getPreset().isEmpty() || p.getPostset().containsAll(p.getPreset()))) {
                     removePlaceRecursively(p);
                 }
             }
@@ -108,7 +108,6 @@ public class QbfSolvingObject<W extends Condition<W>> extends SolvingObject<Petr
         return getGame().hasExtension(AdamExtensions.b.name());
     }
 
-    @SuppressWarnings("unchecked")
 	@Override
     public QbfSolvingObject<W> getCopy() {
     	QbfSolvingObject<W> result = null;

@@ -19,7 +19,7 @@ public class JPTest extends EmptyTest { // Job Processing
 		oneTest(2, 7, 3, true);
 		oneTest(3, 8, 3, true);
 		oneTest(4, 9, 3, true);
-		if (!fast) {
+		if (!QbfControl.fastTests) {
 			oneTest(5, 10, 3, true);
 		}
 	}

@@ -14,8 +14,7 @@ import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.ds.objectives.Condition;
 
 /**
- * TODO removal is based on n, can shorten strategy wrongly for too short n and
- * wrong strategy
+ * TODO removal is based on n, can shorten strategy wrongly for too short n and wrong strategy
  * 
  * This class removes transitions and following places according to the
  * decisions of the WINNING strategy and the simulation length. Unreachable
@@ -26,10 +25,10 @@ import uniolunisaar.adam.ds.objectives.Condition;
  */
 public class PGSimplifier {
 	
-	private QbfSolvingObject<? extends Condition<?>> solvingObject;
-	private boolean removeAdditionalPlaces;
-	private boolean removeUnreachablePlaces;
-	private boolean trueConcurrent;
+	private final QbfSolvingObject<? extends Condition<?>> solvingObject;
+	private final boolean removeAdditionalPlaces;
+	private final boolean removeUnreachablePlaces;
+	private final boolean trueConcurrent;
 	
 	public PGSimplifier(QbfSolvingObject<? extends Condition<?>> solvingObject, boolean removeAdditionalPlaces, boolean removeUnreachablePlaces, boolean trueConcurrent) {
 		this.solvingObject = solvingObject;
@@ -115,8 +114,9 @@ public class PGSimplifier {
 	/**
 	 * returns null if no transition existent, needed to fire all transitions in the true concurrent case
 	 * 
-	 * @param solvingObject
-	 * @param marking
+	 * @param start
+	 * @param current
+	 * @param tctransitions
 	 * @return
 	 */
 	
@@ -133,7 +133,8 @@ public class PGSimplifier {
 	/**
 	 * remove unreachable places and transitions as well as additional system places if wanted
 	 * 
-	 * @param pg
+	 * @param firedTransitions
+	 * @param reachedPlaces
 	 */
 	
 	private void removal(Set<Transition> firedTransitions, Set<Place> reachedPlaces) {
@@ -158,8 +159,6 @@ public class PGSimplifier {
 	
 	/**
 	 * Additional system places from unfolder are removed including their flow.
-	 * 
-	 * @param pg
 	 */
 	private void removeAS() {
 		Set<Place> places = new HashSet<>(solvingObject.getGame().getPlaces());
@@ -179,8 +178,7 @@ public class PGSimplifier {
 	 * For a given Petri game and option that unreachable
 	 * places are removed, places with token from marking are added to the set of
 	 * reached places.
-	 * 
-	 * @param pg
+	 *
 	 * @param marking
 	 * @param reachedPlaces
 	 */

@@ -47,10 +47,7 @@ public abstract class NonDeterministicUnfolder extends Unfolder {
 
 		// every outgoing transition is necessary
 		// originalPOSTset
-		Set<Transition> p_originalPostset = new HashSet<>();
-		for (Transition t : p.getPostset()) {
-			p_originalPostset.add(t);
-		}
+		Set<Transition> p_originalPostset = new HashSet<>(p.getPostset());
 
 		// decide unfolding of place
 		return unfoldPlace(p, p_id, p_originalPreset, p_originalPostset);

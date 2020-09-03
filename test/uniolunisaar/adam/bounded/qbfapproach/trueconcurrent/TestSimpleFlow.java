@@ -31,10 +31,10 @@ public class TestSimpleFlow extends EmptyTestEnvDec {
 	
 	@Test(timeOut = 1800 * 1000)
 	private void oneTest() throws Exception {
-		//testPath("examples/safety/nm/testStepNet.apt", 4, 1, true);
-		//testPath("examples/safety/nm/trueconcurrent.apt",10,1,true);
-		//testPath("examples/safety/nm/sccbenchmark.apt",20,0,true);
-		testPath("examples/safety/boundedunfolding/causalmemory.apt", 10, 2, false);
+		//testPath("examples/synthesis/forallsafety/nm/testStepNet.apt", 4, 1, true);
+		//testPath("examples/synthesis/forallsafety/nm/trueconcurrent.apt",10,1,true);
+		//testPath("examples/synthesis/forallsafety/nm/sccbenchmark.apt",20,0,true);
+		testPath("examples/synthesis/forallsafety/boundedunfolding/causalmemory.apt", 10, 2, false);
 		//PetriGame pg = ManufactorySystem.generate(a, true, true, true);
 		//testGame(pg, n, b, result);
 	}

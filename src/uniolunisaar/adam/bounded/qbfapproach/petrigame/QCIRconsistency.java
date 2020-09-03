@@ -25,7 +25,7 @@ public class QCIRconsistency {
 		int numberAndTrue = 0;
 		int numberOrFalse = 0;
 		BufferedReader reader = new BufferedReader(new FileReader(qcirFile));
-		String qcirString = "";
+		String qcirString;
 		try {
 			StringBuilder builder = new StringBuilder();
 			String line = reader.readLine();

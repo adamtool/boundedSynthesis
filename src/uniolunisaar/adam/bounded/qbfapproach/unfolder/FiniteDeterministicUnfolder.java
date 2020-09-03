@@ -1,6 +1,5 @@
 package uniolunisaar.adam.bounded.qbfapproach.unfolder;
 
-import java.io.FileNotFoundException;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
@@ -10,13 +9,10 @@ import java.util.Set;
 import uniol.apt.adt.pn.Marking;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
-import uniol.apt.analysis.exception.UnboundedException;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QbfSolvingObject;
 import uniolunisaar.adam.ds.objectives.Condition;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.exceptions.pg.NoSuitableDistributionFoundException;
-import uniolunisaar.adam.exceptions.pg.NotSupportedGameException;
 
 /**
  * 
@@ -29,16 +25,16 @@ import uniolunisaar.adam.exceptions.pg.NotSupportedGameException;
  */
 
 public class FiniteDeterministicUnfolder extends Unfolder {
-	
-	private QbfSolvingObject<? extends Condition<?>> originalSolvingObj;
-	private PetriGame originalGame;
+
+	private final QbfSolvingObject<? extends Condition<?>> originalSolvingObj;
+	private final PetriGame originalGame;
 	
 	public Queue<Pair<Marking, Integer>> queue = new LinkedList<>();
 	public int counter = 0;
 	
-	public FiniteDeterministicUnfolder(QbfSolvingObject<? extends Condition<?>> petriGame, Map<String, Integer> max) throws NotSupportedGameException {
+	public FiniteDeterministicUnfolder(QbfSolvingObject<? extends Condition<?>> petriGame, Map<String, Integer> max) {
 		super(petriGame, max);
-		
+
 		originalSolvingObj = petriGame.getCopy();
 		originalGame = originalSolvingObj.getGame();
 		
@@ -69,7 +65,7 @@ public class FiniteDeterministicUnfolder extends Unfolder {
 	}
 
 	@Override
-	protected void createUnfolding() throws NoSuitableDistributionFoundException, UnboundedException, FileNotFoundException {
+	protected void createUnfolding() {
 		Pair<Marking, Integer> currentPair;
 		while ((currentPair = queue.poll()) != null){
 			Marking marking = currentPair.getFirst();
@@ -94,7 +90,7 @@ public class FiniteDeterministicUnfolder extends Unfolder {
 							Marking nextMarking = new Marking(marking);
 							nextMarking.fire(post);
 							if (i + 1 <= pg.getN()) {
-								queue.add(new Pair<Marking, Integer>(nextMarking, i + 1));
+								queue.add(new Pair<>(nextMarking, i + 1));
 							}
 							fired = true;
 						}
@@ -128,7 +124,7 @@ public class FiniteDeterministicUnfolder extends Unfolder {
 						Marking nextMarking = new Marking(marking);
 						nextMarking.fire(newT);
 						if (i + 1 <= pg.getN()) {
-							queue.add(new Pair<Marking, Integer>(nextMarking, i + 1));
+							queue.add(new Pair<>(nextMarking, i + 1));
 						}
 					}
 				}

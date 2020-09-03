@@ -1,6 +1,5 @@
 package uniolunisaar.adam.bounded.qbfapproach.unfolder;
 
-import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -9,11 +8,8 @@ import java.util.Set;
 
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
-import uniol.apt.analysis.exception.UnboundedException;
 import uniolunisaar.adam.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QbfSolvingObject;
-import uniolunisaar.adam.exceptions.pnwt.NetNotSafeException;
-import uniolunisaar.adam.exceptions.pg.NoSuitableDistributionFoundException;
 import uniolunisaar.adam.ds.objectives.Condition;
 
 /**
@@ -29,7 +25,7 @@ public class NewDeterministicUnfolder extends Unfolder {
 	}
 
 	@Override
-	public void createUnfolding() throws NetNotSafeException, NoSuitableDistributionFoundException, UnboundedException, FileNotFoundException {
+	public void createUnfolding() {
 		Map<String, LinkedList<Integer>> orderOfUnfolding = calculateOrderOfUnfoldingBasedOnGameSimulation();
 		Map<Place, Set<Transition>> originalPresetMap = new HashMap<>();
 		for (int i = 2; i <= pg.getN(); ++i) {

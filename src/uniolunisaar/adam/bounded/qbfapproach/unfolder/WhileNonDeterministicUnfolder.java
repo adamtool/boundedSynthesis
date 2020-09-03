@@ -1,6 +1,5 @@
 package uniolunisaar.adam.bounded.qbfapproach.unfolder;
 
-import java.io.FileNotFoundException;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
@@ -10,10 +9,7 @@ import java.util.Set;
 import uniol.apt.adt.pn.Marking;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
-import uniol.apt.analysis.exception.UnboundedException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QbfSolvingObject;
-import uniolunisaar.adam.exceptions.pnwt.NetNotSafeException;
-import uniolunisaar.adam.exceptions.pg.NoSuitableDistributionFoundException;
 import uniolunisaar.adam.ds.objectives.Condition;
 
 /**
@@ -32,7 +28,7 @@ public class WhileNonDeterministicUnfolder extends NonDeterministicUnfolder {
 	}
 
 	@Override
-	protected void createUnfolding() throws NetNotSafeException, NoSuitableDistributionFoundException, UnboundedException, FileNotFoundException {
+	protected void createUnfolding() {
 		// Initialize queue
 		placesToUnfold = initializeQueue();
 		// begin unfolding
@@ -46,7 +42,7 @@ public class WhileNonDeterministicUnfolder extends NonDeterministicUnfolder {
 		addAdditionalSystemPlaces();
 	}
 
-	private Queue<String> initializeQueue() throws UnboundedException, NetNotSafeException {
+	private Queue<String> initializeQueue() {
 		// THEORY: 2 transitions from only (sich gegenseitig ausschließenden) sys places to the same place do not require unfolding TODO das hier prüfen
 		Queue<String> result = new LinkedList<>(); // fancy
 		Marking in = pn.getInitialMarking();

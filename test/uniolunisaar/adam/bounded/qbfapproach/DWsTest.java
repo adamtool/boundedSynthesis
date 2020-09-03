@@ -19,7 +19,7 @@ public class DWsTest extends EmptyTest { // Document Workflow / DW
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testDWs() throws Exception {
 		int max = 8;
-		if (fast) {max = 5;}
+		if (QbfControl.fastTests) {max = 5;}
 		int j = 5; 	// j = 4 -> UNSAT; j = 5 -> SAT
 		for (int i = 1; i <= max; ++i) {
 			oneTestTrue(i, j, 0);

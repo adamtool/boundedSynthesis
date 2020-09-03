@@ -18,10 +18,10 @@ public class PhilosopherTest extends EmptyTest {
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testPhilosopher() throws Exception {
 		int max = 12;
-		if (fast) {max = 8;}
+		if (QbfControl.fastTests) {max = 8;}
 		for (int i = 2; i <= max; ++i) {
 			PetriGame pg = Philosopher.generateGuided(i, true, true);
-			if (trueconcurrent) {
+			if (QbfControl.trueConcurrent) {
 				testGame(pg, 2, 0, false);
 				testGame(pg, 3, 0, true);
 			} else {

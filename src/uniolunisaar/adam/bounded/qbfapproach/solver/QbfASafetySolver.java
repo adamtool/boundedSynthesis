@@ -30,7 +30,7 @@ import uniolunisaar.adam.exceptions.pg.SolvingException;
 public class QbfASafetySolver extends QbfSolver<Safety> {
 
 	// variable to store keys of calculated components for later use (special to this winning condition)
-	private int[] bad;
+	private final int[] bad;
 
 	public QbfASafetySolver(QbfSolvingObject<Safety> solObj, QbfSolverOptions so) throws SolvingException {
 		super(solObj, so);

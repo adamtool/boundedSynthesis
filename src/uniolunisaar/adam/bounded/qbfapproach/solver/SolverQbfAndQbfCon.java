@@ -8,7 +8,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -77,7 +77,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition<W>, SOP extends Sol
 	protected Map<Integer, String> exists_transitions = new HashMap<>();
 	
 	// storing QBF result for strategy generation
-	protected String outputQBFsolver;
+	protected StringBuilder outputQBFsolver;
 	
 	// caches
 	protected Transition[] transitions;
@@ -86,7 +86,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition<W>, SOP extends Sol
 	// solving
 	protected BufferedWriter writer;
 	protected int variablesCounter = 1;
-	protected TObjectIntHashMap<String> numbersForVariables = new TObjectIntHashMap<String>(); // map for storing keys and the corresponding value
+	protected TObjectIntHashMap<String> numbersForVariables = new TObjectIntHashMap<>(); // map for storing keys and the corresponding value
 
 	protected Map<Place, Integer> placeKeys = new HashMap<>();
 	protected Map<Transition, Integer> transitionKeys = new HashMap<>();
@@ -96,7 +96,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition<W>, SOP extends Sol
 	protected int[][] terminatingSubFormulas; // (Transition, 1..n) -> terminatingID
 	
 	// StringBuilder
-	private StringBuilder sb = new StringBuilder();
+	private final StringBuilder sb = new StringBuilder();
 	
 	protected SolverQbfAndQbfCon(QbfSolvingObject<W> solverObject, SOP options) throws SolvingException {
 		super(solverObject, options);
@@ -104,21 +104,21 @@ public abstract class SolverQbfAndQbfCon<W extends Condition<W>, SOP extends Sol
 		originalSolvingObject = getSolvingObject().getCopy();
 		
 		// create random file in tmp directory which is deleted after solving it
-		String prefix = "";
+		StringBuilder prefix = new StringBuilder();
 		final Random rand = new Random();
 		final String lexicon = "ABCDEFGHIJKLMNOPQRSTUVWXYZ12345674890";
 		for (int i = 0; i < 20; ++i) {
-			prefix += lexicon.charAt(rand.nextInt(lexicon.length()));
+			prefix.append(lexicon.charAt(rand.nextInt(lexicon.length())));
 		}
 		try {
-			file = File.createTempFile(prefix, /* pn.getName() + */ ".qcir");
+			file = File.createTempFile(prefix.toString(), /* pn.getName() + */ ".qcir");
 		} catch (IOException e) {
 			throw new SolvingException("Generation of QBF-file failed.", e.fillInStackTrace());
 		}
 		file.deleteOnExit();
 		try {
-			writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "utf-8"));
-		} catch (FileNotFoundException | UnsupportedEncodingException e) {
+			writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8));
+		} catch (FileNotFoundException e) {
 			throw new SolvingException("Writing of QBF-file failed.", e.fillInStackTrace());
 		}
 	}
@@ -433,7 +433,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition<W>, SOP extends Sol
 	}
 	
 	protected int getVarNr(String id, boolean extraCheck) {
-		Integer ret = numbersForVariables.get(id);
+		int ret = numbersForVariables.get(id);
 		if (ret != numbersForVariables.getNoEntryValue()) {
 			return ret;
 		} else if (extraCheck) {
@@ -444,7 +444,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition<W>, SOP extends Sol
 	}
 
 	protected Pair<Boolean, Integer> getVarNrWithResult(String id) {
-		Integer ret = numbersForVariables.get(id);
+		int ret = numbersForVariables.get(id);
 		if (ret != numbersForVariables.getNoEntryValue()) {
 			return new Pair<>(false, ret);
 		} else {
@@ -489,7 +489,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition<W>, SOP extends Sol
 	protected String writeOr(TIntHashSet input) {
 		sb.append("or(");
 		String delim = ""; // first element is added without ","
-		int n = 0;
+		int n;
 		for (TIntIterator i = input.iterator(); i.hasNext(); ) {
 			n = i.next();
 			sb.append(delim);
@@ -506,7 +506,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition<W>, SOP extends Sol
 	protected String writeAnd(TIntHashSet input) {
 		sb.append("and(");
 		String delim = ""; // first element is added without ","
-		int n = 0;
+		int n;
 		for (TIntIterator i = input.iterator(); i.hasNext(); ) {
 			n = i.next();
 			sb.append(delim);
@@ -613,7 +613,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition<W>, SOP extends Sol
 		sb.append(op);
 		sb.append("(");
 		String delim = ""; // first element is added without ","
-		int n = 0;
+		int n;
 		for (TIntIterator i = variables.iterator(); i.hasNext(); ) {
 			n = i.next();
 			sb.append(delim);
@@ -644,9 +644,10 @@ public abstract class SolverQbfAndQbfCon<W extends Condition<W>, SOP extends Sol
 			// Read caqe's output
 			BufferedReader inputReader = new BufferedReader(new InputStreamReader(pr.getInputStream()));
 			String line_read;
-			outputQBFsolver = "";
+			outputQBFsolver = new StringBuilder();
 			while ((line_read = inputReader.readLine()) != null) {
-				outputQBFsolver += line_read + "\n";
+				outputQBFsolver.append(line_read);
+				outputQBFsolver.append("\n");
 			}
 
 			exitcode = pr.waitFor();
@@ -693,7 +694,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition<W>, SOP extends Sol
 					}
 				}
 			}
-			
+
 			if (max <= 1) {
 				// no loop -> McMillianUnfolder
 				QbfControl.rebuildingUnfolder = true;
@@ -729,12 +730,12 @@ public abstract class SolverQbfAndQbfCon<W extends Condition<W>, SOP extends Sol
 	
 	protected PetriGame calculateStrategy(boolean trueConcurrent) throws NoStrategyExistentException, CalculationInterruptedException {
 		if (existsWinningStrategy()) {
-			for (String outputCAQE_line : outputQBFsolver.split("\n")) {
+			for (String outputCAQE_line : outputQBFsolver.toString().split("\n")) {
 				if (outputCAQE_line.startsWith("V")) {
 					String[] parts = outputCAQE_line.split(" ");
-					for (int i = 0; i < parts.length; ++i) {
-						if (!parts[i].equals("V")) {
-							int num = Integer.parseInt(parts[i]);
+					for (String part : parts) {
+						if (!part.equals("V")) {
+							int num = Integer.parseInt(part);
 							if (num > 0) {
 								// System.out.println("ALLOW " + num);
 							} else if (num < 0) {

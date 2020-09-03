@@ -28,7 +28,7 @@ public class SafetyTest extends EmptyTest {
 			oneTest("constructedExampleWithoutLoop/constructedExampleWithoutLoop", 4, 0, true);			// TODO loop despite name?
 			oneTest("ma_vsp/vsp_1_withBadPlaces", 3, 0, true);
 			int bound = 3;
-			if (trueconcurrent) bound = 2;
+			if (QbfControl.trueConcurrent) bound = 2;
 			oneTest("jhh/myexample7", bound, 0, false);
 			oneTest("jhh/myexample7", bound + 1, 0, true);
 		}
@@ -53,12 +53,12 @@ public class SafetyTest extends EmptyTest {
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testTrueConcurrent() throws Exception {
 		int bound = 3;
-		if (trueconcurrent) bound = 2;
+		if (QbfControl.trueConcurrent) bound = 2;
 		oneTest("deadlock/missDeadlock", bound, 0, false);
 		oneTest("deadlock/missDeadlock", bound + 1, 0, true);
 	}
 	
-	@Test(timeOut = 18000000 * 1000) // 30 min
+	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testGeneralExamples() throws Exception {
 		oneTest("boundedunfolding/txt2", 25, 3, true);
 		//oneTest("boundedunfolding/txt", 25, 3, true); //
@@ -130,7 +130,7 @@ public class SafetyTest extends EmptyTest {
 	}
 	
 	private void oneTest(String str, int n, int b, boolean result) throws Exception {
-		final String path = System.getProperty("examplesfolder") + "/safety/" + str + ".apt";
+		final String path = System.getProperty("examplesfolder") + "/synthesis/forallsafety/" + str + ".apt";
 		testPath(path, n, b, result);
 	}
 }

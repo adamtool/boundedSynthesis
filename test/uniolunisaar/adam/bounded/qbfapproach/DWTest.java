@@ -19,9 +19,9 @@ public class DWTest extends EmptyTest { // Document Workflow / DW
     public void testDW() throws Exception {
         int j = 8; // j = 7 -> UNSAT; j = 8 -> SAT
         int max = 8;
-        if (fast) {max = 5;}
+        if (QbfControl.fastTests) {max = 5;}
         for (int i = 1; i <= max; ++i) {
-        	if (trueconcurrent) {
+        	if (QbfControl.trueConcurrent) {
         		oneTestTrue(i, j - 1, 0);
         		oneTestFalse(i, j - 2, 0);
         	} else {

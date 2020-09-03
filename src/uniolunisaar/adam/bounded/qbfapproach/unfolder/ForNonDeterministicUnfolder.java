@@ -1,16 +1,12 @@
 package uniolunisaar.adam.bounded.qbfapproach.unfolder;
 
-import java.io.FileNotFoundException;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
 import uniol.apt.adt.pn.Place;
-import uniol.apt.analysis.exception.UnboundedException;
 import uniolunisaar.adam.bounded.qbfapproach.petrigame.QbfSolvingObject;
-import uniolunisaar.adam.exceptions.pnwt.NetNotSafeException;
-import uniolunisaar.adam.exceptions.pg.NoSuitableDistributionFoundException;
 import uniolunisaar.adam.ds.objectives.Condition;
 
 /**
@@ -28,7 +24,7 @@ public class ForNonDeterministicUnfolder extends NonDeterministicUnfolder {
 	}
 
 	@Override
-	protected void createUnfolding() throws NetNotSafeException, NoSuitableDistributionFoundException, UnboundedException, FileNotFoundException {
+	protected void createUnfolding() {
 		Set<Place> places = new HashSet<>(pn.getPlaces());
 		Map<String, LinkedList<Integer>> orderOfUnfolding = calculateOrderOfUnfoldingBasedOnGameSimulation();
 		for (int i = 2; i <= pg.getN(); ++i) {

@@ -30,7 +30,7 @@ import uniolunisaar.adam.exceptions.pg.CalculationInterruptedException;
 public class QbfEReachabilitySolver extends QbfSolver<Reachability> {
 
 	// variable to store keys of calculated components for later use (special to this winning condition)
-	private int[] goodPlaces;
+	private final int[] goodPlaces;
 
 	public QbfEReachabilitySolver(QbfSolvingObject<Reachability> solObj, QbfSolverOptions so) throws SolvingException {
 		super(solObj, so);
