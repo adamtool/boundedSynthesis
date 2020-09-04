@@ -258,7 +258,6 @@ public class McMillianUnfolder extends Unfolder {
 				//System.out.println(cutOffUnfolding.size());
 			}
 		}
-		System.out.println("JE SUIS FINI.");
 	}
 	
 	// TODO maybe utilize that when bad place is reached no more unfolding is needed?

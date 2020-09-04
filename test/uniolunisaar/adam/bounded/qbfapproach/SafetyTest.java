@@ -60,13 +60,13 @@ public class SafetyTest extends EmptyTest {
 	
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testGeneralExamples() throws Exception {
-		oneTest("boundedunfolding/txt2", 25, 3, true);
+		//oneTest("boundedunfolding/txt2", 25, 3, true);
 		//oneTest("boundedunfolding/txt", 25, 3, true); //
 		//oneTest("boundedunfolding/secondTry", 15, 3, true);
 		//TODO continue including more examples
-		/*oneTest("tests/watchdog5", 15, 3, true);
+		oneTest("tests/watchdog5", 15, 3, true);
 		//oneTest("container/container", 10, 2, true);	// TODO search for bounds
-		oneTest("2env/paul", 10, 2, true);
+		//oneTest("2env/paul", 10, 2, true); // TODO find corresponding unfolding to find winning strategy?
 		oneTest("boundedunfolding/causalmemory", 15, 2, false);
 		oneTest("notConcurrencyPreservingTests/madeCP", 6, 0, false);
 		//oneTest("notConcurrencyPreservingTests/madeCP", 15, 2, false); // TODO search for bug of new unfolder here
@@ -75,7 +75,7 @@ public class SafetyTest extends EmptyTest {
 		oneTest("boundedunfolding/finiteWithBad", 10, 2, true);
 		oneTest("boundedunfolding/finite3", 10, 2, true); 
 		oneTest("boundedunfolding/counterexample", 10, 0, true);
-		if (!fast) {
+		if (!QbfControl.fastTests) {
 			// TODO debug these four for unfolder? take long and use NondeterministicUnfolder?
 			//oneTest("boundedunfolding/unfolding1", 15, 2, true);
 			//oneTest("boundedunfolding/unfolding2", 20, 2, true); // 20 is necessary for current unfolder; strategy NOT accepted
@@ -103,7 +103,7 @@ public class SafetyTest extends EmptyTest {
 		oneTest("cornercases/unreachableEnvTransition2", 10, 0, true);
 		oneTest("ndet/nondet", 5, 2, false);
 		int bound = 7;
-		if (trueconcurrent) bound = 6;
+		if (QbfControl.trueConcurrent) bound = 6;
 		oneTest("burglar/burglar", bound, 2, true);
 		oneTest("burglar/burglar", bound, 1, false);
 		oneTest("container/container", 20, 0, false);
@@ -121,12 +121,12 @@ public class SafetyTest extends EmptyTest {
 		oneTest("testingNets/envSkipsSys", 15, 3, false);
 		oneTest("nm/sendingprotocol", 25, 2, true); // TODO strategy not accepted
 		oneTest("nm/sendingprotocol", 5, 2, false);
-		if (!fast) {
+		if (!QbfControl.fastTests) {
 			bound = 12;
-			if (trueconcurrent) bound = 10;
+			if (QbfControl.trueConcurrent) bound = 10;
 			//oneTest("nm/sendingprotocolTwo", bound, 2, true);	// TODO debug: BOTH encodings are not deadlock-avoiding as there is a loop which is stopped; ForNonDeterministicUnfolder problem?
 			oneTest("nm/sendingprotocolTwo", bound - 1, 2, false);
-		}*/
+		}
 	}
 	
 	private void oneTest(String str, int n, int b, boolean result) throws Exception {

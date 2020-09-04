@@ -200,7 +200,7 @@ public abstract class NonDeterministicUnfolder extends Unfolder {
 		// interconnect via self-loops
 		if (!selfLoops.isEmpty()) {
 			// from p to all unfolded places via all selfloops
-			// TODO was hat es mit p2 und p weiter unten auf sich?
+			// TODO why are there p2 and p down below?
 			for (Place p2 : copies) {
 				for (Transition loop : selfLoops) {
 					Transition newT = copyTransition(loop);

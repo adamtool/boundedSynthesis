@@ -43,7 +43,7 @@ public class WhileNonDeterministicUnfolder extends NonDeterministicUnfolder {
 	}
 
 	private Queue<String> initializeQueue() {
-		// THEORY: 2 transitions from only (sich gegenseitig ausschließenden) sys places to the same place do not require unfolding TODO das hier prüfen
+		// THEORY: 2 transitions from only (mutual exclusive) sys places to the same place do not require unfolding TODO check this
 		Queue<String> result = new LinkedList<>(); // fancy
 		Marking in = pn.getInitialMarking();
 		// add non-initial places which can have different history

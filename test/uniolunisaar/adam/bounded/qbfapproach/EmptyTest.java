@@ -45,7 +45,7 @@ public abstract class EmptyTest {
 		if (sol.existsWinningStrategy()) {
 			PGTools.savePG2PDF("strategy", sol.getStrategy(), false);
 			// check correctness of strategy:
-			Assert.assertEquals(QbfControl.checkStrategy(originalGame, sol.getStrategy()), true);
+			Assert.assertTrue(QbfControl.checkStrategy(originalGame, sol.getStrategy()));
 		}
 		Assert.assertEquals(sol.existsWinningStrategy(), result);
 	}
