@@ -130,7 +130,7 @@ public class SafetyTest extends EmptyTest {
 	}
 	
 	private void oneTest(String str, int n, int b, boolean result) throws Exception {
-		final String path = System.getProperty("examplesfolder") + "/synthesis/forallsafety/" + str + ".apt";
+		final String path = System.getProperty("examplesfolder") + "/forallsafety/" + str + ".apt";
 		testPath(path, n, b, result);
 	}
 }
