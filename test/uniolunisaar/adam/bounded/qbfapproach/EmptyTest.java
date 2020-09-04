@@ -26,8 +26,7 @@ public abstract class EmptyTest {
 		}
 	}
 	
-	protected void testGame (PetriGame pg, int n, int b, boolean result) throws Exception {            
-               
+	protected void testGame (PetriGame pg, int n, int b, boolean result) throws Exception {
 		if (QbfControl.trueConcurrent) {
                         QbfConSolverOptions opts = new QbfConSolverOptions(n,b, false);
 			testSolver(QbfConSolverFactory.getInstance().getSolver(pg, opts), n, b, result);
