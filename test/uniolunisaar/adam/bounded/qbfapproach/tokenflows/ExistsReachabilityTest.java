@@ -14,7 +14,7 @@ import uniolunisaar.adam.bounded.qbfapproach.EmptyTest;
  */
 
 @Test
-public class ReachabilityTest extends EmptyTest {
+public class ExistsReachabilityTest extends EmptyTest {
 
 	@BeforeClass
     public void createFolder() {
@@ -74,7 +74,7 @@ public class ReachabilityTest extends EmptyTest {
 	}
 
 	private void test(String folder, String name, boolean result, int n, int b) throws Exception {
-		final String path = System.getProperty("examplesfolder") + File.separator + "reachability" + File.separator + folder + File.separator + name + ".apt";
+		final String path = System.getProperty("examplesfolder") + File.separator + "existsreachability" + File.separator + folder + File.separator + name + ".apt";
 		testPath(path, n, b, result);
 	}
 }

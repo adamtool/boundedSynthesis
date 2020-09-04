@@ -14,7 +14,7 @@ import uniolunisaar.adam.bounded.qbfapproach.EmptyTest;
  */
 
 @Test
-public class BuechiTest extends EmptyTest {
+public class ExistsBuchiTest extends EmptyTest {
 
     @BeforeClass
     public void setProperties() {
@@ -24,7 +24,7 @@ public class BuechiTest extends EmptyTest {
     }
 
     @Test(timeOut = 1800 * 1000) // 30 min
-    public void testExistsBüchi() throws Exception {
+    public void testExistsBuechi() throws Exception {
         test ("independentloops", true, 10, 0);
 		test ("independentloops", true, 10, 2);
 		test ("independentloops2", true, 10, 0);
@@ -50,7 +50,7 @@ public class BuechiTest extends EmptyTest {
     }
 
     private void test(String name, boolean result, int n, int b) throws Exception {
-        final String path = System.getProperty("examplesfolder") + File.separator + "buechi" + File.separator + "toyExamples" + File.separator + name + ".apt";
+        final String path = System.getProperty("examplesfolder") + File.separator + "existsbuechi" + File.separator + "toyExamples" + File.separator + name + ".apt";
 		testPath(path, n, b, result);
     }
 }

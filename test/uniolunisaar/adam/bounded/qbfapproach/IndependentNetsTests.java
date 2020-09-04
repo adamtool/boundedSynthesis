@@ -1,4 +1,4 @@
-package uniolunisaar.adam.bounded.qbfapproach.tokenflows;
+package uniolunisaar.adam.bounded.qbfapproach;
 
 import org.testng.annotations.Test;
 
@@ -16,7 +16,7 @@ import uniolunisaar.adam.util.PNWTTools;
  */
 
 @Test
-public class IndependentNets extends EmptyTest {
+public class IndependentNetsTests extends EmptyTest {
 
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testIndependentNets() throws Exception {
