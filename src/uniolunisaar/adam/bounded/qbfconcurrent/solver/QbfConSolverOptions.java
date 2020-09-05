@@ -1,6 +1,6 @@
 package uniolunisaar.adam.bounded.qbfconcurrent.solver;
 
-import uniolunisaar.adam.ds.solver.LLSolverOptions;
+import uniolunisaar.adam.ds.synthesis.solver.LLSolverOptions;
 
 /**
  * 

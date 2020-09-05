@@ -10,7 +10,7 @@ import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.ds.solver.SolvingObject;
+import uniolunisaar.adam.ds.synthesis.solver.SolvingObject;
 import uniolunisaar.adam.exceptions.pnwt.NetNotSafeException;
 import uniolunisaar.adam.util.AdamExtensions;
 import uniolunisaar.adam.ds.objectives.Condition;

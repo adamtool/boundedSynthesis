@@ -8,7 +8,7 @@ import uniolunisaar.adam.ds.objectives.Reachability;
 import uniolunisaar.adam.ds.objectives.Safety;
 import uniolunisaar.adam.ds.objectives.Condition;
 import uniolunisaar.adam.exceptions.pg.NotSupportedGameException;
-import uniolunisaar.adam.logic.pg.solver.LLSolverFactory;
+import uniolunisaar.adam.logic.synthesis.solver.LLSolverFactory;
 
 /**
  *

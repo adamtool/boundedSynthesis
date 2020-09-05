@@ -7,7 +7,7 @@ import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverOptions;
 import uniolunisaar.adam.bounded.qbfconcurrent.solver.QbfConSolverFactory;
 import uniolunisaar.adam.bounded.qbfconcurrent.solver.QbfConSolverOptions;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.ds.solver.Solver;
+import uniolunisaar.adam.ds.synthesis.solver.Solver;
 import uniolunisaar.adam.util.PGTools;
 
 /**
