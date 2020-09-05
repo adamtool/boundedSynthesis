@@ -15,10 +15,10 @@ import uniol.apt.adt.pn.Transition;
 import uniolunisaar.adam.logic.synthesis.bounded.qbfapproach.petrigame.QCIRconsistency;
 import uniolunisaar.adam.ds.synthesis.solver.bounded.qbfapproach.QbfSolvingObject;
 import uniolunisaar.adam.ds.objectives.Safety;
-import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.exceptions.pg.CalculationInterruptedException;
-import uniolunisaar.adam.exceptions.pg.NoStrategyExistentException;
-import uniolunisaar.adam.exceptions.pg.SolvingException;
+import uniolunisaar.adam.ds.synthesis.pgwt.PetriGameWithTransits;
+import uniolunisaar.adam.exceptions.synthesis.pgwt.CalculationInterruptedException;
+import uniolunisaar.adam.exceptions.synthesis.pgwt.NoStrategyExistentException;
+import uniolunisaar.adam.exceptions.synthesis.pgwt.SolvingException;
 import uniolunisaar.adam.logic.synthesis.bounded.qbfapproach.QbfControl;
 
 /**
@@ -161,7 +161,7 @@ public class QbfASafetySolver extends QbfSolver<Safety> {
 	}
 
 	@Override
-	protected PetriGame calculateStrategy() throws NoStrategyExistentException, CalculationInterruptedException {
+	protected PetriGameWithTransits calculateStrategy() throws NoStrategyExistentException, CalculationInterruptedException {
 		return calculateStrategy(false);
 	}
 }

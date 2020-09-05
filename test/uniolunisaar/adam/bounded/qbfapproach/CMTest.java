@@ -2,8 +2,8 @@ package uniolunisaar.adam.bounded.qbfapproach;
 
 import org.testng.annotations.Test;
 
-import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.generators.pg.Workflow;
+import uniolunisaar.adam.ds.synthesis.pgwt.PetriGameWithTransits;
+import uniolunisaar.adam.generators.pgwt.Workflow;
 
 /**
  * 
@@ -33,7 +33,7 @@ public class CMTest extends EmptyTest { // Concurrent Machines / WF
 	}
 
 	private void oneTest(int ps1, int ps2, int n, int b, boolean result) throws Exception {
-		PetriGame pg = Workflow.generate(ps1, ps2, true, true);
+		PetriGameWithTransits pg = Workflow.generate(ps1, ps2, true, true);
 		testGame(pg, n, b, result);
 	}
 }

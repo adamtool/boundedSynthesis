@@ -9,12 +9,12 @@ import uniol.apt.adt.pn.Marking;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
-import uniolunisaar.adam.ds.petrigame.PetriGame;
+import uniolunisaar.adam.ds.synthesis.pgwt.PetriGameWithTransits;
 import uniolunisaar.adam.ds.synthesis.solver.SolvingObject;
 import uniolunisaar.adam.exceptions.pnwt.NetNotSafeException;
 import uniolunisaar.adam.util.AdamExtensions;
 import uniolunisaar.adam.ds.objectives.Condition;
-import uniolunisaar.adam.exceptions.pg.SolvingException;
+import uniolunisaar.adam.exceptions.synthesis.pgwt.SolvingException;
 
 /**
  * Parameters for bounded synthesis added. Possibilities to remove
@@ -24,13 +24,13 @@ import uniolunisaar.adam.exceptions.pg.SolvingException;
  * @author Jesko Hecking-Harbusch
  * @param <W>
  */
-public class QbfSolvingObject<W extends Condition<W>> extends SolvingObject<PetriGame, W, QbfSolvingObject<W>> {
+public class QbfSolvingObject<W extends Condition<W>> extends SolvingObject<PetriGameWithTransits, W, QbfSolvingObject<W>> {
 
     private int n; // length of the simulation, i.e., for n there are n - 1 transitions simulated
     private int b; // number of unfoldings per place in the bounded unfolding
     private Map<Transition, Set<Pair<Place, Place>>> fl = new HashMap<>(); // tokenflow
 
-    public QbfSolvingObject(PetriGame game, W winCon, boolean skipChecks) throws SolvingException {
+    public QbfSolvingObject(PetriGameWithTransits game, W winCon, boolean skipChecks) throws SolvingException {
         super(game, winCon);
         for (Transition t : game.getTransitions()) {	// TODO necessary!
             fl.put(t, new HashSet<>());
@@ -112,7 +112,7 @@ public class QbfSolvingObject<W extends Condition<W>> extends SolvingObject<Petr
     public QbfSolvingObject<W> getCopy() {
     	QbfSolvingObject<W> result = null;
 		try {
-			result = new QbfSolvingObject<>(new PetriGame(this.getGame()), this.getWinCon().getCopy(), true);
+			result = new QbfSolvingObject<>(new PetriGameWithTransits(this.getGame()), this.getWinCon().getCopy(), true);
 		} catch (SolvingException e) {
 			// cannot be thrown as it was tested for safe on initialisation
 		}

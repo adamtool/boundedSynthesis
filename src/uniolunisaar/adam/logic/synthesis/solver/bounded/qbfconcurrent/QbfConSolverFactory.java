@@ -2,13 +2,13 @@ package uniolunisaar.adam.logic.synthesis.solver.bounded.qbfconcurrent;
 
 import uniolunisaar.adam.ds.synthesis.solver.bounded.qbfconcurrent.QbfConSolverOptions;
 import uniolunisaar.adam.ds.synthesis.solver.bounded.qbfapproach.QbfSolvingObject;
-import uniolunisaar.adam.exceptions.pg.SolvingException;
-import uniolunisaar.adam.ds.petrigame.PetriGame;
+import uniolunisaar.adam.exceptions.synthesis.pgwt.SolvingException;
+import uniolunisaar.adam.ds.synthesis.pgwt.PetriGameWithTransits;
 import uniolunisaar.adam.ds.objectives.Buchi;
 import uniolunisaar.adam.ds.objectives.Reachability;
 import uniolunisaar.adam.ds.objectives.Safety;
 import uniolunisaar.adam.ds.objectives.Condition;
-import uniolunisaar.adam.exceptions.pg.NotSupportedGameException;
+import uniolunisaar.adam.exceptions.synthesis.pgwt.NotSupportedGameException;
 import uniolunisaar.adam.logic.synthesis.solver.LLSolverFactory;
 
 /**
@@ -28,7 +28,7 @@ public class QbfConSolverFactory extends LLSolverFactory<QbfConSolverOptions, Qb
     }
 
     @Override
-    protected <W extends Condition<W>> QbfSolvingObject<W> createSolvingObject(PetriGame game, W winCon) throws NotSupportedGameException {
+    protected <W extends Condition<W>> QbfSolvingObject<W> createSolvingObject(PetriGameWithTransits game, W winCon) throws NotSupportedGameException {
         try {
             return new QbfSolvingObject<>(game, winCon, false);
         } catch (SolvingException ex) {
@@ -37,32 +37,32 @@ public class QbfConSolverFactory extends LLSolverFactory<QbfConSolverOptions, Qb
     }
 
     @Override
-    protected QbfConSolver<Safety> getESafetySolver(PetriGame game, Safety con, QbfConSolverOptions options) throws SolvingException {
+    protected QbfConSolver<Safety> getESafetySolver(PetriGameWithTransits game, Safety con, QbfConSolverOptions options) throws SolvingException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    protected QbfConSolver<Safety> getASafetySolver(PetriGame game, Safety con, QbfConSolverOptions options) throws SolvingException {
+    protected QbfConSolver<Safety> getASafetySolver(PetriGameWithTransits game, Safety con, QbfConSolverOptions options) throws SolvingException {
         return new QbfConSafetySolver(createSolvingObject(game, con), options);
     }
 
     @Override
-    protected QbfConSolver<Reachability> getEReachabilitySolver(PetriGame game, Reachability con, QbfConSolverOptions options) throws SolvingException {
+    protected QbfConSolver<Reachability> getEReachabilitySolver(PetriGameWithTransits game, Reachability con, QbfConSolverOptions options) throws SolvingException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    protected QbfConSolver<Reachability> getAReachabilitySolver(PetriGame game, Reachability con, QbfConSolverOptions options) throws SolvingException {
+    protected QbfConSolver<Reachability> getAReachabilitySolver(PetriGameWithTransits game, Reachability con, QbfConSolverOptions options) throws SolvingException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    protected QbfConSolver<Buchi> getEBuchiSolver(PetriGame game, Buchi con, QbfConSolverOptions options) throws SolvingException {
+    protected QbfConSolver<Buchi> getEBuchiSolver(PetriGameWithTransits game, Buchi con, QbfConSolverOptions options) throws SolvingException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    protected QbfConSolver<Buchi> getABuchiSolver(PetriGame game, Buchi con, QbfConSolverOptions options) throws SolvingException {
+    protected QbfConSolver<Buchi> getABuchiSolver(PetriGameWithTransits game, Buchi con, QbfConSolverOptions options) throws SolvingException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

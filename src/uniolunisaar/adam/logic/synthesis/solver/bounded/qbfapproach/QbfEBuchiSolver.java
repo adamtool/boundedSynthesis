@@ -15,11 +15,11 @@ import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.logic.synthesis.bounded.qbfapproach.petrigame.QCIRconsistency;
 import uniolunisaar.adam.ds.synthesis.solver.bounded.qbfapproach.QbfSolvingObject;
-import uniolunisaar.adam.exceptions.pg.NoStrategyExistentException;
-import uniolunisaar.adam.exceptions.pg.SolvingException;
-import uniolunisaar.adam.ds.petrigame.PetriGame;
+import uniolunisaar.adam.exceptions.synthesis.pgwt.NoStrategyExistentException;
+import uniolunisaar.adam.exceptions.synthesis.pgwt.SolvingException;
+import uniolunisaar.adam.ds.synthesis.pgwt.PetriGameWithTransits;
 import uniolunisaar.adam.ds.objectives.Buchi;
-import uniolunisaar.adam.exceptions.pg.CalculationInterruptedException;
+import uniolunisaar.adam.exceptions.synthesis.pgwt.CalculationInterruptedException;
 import uniolunisaar.adam.logic.synthesis.bounded.qbfapproach.QbfControl;
 
 /**
@@ -174,7 +174,7 @@ public class QbfEBuchiSolver extends QbfSolver<Buchi> {
 	}
 	
 	@Override
-	protected PetriGame calculateStrategy() throws NoStrategyExistentException, CalculationInterruptedException {
+	protected PetriGameWithTransits calculateStrategy() throws NoStrategyExistentException, CalculationInterruptedException {
 		return calculateStrategy(false);
 	}
 }

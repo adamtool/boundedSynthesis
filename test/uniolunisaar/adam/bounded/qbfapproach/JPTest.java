@@ -2,8 +2,8 @@ package uniolunisaar.adam.bounded.qbfapproach;
 
 import org.testng.annotations.Test;
 
-import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.generators.pg.ManufactorySystem;
+import uniolunisaar.adam.ds.synthesis.pgwt.PetriGameWithTransits;
+import uniolunisaar.adam.generators.pgwt.ManufactorySystem;
 
 /**
  * 
@@ -25,7 +25,7 @@ public class JPTest extends EmptyTest { // Job Processing
 	}
 
 	private void oneTest(int a, int n, int b, boolean result) throws Exception {
-		PetriGame pg = ManufactorySystem.generate(a, true, true);
+		PetriGameWithTransits pg = ManufactorySystem.generate(a, true, true);
 		testGame(pg, n, b, result);
 	}
 }

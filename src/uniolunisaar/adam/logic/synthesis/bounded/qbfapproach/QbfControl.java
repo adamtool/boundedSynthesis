@@ -3,7 +3,7 @@ package uniolunisaar.adam.logic.synthesis.bounded.qbfapproach;
 import uniol.apt.adt.pn.Place;
 import uniol.apt.adt.pn.Transition;
 import uniolunisaar.adam.logic.synthesis.bounded.qbfapproach.unfolder.Unfolder;
-import uniolunisaar.adam.ds.petrigame.PetriGame;
+import uniolunisaar.adam.ds.synthesis.pgwt.PetriGameWithTransits;
 import uniolunisaar.adam.util.PGTools;
 
 /**
@@ -28,7 +28,7 @@ public class QbfControl {
 	public static boolean fastTests = true;
 
 	// Check winning strategy for validity
-	public static boolean checkStrategy(PetriGame origNet, PetriGame strat) {
+	public static boolean checkStrategy(PetriGameWithTransits origNet, PetriGameWithTransits strat) {
 		// some preparation
 		for (Place p : origNet.getPlaces()) {
 			origNet.setOrigID(p, Unfolder.getTruncatedId(p.getId()));

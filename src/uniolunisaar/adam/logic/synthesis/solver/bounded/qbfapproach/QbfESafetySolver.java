@@ -16,7 +16,7 @@ import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.logic.synthesis.bounded.qbfapproach.petrigame.QCIRconsistency;
 import uniolunisaar.adam.ds.synthesis.solver.bounded.qbfapproach.QbfSolvingObject;
-import uniolunisaar.adam.exceptions.pg.SolvingException;
+import uniolunisaar.adam.exceptions.synthesis.pgwt.SolvingException;
 import uniolunisaar.adam.ds.objectives.Safety;
 import uniolunisaar.adam.logic.synthesis.bounded.qbfapproach.QbfControl;
 

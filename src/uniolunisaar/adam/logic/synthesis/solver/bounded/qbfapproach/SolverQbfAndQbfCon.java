@@ -36,12 +36,12 @@ import uniolunisaar.adam.logic.synthesis.bounded.qbfapproach.unfolder.ForNonDete
 import uniolunisaar.adam.logic.synthesis.bounded.qbfapproach.unfolder.McMillianUnfolder;
 import uniolunisaar.adam.logic.synthesis.bounded.qbfapproach.unfolder.Unfolder;
 import uniolunisaar.adam.ds.objectives.Condition;
-import uniolunisaar.adam.ds.petrigame.PetriGame;
+import uniolunisaar.adam.ds.synthesis.pgwt.PetriGameWithTransits;
 import uniolunisaar.adam.logic.synthesis.solver.Solver;
 import uniolunisaar.adam.ds.synthesis.solver.SolverOptions;
-import uniolunisaar.adam.exceptions.pg.CalculationInterruptedException;
-import uniolunisaar.adam.exceptions.pg.NoStrategyExistentException;
-import uniolunisaar.adam.exceptions.pg.SolvingException;
+import uniolunisaar.adam.exceptions.synthesis.pgwt.CalculationInterruptedException;
+import uniolunisaar.adam.exceptions.synthesis.pgwt.NoStrategyExistentException;
+import uniolunisaar.adam.exceptions.synthesis.pgwt.SolvingException;
 import uniolunisaar.adam.exceptions.pnwt.NetNotSafeException;
 import uniolunisaar.adam.logic.synthesis.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.tools.AdamProperties;
@@ -52,13 +52,13 @@ import uniolunisaar.adam.tools.AdamProperties;
  *
  */
 
-public abstract class SolverQbfAndQbfCon<W extends Condition<W>, SOP extends SolverOptions> extends Solver<PetriGame, W, QbfSolvingObject<W>, SOP>{
+public abstract class SolverQbfAndQbfCon<W extends Condition<W>, SOP extends SolverOptions> extends Solver<PetriGameWithTransits, W, QbfSolvingObject<W>, SOP>{
 
 	// steps of solving
 	public QbfSolvingObject<W> originalSolvingObject;
-	public PetriGame originalGame;
-	public PetriGame unfolding;
-	public PetriGame strategy;
+	public PetriGameWithTransits originalGame;
+	public PetriGameWithTransits unfolding;
+	public PetriGameWithTransits strategy;
 	
 	// variable to store keys of calculated components for later use (shared among all solvers)
 	protected int in;
@@ -670,7 +670,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition<W>, SOP extends Sol
 	}
 
 	protected Map<Place, Set<Transition>> unfoldPG() {
-		originalGame = new PetriGame(getSolvingObject().getGame());
+		originalGame = new PetriGameWithTransits(getSolvingObject().getGame());
 		
 		Unfolder unfolder = null;
 		Map<Place, Set<Transition>> result = null;
@@ -724,11 +724,11 @@ public abstract class SolverQbfAndQbfCon<W extends Condition<W>, SOP extends Sol
 			result = unfolder.systemHasToDecideForAtLeastOne;
 		}
         
-		unfolding = new PetriGame(getSolvingObject().getGame());
+		unfolding = new PetriGameWithTransits(getSolvingObject().getGame());
 		return result;
 	}
 	
-	protected PetriGame calculateStrategy(boolean trueConcurrent) throws NoStrategyExistentException, CalculationInterruptedException {
+	protected PetriGameWithTransits calculateStrategy(boolean trueConcurrent) throws NoStrategyExistentException, CalculationInterruptedException {
 		if (existsWinningStrategy()) {
 			for (String outputCAQE_line : outputQBFsolver.toString().split("\n")) {
 				if (outputCAQE_line.startsWith("V")) {
@@ -775,7 +775,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition<W>, SOP extends Sol
 								// 0 is the last member
 								// System.out.println("Finished reading strategy.");
 								new PGSimplifier(getSolvingObject(), true, false, false).simplifyPG();
-								strategy = new PetriGame(getSolvingObject().getGame());
+								strategy = new PetriGameWithTransits(getSolvingObject().getGame());
 								return getSolvingObject().getGame();
 							}
 						}
@@ -784,7 +784,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition<W>, SOP extends Sol
 			}
 			// There were no decision points for the system, thus the previous loop did not leave the method
 			new PGSimplifier(getSolvingObject(), true, false, false).simplifyPG();
-			strategy = new PetriGame(getSolvingObject().getGame());
+			strategy = new PetriGameWithTransits(getSolvingObject().getGame());
 			return getSolvingObject().getGame();
 		}
 		throw new NoStrategyExistentException();

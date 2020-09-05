@@ -1,6 +1,6 @@
 package uniolunisaar.adam.exceptions.synthesis.bounded.qbfapproach;
 
-import uniolunisaar.adam.exceptions.pg.ParameterMissingException;
+import uniolunisaar.adam.exceptions.synthesis.pgwt.ParameterMissingException;
 
 /**
  *

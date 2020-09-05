@@ -8,9 +8,9 @@ import org.testng.annotations.Test;
 import uniolunisaar.adam.logic.synthesis.solver.bounded.qbfapproach.QbfSolver;
 import uniolunisaar.adam.logic.synthesis.solver.bounded.qbfapproach.QbfSolverFactory;
 import uniolunisaar.adam.ds.synthesis.solver.bounded.qbfapproach.QbfSolverOptions;
-import uniolunisaar.adam.ds.petrigame.PetriGame;
+import uniolunisaar.adam.ds.synthesis.pgwt.PetriGameWithTransits;
 import uniolunisaar.adam.ds.objectives.Condition;
-import uniolunisaar.adam.generators.pg.ContainerTerminal;
+import uniolunisaar.adam.generators.pgwt.ContainerTerminal;
 import uniolunisaar.adam.util.PNWTTools;
 import uniolunisaar.adam.tools.Logger;
 
@@ -49,7 +49,7 @@ public class ContainerTerminalTest {
         File f = new File(path);
         f.mkdir();
         System.out.println("Generate container terminal...");
-        PetriGame pn = ContainerTerminal.createSafetyVersion(containerPlaces, true);
+        PetriGameWithTransits pn = ContainerTerminal.createSafetyVersion(containerPlaces, true);
         PNWTTools.savePnwt2PDF(path + name, pn, false);
         QbfSolver<? extends Condition> solv = QbfSolverFactory.getInstance().getSolver(pn, new QbfSolverOptions(15, 3, false));
         if (hasStrategy) {

@@ -3,8 +3,8 @@ package uniolunisaar.adam.bounded.qbfapproach.tokenflows;
 import org.testng.annotations.Test;
 
 import uniolunisaar.adam.bounded.qbfapproach.EmptyTest;
-import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.generators.pg.Escape;
+import uniolunisaar.adam.ds.synthesis.pgwt.PetriGameWithTransits;
+import uniolunisaar.adam.generators.pgwt.Escape;
 
 /**
  * 
@@ -28,7 +28,7 @@ public class EscapeTest extends EmptyTest {
 	}
 	
 	private void oneTest(int nb_sys, int nb_env, int n, int b, boolean result) throws Exception {
-		PetriGame pg = Escape.createESafetyVersion(nb_sys, nb_env, false);
+		PetriGameWithTransits pg = Escape.createESafetyVersion(nb_sys, nb_env, false);
 		testGame(pg, n, b, result);
 	}
 }

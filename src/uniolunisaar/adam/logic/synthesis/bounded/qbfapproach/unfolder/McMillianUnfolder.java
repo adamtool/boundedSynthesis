@@ -15,7 +15,7 @@ import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.ds.synthesis.solver.bounded.qbfapproach.QbfSolvingObject;
 import uniolunisaar.adam.ds.objectives.Condition;
-import uniolunisaar.adam.ds.petrigame.PetriGame;
+import uniolunisaar.adam.ds.synthesis.pgwt.PetriGameWithTransits;
 
 /**
  * 
@@ -26,7 +26,7 @@ import uniolunisaar.adam.ds.petrigame.PetriGame;
 public class McMillianUnfolder extends Unfolder {
 	// unfolded result Petri game and Petri net
 	private final QbfSolvingObject<? extends Condition<?>> originalSolvingObject;
-	private final PetriGame originalGame;
+	private final PetriGameWithTransits originalGame;
 
 	private Set<Pair<Transition, Set<Place>>> closed = new HashSet<>(); //add transition only once
 	//private Set<Set<Place>> cutOffOriginal = new HashSet<>(); // cutOff based on markings in the original net

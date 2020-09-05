@@ -12,7 +12,7 @@ import uniol.apt.adt.pn.Transition;
 import uniol.apt.util.Pair;
 import uniolunisaar.adam.ds.synthesis.solver.bounded.qbfapproach.QbfSolvingObject;
 import uniolunisaar.adam.ds.objectives.Condition;
-import uniolunisaar.adam.ds.petrigame.PetriGame;
+import uniolunisaar.adam.ds.synthesis.pgwt.PetriGameWithTransits;
 
 /**
  * 
@@ -27,7 +27,7 @@ import uniolunisaar.adam.ds.petrigame.PetriGame;
 public class FiniteDeterministicUnfolder extends Unfolder {
 
 	private final QbfSolvingObject<? extends Condition<?>> originalSolvingObj;
-	private final PetriGame originalGame;
+	private final PetriGameWithTransits originalGame;
 	
 	public Queue<Pair<Marking, Integer>> queue = new LinkedList<>();
 	public int counter = 0;

@@ -2,8 +2,8 @@ package uniolunisaar.adam.bounded.qbfapproach;
 
 import org.testng.annotations.Test;
 
-import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.generators.pg.Clerks;
+import uniolunisaar.adam.ds.synthesis.pgwt.PetriGameWithTransits;
+import uniolunisaar.adam.generators.pgwt.Clerks;
 
 /**
  * 
@@ -33,12 +33,12 @@ public class DWTest extends EmptyTest { // Document Workflow / DW
     }
 
     private void oneTestTrue(int problemSize, int n, int b) throws Exception {
-        PetriGame pg = Clerks.generateNonCP(problemSize, true, true);
+        PetriGameWithTransits pg = Clerks.generateNonCP(problemSize, true, true);
         testGame(pg, n, b, true);
     }
 
     private void oneTestFalse(int problemSize, int n, int b) throws Exception {
-        PetriGame pg = Clerks.generateNonCP(problemSize, true, true);
+        PetriGameWithTransits pg = Clerks.generateNonCP(problemSize, true, true);
         testGame(pg, n, b, false);
     }
 }

@@ -3,8 +3,8 @@ package uniolunisaar.adam.bounded.qbfapproach.tokenflows;
 import org.testng.annotations.Test;
 
 import uniolunisaar.adam.bounded.qbfapproach.EmptyTest;
-import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.generators.pg.SecuritySystem;
+import uniolunisaar.adam.ds.synthesis.pgwt.PetriGameWithTransits;
+import uniolunisaar.adam.generators.pgwt.SecuritySystem;
 
 /**
  * 
@@ -24,7 +24,7 @@ public class BurglarTestReachability extends EmptyTest {
 	}
 	
 	private void oneTest(int problemSize, int n, int b, boolean result) throws Exception {
-		PetriGame pg = SecuritySystem.createReachabilityVersion(problemSize, false);
+		PetriGameWithTransits pg = SecuritySystem.createReachabilityVersion(problemSize, false);
 		testGame(pg, n, b, result);
 	}
 	
