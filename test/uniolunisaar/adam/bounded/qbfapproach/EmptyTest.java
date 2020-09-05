@@ -2,12 +2,12 @@ package uniolunisaar.adam.bounded.qbfapproach;
 
 import org.testng.Assert;
 
-import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverFactory;
-import uniolunisaar.adam.bounded.qbfapproach.solver.QbfSolverOptions;
-import uniolunisaar.adam.bounded.qbfconcurrent.solver.QbfConSolverFactory;
-import uniolunisaar.adam.bounded.qbfconcurrent.solver.QbfConSolverOptions;
+import uniolunisaar.adam.logic.synthesis.solver.bounded.qbfapproach.QbfSolverFactory;
+import uniolunisaar.adam.ds.synthesis.solver.bounded.qbfapproach.QbfSolverOptions;
+import uniolunisaar.adam.logic.synthesis.solver.bounded.qbfconcurrent.QbfConSolverFactory;
+import uniolunisaar.adam.ds.synthesis.solver.bounded.qbfconcurrent.QbfConSolverOptions;
 import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.ds.synthesis.solver.Solver;
+import uniolunisaar.adam.logic.synthesis.solver.Solver;
 import uniolunisaar.adam.util.PGTools;
 
 /**
