@@ -1,10 +1,6 @@
 package uniolunisaar.adam.logic.synthesis.bounded.qbfapproach.unfolder;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 
 import uniol.apt.adt.pn.Marking;
 import uniol.apt.adt.pn.Place;
@@ -18,7 +14,6 @@ import uniolunisaar.adam.ds.synthesis.pgwt.PetriGameWithTransits;
  * 
  * 27.11.2018 ONLY WORKS FOR FINITE NETS AND NEEDS QBFCONTROL rebuildingUnfolder ENABLED
  * copy original net and then build net in place new
- * Misc note: solvingObj -> PG -> PN
  * 
  * @author Jesko Hecking-Harbusch
  *
@@ -28,7 +23,8 @@ public class FiniteDeterministicUnfolder extends Unfolder {
 
 	private final QbfSolvingObject<? extends Condition<?>> originalSolvingObj;
 	private final PetriGameWithTransits originalGame;
-	
+	private final Map<Place, Set<Place>> pred = new HashMap<>();
+
 	public Queue<Pair<Marking, Integer>> queue = new LinkedList<>();
 	public int counter = 0;
 	
@@ -59,6 +55,7 @@ public class FiniteDeterministicUnfolder extends Unfolder {
 					newP.putExtension(pair.getFirst(), pair.getSecond());
 				}
 				initial_unfolding.addToken(newP, 1);
+				pred.put(newP, new HashSet<>());
 			}
 		}
 		queue.add(new Pair<>(initial_unfolding, 1));
@@ -73,7 +70,7 @@ public class FiniteDeterministicUnfolder extends Unfolder {
 			Set<String> ids = new HashSet<>();
 			for (Place p : pn.getPlaces()) {
 				if (marking.getToken(p).getValue() > 0) {
-					ids.add(getOriginalPlaceId(p.getId()));
+					ids.add(getTruncatedId(p.getId()));
 				}
 			}
 			
@@ -86,7 +83,7 @@ public class FiniteDeterministicUnfolder extends Unfolder {
 					// fire existing transition
 					boolean fired = false;
 					for (Transition post : pn.getTransitions()) {
-						if (getOriginalTransitionId(post.getId()).equals(t.getId()) && post.isFireable(marking)) {
+						if (getTruncatedId(post.getId()).equals(t.getId()) && post.isFireable(marking)) {
 							Marking nextMarking = new Marking(marking);
 							nextMarking.fire(post);
 							if (i + 1 <= pg.getN()) {
@@ -100,7 +97,7 @@ public class FiniteDeterministicUnfolder extends Unfolder {
 						Set<Place> preset = new HashSet<>();
 						for (Place pre : pn.getPlaces()) {
 							if (marking.getToken(pre).getValue() > 0) {
-								if (preset_ids.contains(getOriginalPlaceId(pre.getId()))) {
+								if (preset_ids.contains(getTruncatedId(pre.getId()))) {
 									preset.add(pre);
 								}
 							}
@@ -119,6 +116,7 @@ public class FiniteDeterministicUnfolder extends Unfolder {
 								newPost.putExtension(pair.getFirst(), pair.getSecond());
 							}
 							pn.createFlow(newT, newPost);
+							pred.put(newPost, predecessors(newPost, newPost));
 						}
 						
 						Marking nextMarking = new Marking(marking);
@@ -131,20 +129,33 @@ public class FiniteDeterministicUnfolder extends Unfolder {
 			}
 		}
 	}
-	
-	public static String getOriginalPlaceId(String id) {
-		int index = id.indexOf("__");
-		if (index != -1) {
-			id = id.substring(0, index);
+
+	/** Given a place from the unfolding, this function returns the set of places in its causal past that are based
+	 * on the same place in the underlying Petri net. It performs DFS and therefore needs current and goal. Thus,
+	 * initial call with current == goal.
+	 *
+	 * @param current the current place to check in the unfolding
+	 * @param goal the place for which is searched in the causal past
+	 * @return the possibly empty set of places in the causal past of current that are based on goal
+	 */
+
+	private Set<Place> predecessors(Place current, Place goal) {
+		for (Transition t : current.getPreset()) {
+			for (Place p : t.getPreset()) {
+				if (getTruncatedId(p.getId()).equals(getTruncatedId(goal.getId()))) {
+					// copy found
+					Set<Place> result = new HashSet<>(pred.get(p));
+					result.add(p);
+					return result;
+				} else {
+					// no copy
+					Set<Place> result = predecessors(p, goal);
+					if (!result.isEmpty()) {
+						return result;
+					}
+				}
+			}
 		}
-		return id;
-	}
-	
-	public static String getOriginalTransitionId(String id) {
-		int index = id.indexOf("__");
-		if (index != -1) {
-			id = id.substring(0, index);
-		}
-		return id;
+		return new HashSet<>();
 	}
 }
