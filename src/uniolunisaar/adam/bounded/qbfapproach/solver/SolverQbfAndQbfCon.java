@@ -303,6 +303,49 @@ public abstract class SolverQbfAndQbfCon<W extends Condition<W>, SOP extends Sol
 		l = createUniqueID();
 		writeOr(l, or);
 	}
+
+	protected void writeLoopALTERNATIVE(Map<Place, Set<Place>> predecessors) throws IOException {
+		Set<Integer> or = new HashSet<>();
+		for (int i = 1; i < getSolvingObject().getN(); ++i) {
+			for (int j = i + 1; j <= getSolvingObject().getN(); ++j) {
+				Set<Integer> and = new HashSet<>();
+				for (Place p : getSolvingObject().getGame().getPlaces()) {
+					Set<Place> prePlaces = predecessors.get(p);
+					// TODO ensure that prePlace is always intialized
+					if (prePlaces.isEmpty()) {
+						and.add(-getVarNr(p.getId() + "." + j, true));
+					} else {
+						Set<Integer> innerOr = new HashSet<>();
+						for (Place pre : prePlaces) {
+							Set<Integer> innerAnd = new HashSet<>();
+							int pre_i = getVarNr(pre.getId() + "." + i, true);
+							int p_j = getVarNr(p.getId() + "." + j, true);
+							innerAnd.add(writeImplication(pre_i, p_j));
+							innerAnd.add(writeImplication(p_j, pre_i));
+							for (Transition t : p.getPostset()) {
+								int pre_t = getVarNr(pre.getId() + "." + getTruncatedId(t.getId()), true);
+								int p_t = getVarNr(p.getId() + "." + getTruncatedId(t.getId()), true);
+								innerAnd.add(writeImplication(pre_t, p_t));
+								innerAnd.add(writeImplication(p_t, pre_t));
+							}
+							int innerAndNumber = createUniqueID();
+							writeAnd(innerAndNumber, innerAnd);
+							innerOr.add(innerAndNumber);
+						}
+						int innerOrNumber = createUniqueID();
+						writeOr(innerOrNumber, innerOr);
+						and.add(innerOrNumber);
+					}
+
+				}
+				int andNumber = createUniqueID();
+				writeAnd(andNumber, and);
+				or.add(andNumber);
+			}
+		}
+		l = createUniqueID();
+		writeOr(l, or);
+	}
 	
 	// Additional information from nondeterministic unfolding is utilized:
 	// for each place a set of transitions is given of which at least one has to
@@ -744,7 +787,7 @@ public abstract class SolverQbfAndQbfCon<W extends Condition<W>, SOP extends Sol
 								int in = remove.indexOf("..");
 								if (in != -1) { // CTL has exists variables for path EF which mean not remove
 									String place = remove.substring(0, in);
-									String transition = remove.substring(in + 2, remove.length());
+									String transition = remove.substring(in + 2);
 									if (place.startsWith(QbfControl.additionalSystemName)) {
 										// additional system place exactly removes transitions
 										// Transition might already be removed by recursion
