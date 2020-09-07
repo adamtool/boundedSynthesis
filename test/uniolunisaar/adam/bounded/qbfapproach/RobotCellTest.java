@@ -4,6 +4,7 @@ import org.testng.annotations.Test;
 
 import uniolunisaar.adam.ds.synthesis.pgwt.PetriGameWithTransits;
 import uniolunisaar.adam.generators.pgwt.RobotCell;
+import uniolunisaar.adam.logic.synthesis.bounded.qbfapproach.QbfControl;
 
 /**
  * 

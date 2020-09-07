@@ -2,6 +2,7 @@ package uniolunisaar.adam.bounded.qbfapproach;
 
 import org.testng.Assert;
 
+import uniolunisaar.adam.logic.synthesis.bounded.qbfapproach.QbfControl;
 import uniolunisaar.adam.logic.synthesis.solver.bounded.qbfapproach.QbfSolverFactory;
 import uniolunisaar.adam.ds.synthesis.solver.bounded.qbfapproach.QbfSolverOptions;
 import uniolunisaar.adam.logic.synthesis.solver.bounded.qbfconcurrent.QbfConSolverFactory;

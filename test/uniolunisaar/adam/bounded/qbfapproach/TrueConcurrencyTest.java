@@ -1,6 +1,7 @@
 package uniolunisaar.adam.bounded.qbfapproach;
 
 import org.testng.annotations.Test;
+import uniolunisaar.adam.logic.synthesis.bounded.qbfapproach.QbfControl;
 
 import java.io.File;
 
@@ -15,7 +16,7 @@ public class TrueConcurrencyTest extends EmptyTest {
 	
 	@Test(timeOut = 1800 * 1000) // 30 min
 	public void testTrueConcurrent() throws Exception {
-			oneTest("independentNets", 10, 0, true);
+			//oneTest("independentNets", 10, 0, true);
 			oneTest("minimal", 5, 2, false);
 			oneTest("minimalNonCP", 5, 2, false);
 			oneTest("minimalNotFinishingEnv", 5, 2, false);

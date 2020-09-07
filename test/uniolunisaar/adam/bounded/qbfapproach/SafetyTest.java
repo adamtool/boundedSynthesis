@@ -2,6 +2,7 @@ package uniolunisaar.adam.bounded.qbfapproach;
 
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import uniolunisaar.adam.logic.synthesis.bounded.qbfapproach.QbfControl;
 
 /**
  * 
