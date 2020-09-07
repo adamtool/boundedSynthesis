@@ -2,8 +2,8 @@ package uniolunisaar.adam.bounded.qbfapproach;
 
 import org.testng.annotations.Test;
 
-import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.generators.pg.EmergencyBreakdown;
+import uniolunisaar.adam.ds.synthesis.pgwt.PetriGameWithTransits;
+import uniolunisaar.adam.generators.pgwt.EmergencyBreakdown;
 
 /**
  * 
@@ -34,7 +34,7 @@ public class EBTest extends EmptyTest {
 	}
 
 	private void oneTest(int ps1, int ps2, int n, int b) throws Exception {
-		PetriGame pg = EmergencyBreakdown.createSafetyVersion(ps1, ps2, false);
+		PetriGameWithTransits pg = EmergencyBreakdown.createSafetyVersion(ps1, ps2, false);
 		testGame(pg, n, b, true);
 	}
 }

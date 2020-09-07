@@ -1,7 +1,7 @@
 package uniolunisaar.adam.bounded.benchmarks;
 
 import uniol.apt.adt.pn.PetriNet;
-import uniolunisaar.adam.generators.pg.ManufactorySystem;
+import uniolunisaar.adam.generators.pgwt.ManufactorySystem;
 import uniolunisaar.adam.tools.Tools;
 
 /**

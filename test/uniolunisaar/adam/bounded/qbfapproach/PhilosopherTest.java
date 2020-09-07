@@ -2,8 +2,8 @@ package uniolunisaar.adam.bounded.qbfapproach;
 
 import org.testng.annotations.Test;
 
-import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.generators.pg.Philosopher;
+import uniolunisaar.adam.ds.synthesis.pgwt.PetriGameWithTransits;
+import uniolunisaar.adam.generators.pgwt.Philosopher;
 
 /**
  * 
@@ -20,7 +20,7 @@ public class PhilosopherTest extends EmptyTest {
 		int max = 12;
 		if (QbfControl.fastTests) {max = 8;}
 		for (int i = 2; i <= max; ++i) {
-			PetriGame pg = Philosopher.generateGuided(i, true, true);
+			PetriGameWithTransits pg = Philosopher.generateGuided(i, true, true);
 			if (QbfControl.trueConcurrent) {
 				testGame(pg, 2, 0, false);
 				testGame(pg, 3, 0, true);

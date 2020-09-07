@@ -2,8 +2,8 @@ package uniolunisaar.adam.bounded.qbfapproach;
 
 import org.testng.annotations.Test;
 
-import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.generators.pg.RobotCell;
+import uniolunisaar.adam.ds.synthesis.pgwt.PetriGameWithTransits;
+import uniolunisaar.adam.generators.pgwt.RobotCell;
 
 /**
  * 
@@ -38,7 +38,7 @@ public class RobotCellTest extends EmptyTest {
 	}
 
 	private void oneTest(int ps1, int ps2, int n, int b) throws Exception {
-		PetriGame pg = RobotCell.generate(ps1, ps2, true);
+		PetriGameWithTransits pg = RobotCell.generate(ps1, ps2, true);
 		testGame(pg, n, b, true);
 	}
 }

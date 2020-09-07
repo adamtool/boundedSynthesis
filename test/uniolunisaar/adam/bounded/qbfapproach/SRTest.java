@@ -2,8 +2,8 @@ package uniolunisaar.adam.bounded.qbfapproach;
 
 import org.testng.annotations.Test;
 
-import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.generators.pg.SelfOrganizingRobots;
+import uniolunisaar.adam.ds.synthesis.pgwt.PetriGameWithTransits;
+import uniolunisaar.adam.generators.pgwt.SelfOrganizingRobots;
 
 /**
  * 
@@ -26,7 +26,7 @@ public class SRTest extends EmptyTest {
 	}
 
 	private void oneTest(int robot1, int robot2, int n, int b, boolean result) throws Exception {
-		PetriGame pg = SelfOrganizingRobots.generate(robot1, robot2, true, true);
+		PetriGameWithTransits pg = SelfOrganizingRobots.generate(robot1, robot2, true, true);
 		testGame(pg, n, b, result);
 	}
 }

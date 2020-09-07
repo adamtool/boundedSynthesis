@@ -3,8 +3,8 @@ package uniolunisaar.adam.bounded.qbfapproach.tokenflows;
 import org.testng.annotations.Test;
 
 import uniolunisaar.adam.bounded.qbfapproach.EmptyTest;
-import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.generators.pg.LoopUnrolling;
+import uniolunisaar.adam.ds.synthesis.pgwt.PetriGameWithTransits;
+import uniolunisaar.adam.generators.pgwt.LoopUnrolling;
 
 /**
  * 
@@ -24,7 +24,7 @@ public class LoopUnrollingTest extends EmptyTest {
 	}
 	
 	private void oneTest(int problemSize, boolean newChain, int n, int b, boolean result) throws Exception {
-		PetriGame pg = LoopUnrolling.createESafetyVersion(problemSize, newChain, false);
+		PetriGameWithTransits pg = LoopUnrolling.createESafetyVersion(problemSize, newChain, false);
 		testGame(pg, n, b, result);
 	}
 }

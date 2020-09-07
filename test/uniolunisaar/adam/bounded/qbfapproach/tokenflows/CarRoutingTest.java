@@ -3,8 +3,8 @@ package uniolunisaar.adam.bounded.qbfapproach.tokenflows;
 import org.testng.annotations.Test;
 
 import uniolunisaar.adam.bounded.qbfapproach.EmptyTest;
-import uniolunisaar.adam.ds.petrigame.PetriGame;
-import uniolunisaar.adam.generators.pg.CarRouting;
+import uniolunisaar.adam.ds.synthesis.pgwt.PetriGameWithTransits;
+import uniolunisaar.adam.generators.pgwt.CarRouting;
 
 /**
  * 
@@ -21,7 +21,7 @@ public class CarRoutingTest extends EmptyTest {
 	}
 	
 	private void oneTest(int nb_routes, int nb_cars, int n, int b, boolean result) throws Exception {
-		PetriGame pg = CarRouting.createAReachabilityVersion(nb_routes, nb_cars, false);
+		PetriGameWithTransits pg = CarRouting.createAReachabilityVersion(nb_routes, nb_cars, false);
 		testGame(pg, n, b, result);
 	}
 }
