@@ -18,7 +18,7 @@ import uniolunisaar.adam.ds.synthesis.solver.bounded.qbfapproach.QbfSolvingObjec
 import uniolunisaar.adam.exceptions.synthesis.pgwt.NoStrategyExistentException;
 import uniolunisaar.adam.exceptions.synthesis.pgwt.SolvingException;
 import uniolunisaar.adam.ds.synthesis.pgwt.PetriGameWithTransits;
-import uniolunisaar.adam.ds.objectives.Reachability;
+import uniolunisaar.adam.ds.objectives.local.Reachability;
 import uniolunisaar.adam.exceptions.synthesis.pgwt.CalculationInterruptedException;
 import uniolunisaar.adam.logic.synthesis.bounded.qbfapproach.QbfControl;
 
