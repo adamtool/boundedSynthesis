@@ -20,6 +20,7 @@ import uniolunisaar.adam.exceptions.synthesis.pgwt.CalculationInterruptedExcepti
 import uniolunisaar.adam.exceptions.synthesis.pgwt.NoStrategyExistentException;
 import uniolunisaar.adam.exceptions.synthesis.pgwt.SolvingException;
 import uniolunisaar.adam.logic.synthesis.bounded.qbfapproach.QbfControl;
+import uniolunisaar.adam.logic.synthesis.bounded.qbfapproach.unfolder.FiniteDeterministicUnfolder;
 
 /**
  *
@@ -102,6 +103,7 @@ public class QbfASafetySolver extends QbfSolver<Safety> {
 		writeNoBadPlaces();
 		writeDeterministic();
 		writeLoop();
+		//writeLoopALTERNATIVE(FiniteDeterministicUnfolder.pred);
 		writeDeadlocksterm();
 		writeWinning();
 
