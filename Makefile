@@ -92,12 +92,12 @@ setCleanAll:
 	$(eval t=clean-all)
 
 clean: setClean $(FRAMEWORK_TARGETS) $(SYNTHESIZER_TARGETS)
-	$(RM)-r -f deploy
+	$(RM) -r -f deploy
 	$(RM) -r -f javadoc
 
 clean-all: setCleanAll $(FRAMEWORK_TARGETS) $(SYNTHESIZER_TARGETS)
 	$(RM) -r -f deploy
-	$(RM)-r -f javadoc
+	$(RM) -r -f javadoc
 
 #javadoc:
 #	ant javadoc
