@@ -20,6 +20,7 @@ t=javac
 .PHONY: symbolic
 .PHONY: bdd
 .PHONY: mtbdd
+.PHONY: bounded_deploy_noUI
 #.PHONY: javadoc
 .PHONY: setJavac
 .PHONY: setJar
@@ -85,11 +86,21 @@ setJavac:
 setStandalone:
 	$(eval t=jar-standalone)
 
+setDeployBounded:
+	$(eval t=deploy_bounded)
+
 setClean:
 	$(eval t=clean)
 
 setCleanAll:
 	$(eval t=clean-all)
+
+bounded_deploy_noUI: $(FRAMEWORK_TARGETS) petrigames bounded setDeployBounded backend
+	mkdir -p deploy
+	echo "$(call create_bashscript, _bounded)" > ./deploy/adam_bounded
+	chmod +x ./deploy/adam_bounded
+	cp ./adam_bounded.jar ./deploy/Adam_bounded.jar
+	cp ./ADAM.properties ./deploy/ADAM.properties
 
 clean: setClean $(FRAMEWORK_TARGETS) $(SYNTHESIZER_TARGETS)
 	$(RM) -r -f deploy
