@@ -12,7 +12,6 @@ import uniolunisaar.adam.logic.synthesis.solver.bounded.qbfconcurrent.QbfConSolv
 import uniolunisaar.adam.logic.synthesis.solver.bounded.qbfconcurrent.QbfConSolverFactory;
 import uniolunisaar.adam.ds.synthesis.solver.bounded.qbfconcurrent.QbfConSolverOptions;
 import uniolunisaar.adam.ds.objectives.Condition;
-import uniolunisaar.adam.exceptions.synthesis.pgwt.CalculationInterruptedException;
 import uniolunisaar.adam.exceptions.synthesis.pgwt.NoStrategyExistentException;
 import uniolunisaar.adam.exceptions.synthesis.pgwt.SolvingException;
 import uniolunisaar.adam.exceptions.synthesis.pgwt.CouldNotFindSuitableConditionException;
@@ -40,11 +39,10 @@ public class AdamBounded {
 	 * @throws ParseException
 	 * @throws CouldNotFindSuitableConditionException
 	 * @throws SolvingException
-	 * @throws CalculationInterruptedException
 	 * @throws NoStrategyExistentException 
 	 * @throws InterruptedException 
 	 */
-	public static void main(String[] args) throws IOException, ParseException, CouldNotFindSuitableConditionException, SolvingException, CalculationInterruptedException, InterruptedException, NoStrategyExistentException {
+	public static void main(String[] args) throws IOException, ParseException, CouldNotFindSuitableConditionException, SolvingException, InterruptedException, NoStrategyExistentException {
 		if ((args.length != 4) && (args.length != 3))
 			printHelpAndExit("Invalid number of arguments");
 		String option = args[0];
