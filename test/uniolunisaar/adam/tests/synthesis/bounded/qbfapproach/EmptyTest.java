@@ -38,13 +38,16 @@ public abstract class EmptyTest {
 	}
  
 	protected void testSolver (Solver<PetriGameWithTransits,?,?,?> sol, int n, int b, boolean result) throws Exception {
-		PGTools.savePG2PDF("originalGame", sol.getGame(), false);
+		Thread game = PGTools.savePG2PDF("originalGame", sol.getGame(), false);
 		PetriGameWithTransits originalGame = new PetriGameWithTransits(sol.getGame());		// true copy of original game to check strategy for correctness later
         sol.existsWinningStrategy();								// solve game
-        PGTools.savePG2PDF("unfolding", sol.getGame(), false);
+        Thread unfolding = PGTools.savePG2PDF("unfolding", sol.getGame(), false);
+        game.join();
+        unfolding.join();
 		if (sol.existsWinningStrategy()) {
-			PGTools.savePG2PDF("strategy", sol.getStrategy(), false);
+			Thread strategy = PGTools.savePG2PDF("strategy", sol.getStrategy(), false);
 			// check correctness of strategy:
+			strategy.join();
 			Assert.assertTrue(QbfControl.checkStrategy(originalGame, sol.getStrategy()));
 		}
 		Assert.assertEquals(sol.existsWinningStrategy(), result);
