@@ -156,7 +156,7 @@ public class QbfASafetySolver extends QbfSolver<Safety> {
 			FileUtils.copyFile(file, new File(getSolvingObject().getGame().getName() + ".qcir"));
 		}
 		
-		// only check for files smaller than 500mb b/c otherwise bottleneck
+		// only check for files smaller than 500mb because otherwise bottleneck
 		if (QbfControl.debug && file.length() < 500000000) {
 			assert (QCIRconsistency.checkConsistency(file));
 		}
