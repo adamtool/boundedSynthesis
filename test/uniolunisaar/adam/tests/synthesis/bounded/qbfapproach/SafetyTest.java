@@ -65,6 +65,7 @@ public class SafetyTest extends EmptyTest {
 		//oneTest("boundedunfolding/txt", 25, 3, true); //
 		//oneTest("boundedunfolding/secondTry", 15, 3, true);
 		//TODO continue including more examples
+		oneTest("jhh/thesis2sys2env", 10, 2, true);
 		oneTest("tests/watchdog5", 15, 3, true);
 		//oneTest("container/container", 10, 2, true);	// TODO search for bounds
 		//oneTest("2env/paul", 10, 2, true); // TODO find corresponding unfolding to find winning strategy?
