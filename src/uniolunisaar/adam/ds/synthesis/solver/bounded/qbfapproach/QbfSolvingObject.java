@@ -14,6 +14,7 @@ import uniolunisaar.adam.ds.synthesis.solver.SolvingObject;
 import uniolunisaar.adam.exceptions.pnwt.NetNotSafeException;
 import uniolunisaar.adam.util.AdamExtensions;
 import uniolunisaar.adam.ds.objectives.Condition;
+import uniolunisaar.adam.ds.synthesis.solver.bounded.BoundedExtensionHandler;
 import uniolunisaar.adam.exceptions.synthesis.pgwt.SolvingException;
 
 /**
@@ -93,19 +94,19 @@ public class QbfSolvingObject<W extends Condition<W>> extends SolvingObject<Petr
     }
 
     public int getBoundedParameterNFromExtension() {
-        return (int) getGame().getExtension(AdamExtensions.n.name());
+        return BoundedExtensionHandler.getBoundN(getGame());
     }
 
     public boolean hasBoundedParameterNinExtension() {
-        return getGame().hasExtension(AdamExtensions.n.name());
+        return BoundedExtensionHandler.hasBoundN(getGame());
     }
 
     public int getBoundedParameterBFromExtension() {
-        return (int) getGame().getExtension(AdamExtensions.b.name());
+        return BoundedExtensionHandler.getBoundB(getGame());
     }
 
     public boolean hasBoundedParameterBinExtension() {
-        return getGame().hasExtension(AdamExtensions.b.name());
+        return BoundedExtensionHandler.hasBoundB(getGame());
     }
 
 	@Override
