@@ -31,7 +31,7 @@ public class QbfSolverFactory extends LLSolverFactory<QbfSolverOptions, QbfSolve
     }
 
     @Override
-    protected <W extends Condition<W>> QbfSolvingObject<W> createSolvingObject(PetriGameWithTransits game, W winCon) throws NotSupportedGameException {
+    protected <W extends Condition<W>> QbfSolvingObject<W> createSolvingObject(PetriGameWithTransits game, W winCon, QbfSolverOptions options) throws NotSupportedGameException {
         try {
             return new QbfSolvingObject<>(game, winCon, false);
         } catch (SolvingException ex) {
@@ -41,32 +41,32 @@ public class QbfSolverFactory extends LLSolverFactory<QbfSolverOptions, QbfSolve
 
     @Override
     protected QbfSolver<Safety> getESafetySolver(PetriGameWithTransits game, Safety con, QbfSolverOptions options) throws SolvingException {
-        return new QbfESafetySolver(createSolvingObject(game, con), options);
+        return new QbfESafetySolver(createSolvingObject(game, con, options), options);
     }
 
     @Override
     protected QbfSolver<Safety> getASafetySolver(PetriGameWithTransits game, Safety con, QbfSolverOptions options) throws SolvingException {
-        return new QbfASafetySolver(createSolvingObject(game, con), options);
+        return new QbfASafetySolver(createSolvingObject(game, con, options), options);
     }
 
     @Override
     protected QbfSolver<Reachability> getEReachabilitySolver(PetriGameWithTransits game, Reachability con, QbfSolverOptions options) throws SolvingException {
-        return new QbfEReachabilitySolver(createSolvingObject(game, con), options);
+        return new QbfEReachabilitySolver(createSolvingObject(game, con, options), options);
     }
 
     @Override
     protected QbfSolver<Reachability> getAReachabilitySolver(PetriGameWithTransits game, Reachability con, QbfSolverOptions options) throws SolvingException {
-        return new QbfAReachabilitySolver(createSolvingObject(game, con), options);
+        return new QbfAReachabilitySolver(createSolvingObject(game, con, options), options);
     }
 
     @Override
     protected QbfSolver<Buchi> getEBuchiSolver(PetriGameWithTransits game, Buchi con, QbfSolverOptions options) throws SolvingException {
-        return new QbfEBuchiSolver(createSolvingObject(game, con), options);
+        return new QbfEBuchiSolver(createSolvingObject(game, con, options), options);
     }
 
     @Override
     protected QbfSolver<Buchi> getABuchiSolver(PetriGameWithTransits game, Buchi con, QbfSolverOptions options) throws SolvingException {
-        return new QbfABuchiSolver(createSolvingObject(game, con), options);
+        return new QbfABuchiSolver(createSolvingObject(game, con, options), options);
     }
 
 }

@@ -28,7 +28,7 @@ public class QbfConSolverFactory extends LLSolverFactory<QbfConSolverOptions, Qb
     }
 
     @Override
-    protected <W extends Condition<W>> QbfSolvingObject<W> createSolvingObject(PetriGameWithTransits game, W winCon) throws NotSupportedGameException {
+    protected <W extends Condition<W>> QbfSolvingObject<W> createSolvingObject(PetriGameWithTransits game, W winCon, QbfConSolverOptions options) throws NotSupportedGameException {
         try {
             return new QbfSolvingObject<>(game, winCon, false);
         } catch (SolvingException ex) {
@@ -43,7 +43,7 @@ public class QbfConSolverFactory extends LLSolverFactory<QbfConSolverOptions, Qb
 
     @Override
     protected QbfConSolver<Safety> getASafetySolver(PetriGameWithTransits game, Safety con, QbfConSolverOptions options) throws SolvingException {
-        return new QbfConSafetySolver(createSolvingObject(game, con), options);
+        return new QbfConSafetySolver(createSolvingObject(game, con, options), options);
     }
 
     @Override
